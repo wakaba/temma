@@ -1,0 +1,66 @@
+#data
+<ruby>ab<rp>aaa<rt>xx<rp>ccc</ruby>cc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <ruby>
+|       "ab"
+|       <rp>
+|         "aaa"
+|       <rt>
+|         "xx"
+|       <rp>
+|         "ccc"
+|     "cc"
+
+#data
+<ruby>ab<rp>aaa<rt>xx<rt>ccc</ruby>cc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <ruby>
+|       "ab"
+|       <rp>
+|         "aaa"
+|       <rt>
+|         "xx"
+|       <rt>
+|         "ccc"
+|     "cc"
+
+#data
+<ruby>ab<rp>aa<span>a<rt>x<b>x<rp>ccc</ruby>cc
+#errors
+1;45;m;not closed;;span
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <ruby>
+|       "ab"
+|       <rp>
+|         "aa"
+|         <span>
+|           "a"
+|           <rt>
+|             "x"
+|             <b>
+|               "x"
+|               <rp>
+|                 "ccc"
+|     "cc"
+
+#data
+foo</sarcasm>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <sarcasm>
+|     "abc"

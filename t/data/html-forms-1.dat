@@ -1,0 +1,44 @@
+#data
+<form>aaa<input>abc</form>aaa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <form>
+|       "aaa"
+|       <input>
+|       "abc"
+|     "aaa"
+
+#data
+<select>aaa<option>aa<option>aa<optgroup>ab<option>aa<optgroup>aa</select>b
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <select>
+|       "aaa"
+|       <option>
+|         "aa"
+|       <option>
+|         "aa"
+|       <optgroup>
+|         "ab"
+|         <option>
+|           "aa"
+|       <optgroup>
+|         "aa"
+|     "b"
+
+#data
+<select><option>abc</select>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <select>
+|       <option>
+|         "abc"

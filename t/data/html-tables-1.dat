@@ -1,0 +1,218 @@
+#data
+<table><tr><th>foo<td>bbba</td>aaa</table>bbb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <th>
+|             "foo"
+|           <td>
+|             "bbba"
+|           "aaa"
+|     "bbb"
+
+#data
+<table><tr><th>foo<td>bbba</td><thead>aaa</table>bbb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <th>
+|             "foo"
+|           <td>
+|             "bbba"
+|       <thead>
+|         "aaa"
+|     "bbb"
+
+#data
+<table><tr><tfoot><tr><td>foo<td>bbba</td>aaa</table>bbb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|       <tfoot>
+|         <tr>
+|           <td>
+|             "foo"
+|           <td>
+|             "bbba"
+|           "aaa"
+|     "bbb"
+
+#data
+<table><tr><td>abc<tbody><tr><th></table>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <td>
+|             "abc"
+|       <tbody>
+|         <tr>
+|           <th>
+
+#data
+<table><tr><th>abc<tbody><tr><td></table>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <th>
+|             "abc"
+|       <tbody>
+|         <tr>
+|           <td>
+
+#data
+<table><tr><th>abc<tfoot><tr><tbody></table>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <th>
+|             "abc"
+|       <tfoot>
+|         <tr>
+|       <tbody>
+
+#data
+<table><tr><td>abc<p>adsf<td>aaa<span>aaa</span>bbb</table>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <td>
+|             "abc"
+|             <p>
+|               "adsf"
+|           <td>
+|             "aaa"
+|             <span>
+|               "aaa"
+|             "bbb"
+
+#data
+<table><tr><th>aa<span>bbb</table>ccc
+#errors
+1;35;m;not closed;;span
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <th>
+|             "aa"
+|             <span>
+|               "bbb"
+|     "ccc"
+
+#data
+<table><tr><th>f<table><tr><td>abc</table>aa</table>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <th>
+|             "f"
+|             <table>
+|               <tbody>
+|                 <tr>
+|                   <td>
+|                     "abc"
+|             "aa"
+
+#data
+<table>aaa<col>bbb<colgroup>aaa<col>aa<col>aa<tr></table>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       "aaa"
+|       <col>
+|       "bbb"
+|       <colgroup>
+|         "aaa"
+|         <col>
+|         "aa"
+|         <col>
+|         "aa"
+|       <tbody>
+|         <tr>
+
+#data
+<table>aa<colgroup>bb<colgrouP>cc<tr></table>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       "aa"
+|       <colgroup>
+|         "bb"
+|       <colgroup>
+|         "cc"
+|       <tbody>
+|         <tr>
+
+#data
+<table><tr><tr></table>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|         <tr>
+
+#data
+<table><tr><td><tr></table>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <td>
+|         <tr>

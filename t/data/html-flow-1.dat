@@ -1,0 +1,544 @@
+#data
+foo<p>abc<address>xx</address>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <address>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<span>aaa<address>xx</address>yy
+#errors
+1;28;m;not closed;;span
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|       <span>
+|         "aaa"
+|     <address>
+|       "xx"
+|     "yy"
+
+#data
+foo<address>aaa</address>bbb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <address>
+|       "aaa"
+|     "bbb"
+
+#data
+foo<p>abc<article>xx</article>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <article>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<aside>xx</aside>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <aside>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<blockquote>xx</blockquote>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <blockquote>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<center>xx</center>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <center>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<details>xx</details>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <details>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<dialog>xx</dialog>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <dialog>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<dir>xx</dir>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <dir>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<div>xx</div>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <div>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<dl>xx</dl>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <dl>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<fieldset>xx</fieldset>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <fieldset>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<figcaption>xx</figcaption>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <figcaption>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<figure>xx</figure>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <figure>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<footer>xx</footer>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <footer>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<header>xx</header>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <header>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<hgroup>xx</hgroup>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <hgroup>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<menu>xx</menu>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <menu>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<nav>xx</nav>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <nav>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<ol>xx</ol>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <ol>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<section>xx</section>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <section>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<summary>xx</summary>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <summary>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<ul>xx</ul>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <ul>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<p>xx</p>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <p>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<h1>xx</h1>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <h1>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<h2>xx</h2>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <h2>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<h3>xx</h3>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <h3>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<h4>xx</h4>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <h4>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<h5>xx</h5>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <h5>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<h6>xx</h6>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <h6>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<pre>xx</pre>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <pre>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<listing>xx</listing>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <listing>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<form>xx</form>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <form>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<plaintext>xx</plaintext>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <plaintext>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<table>xx</table>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <table>
+|       "xx"
+|     "yy"
+
+#data
+foo<p>abc<hr>xx
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <hr>
+|     "xx"
+
+#data
+foo<p>abc<isindex>xx
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <isindex>
+|     "xx"
+
+#data
+foo<p>abc<xmp>xx</xmp>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <xmp>
+|       "xx"
+|     "yy"

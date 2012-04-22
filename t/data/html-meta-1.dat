@@ -1,0 +1,113 @@
+#data
+<link>abc<link>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <link>
+|   <body>
+|     "abc"
+|     <link>
+
+#data
+<meta>abc<meta>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <meta>
+|   <body>
+|     "abc"
+|     <meta>
+
+#data
+<base>abc<base>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <base>
+|   <body>
+|     "abc"
+|     <base>
+
+#data
+<basefont>abc<basefont>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <basefont>
+|   <body>
+|     "abc"
+|     <basefont>
+
+#data
+<command>abc<command>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <command>
+|   <body>
+|     "abc"
+|     <command>
+
+#data
+<bgsound>abc<bgsound>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <bgsound>
+|   <body>
+|     "abc"
+|     <bgsound>
+
+#data
+<style>foo</style>abc<style>xy</style>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <style>
+|       "foo"
+|   <body>
+|     "abc"
+|     <style>
+|       "xy"
+
+#data
+<script>foo</script>abc<script>xy</script>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <script>
+|       "foo"
+|   <body>
+|     "abc"
+|     <script>
+|       "xy"
+
+#data
+<title>foo</title>abc<title>xy</title>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <title>
+|       "foo"
+|   <body>
+|     "abc"
+|     <title>
+|       "xy"

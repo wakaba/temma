@@ -1,0 +1,308 @@
+#data
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+
+#data
+abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abc"
+
+#data escaped
+  \u0020
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   "   "
+
+#data
+<!DOCTYPE HTML>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+
+#data
+<html>
+<!DOCTYPE HTML>
+#errors
+#document escaped
+| <!DOCTYPE html>
+| <html>
+|   "\u000A"
+
+#data
+<!DOCTYPE foo PUBLIC "xab" "xxxssa"  >
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+
+#data
+<html>def<html>abc
+#errors
+1;16;m;start_tag_not_allowed;;html
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "defabc"
+
+#data
+abc <html>xyx</html>saaa<!--bbb-->aa
+#errors
+1;11;m;start_tag_not_allowed;;html
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abc xyxsaaa"
+|     <!-- bbb -->
+|     "aa"
+
+#data
+<!-- aaa --> foo <html/>
+#errors
+1;24;m;start_tag_not_allowed;;html
+#document
+| <!DOCTYPE html>
+| <html>
+|   <!--  aaa  -->
+|   " "
+|   <body>
+|     "foo "
+
+#data
+<html><?foo?>aa
+#errors
+1;7;m;pio;;
+#document
+| <!DOCTYPE html>
+| <html>
+|   <!-- ?foo? -->
+|   <body>
+|     "aa"
+
+#data
+<foo bar="abc" Foo=xyz">
+#errors
+1;23;m;bad attribute value;;
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <foo>
+|       bar="abc"
+|       foo="xyz""
+
+#data
+abc<foo a:bc xmlns:foo="http://www/"/>b
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abc"
+|     <foo>
+|       a:bc=""
+|       xmlns:foo="http://www/"
+|     "b"
+
+#data
+abc</foo>bbb
+#errors
+1;10;m;unmatched end tag;;foo
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abcbbb"
+
+#data
+a<p>aa</>bbb
+#errors
+1;7;m;empty end tag;;
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <p>
+|       "aabbb"
+
+#data
+aaaa,</body>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aaaa,abc"
+
+#data
+aaaa,</head>abc
+#errors
+1;13;m;unmatched end tag;;head
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aaaa,abc"
+
+#data
+aaaa,</html>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aaaa,abc"
+
+#data
+aaaa,</hTml>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aaaa,abc"
+
+#data
+aaaa,<body>a<html>b<head>c
+#errors
+1;12;m;start_tag_not_allowed;;body
+1;19;m;start_tag_not_allowed;;html
+1;26;m;start_tag_not_allowed;;head
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aaaa,abc"
+
+#data
+aaaa,<bOdy/>a<htML/>b<Head/>c
+#errors
+1;13;m;start_tag_not_allowed;;body
+1;21;m;start_tag_not_allowed;;html
+1;29;m;start_tag_not_allowed;;head
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aaaa,abc"
+
+#data
+<html foo bar=1><html bar=2 baz>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   bar="1"
+|   baz=""
+|   foo=""
+
+#data
+<html foo bar=1><html bar=2 baz>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   bar="1"
+|   baz=""
+|   foo=""
+|   <body>
+|     "a"
+
+#data
+<html foo bar=1>a<html bar=2 baz>b
+#errors
+1;34;m;start_tag_not_allowed;;html
+#document
+| <!DOCTYPE html>
+| <html>
+|   bar="1"
+|   foo=""
+|   <body>
+|     "ab"
+
+#data
+<body foo bar=1><body bar=2 baz>
+#errors
+1;32;m;start_tag_not_allowed;;body
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     bar="1"
+|     foo=""
+
+#data
+<body foo bar=1><body bar=2 baz>xy
+#errors
+1;33;m;start_tag_not_allowed;;body
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     bar="1"
+|     foo=""
+|     "xy"
+
+#data
+<head foo bar=1><head bar=2 baz><body abc><head xyz bar=3>
+#errors
+1;33;m;start_tag_not_allowed;;head
+1;58;m;start_tag_not_allowed;;head
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     bar="1"
+|     foo=""
+|   <body>
+|     abc=""
+
+#data
+abc&#XA9;axx
+#errors
+#document escaped
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abc\u00A9axx"
+
+#data
+abc&copy;axx
+#errors
+#document escaped
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abc\u00A9axx"
+
+#data
+abc&AMPaxx
+#errors
+1;10;m;no refc;;
+#document escaped
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abc&axx"
+
+#data
+<foo x="aa&abvc&def&copy">
+#errors
+1;25;m;no refc;;
+#document escaped
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <foo>
+|       x="aa&abvc&def\u00A9"

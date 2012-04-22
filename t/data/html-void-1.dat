@@ -1,0 +1,142 @@
+#data
+foo<br>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <br>
+|     "abc"
+
+#data
+foo<area>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <area>
+|     "abc"
+
+#data
+foo<embed>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <embed>
+|     "abc"
+
+#data
+foo<img>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <img>
+|     "abc"
+
+#data
+foo<keygen>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <keygen>
+|     "abc"
+
+#data
+foo<wbr>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <wbr>
+|     "abc"
+
+#data
+foo<input>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <input>
+|     "abc"
+
+#data
+foo<param>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <param>
+|     "abc"
+
+#data
+foo<source>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <source>
+|     "abc"
+
+#data
+foo<track>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <track>
+|     "abc"
+
+#data
+foo<hr>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <hr>
+|     "abc"
+
+#data
+foo<image>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <image>
+|     "abc"
+
+#data
+foo<isindex>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <isindex>
+|     "abc"

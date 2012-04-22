@@ -1,0 +1,183 @@
+#data
+foo<li>abc<li>xyz
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <li>
+|       "abc"
+|     <li>
+|       "xyz"
+
+#data
+f<p>oo<li>abc<li>xyz
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "f"
+|     <p>
+|       "oo"
+|       <li>
+|         "abc"
+|       <li>
+|         "xyz"
+
+#data
+f<li>oo<p>abc<li>xyz
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "f"
+|     <li>
+|       "oo"
+|       <p>
+|         "abc"
+|     <li>
+|       "xyz"
+
+#data
+<ul><li>foo<li>bar<ol><li>abc<li>def</ol>xyz<li>aaa</ul>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <ul>
+|       <li>
+|         "foo"
+|       <li>
+|         "bar"
+|         <ol>
+|           <li>
+|             "abc"
+|           <li>
+|             "def"
+|         "xyz"
+|       <li>
+|         "aaa"
+
+#data
+<ul>foo<li>abc<p>xhyz</ul>aaa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <ul>
+|       "foo"
+|       <li>
+|         "abc"
+|         <p>
+|           "xhyz"
+|     "aaa"
+
+#data
+<li>aaa<menu><li>bbb</menu>c
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <li>
+|       "aaa"
+|       <menu>
+|         <li>
+|           "bbb"
+|       "c"
+
+#data
+<li>aaa<ul><li>bbb</ul>c
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <li>
+|       "aaa"
+|       <ul>
+|         <li>
+|           "bbb"
+|       "c"
+
+#data
+<li>aaa<ol><li>bbb</ol>c
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <li>
+|       "aaa"
+|       <ol>
+|         <li>
+|           "bbb"
+|       "c"
+
+#data
+<li>aaa<dir><li>bbb</dir>c
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <li>
+|       "aaa"
+|       <dir>
+|         <li>
+|           "bbb"
+|       "c"
+
+#data
+<li>aa<span>a<li>bbb
+#errors
+1;18;m;not closed;;span
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <li>
+|       "aa"
+|       <span>
+|         "a"
+|     <li>
+|       "bbb"
+
+#data
+foo<dt>bar<dd>baz<li>abv<p>aaa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <dt>
+|       "bar"
+|     <dd>
+|       "baz"
+|       <li>
+|         "abv"
+|         <p>
+|           "aaa"
+
+#data
+<dt>aaa<dl>foo<dt>abc<dd>xyz</dl>aaa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <dt>
+|       "aaa"
+|       <dl>
+|         "foo"
+|         <dt>
+|           "abc"
+|         <dd>
+|           "xyz"
+|       "aaa"
