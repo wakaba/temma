@@ -6,9 +6,12 @@ our $VERSION = '2.1';
 
 push our @ISA, 'Whatpm::HTML';
 use Whatpm::HTML::Tokenizer qw/:token/;
+use Whatpm::HTML::ParserData;
 
-use constant HTML_NS => q<http://www.w3.org/1999/xhtml>;
-use constant TEMMA_NS => q<http://suika.fam.cx/www/markup/temma>;
+sub HTML_NS () { q<http://www.w3.org/1999/xhtml> }
+sub MML_NS () { q<http://www.w3.org/1998/Math/MathML> }
+sub SVG_NS () { q<http://www.w3.org/2000/svg> }
+sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 
 sub parse_char_string ($$$;$$) {
   #my ($self, $s, $doc, $onerror, $get_wrapper) = @_;
@@ -320,6 +323,10 @@ our $EndTagOptional = {
   optgroup => 1,
 };
 
+sub IM_HTML () { 1 }
+sub IM_SVG () { 2 }
+sub IM_MML () { 3 }
+
 sub _construct_tree ($) {
   my ($self) = @_;
 
@@ -332,7 +339,7 @@ sub _construct_tree ($) {
 
   my $el = $self->{document}->create_element_ns (HTML_NS, [undef, 'html']);
   $self->{document}->append_child ($el);
-  push @{$self->{open_elements}}, [$el, 'html'];
+  push @{$self->{open_elements}}, [$el, 'html', IM_HTML];
 
   $self->{t} = $self->_get_next_token;
 
@@ -366,7 +373,7 @@ sub _construct_tree ($) {
           my $el = $self->{document}->create_element_ns
               (HTML_NS, [undef, $ao]);
           $self->{open_elements}->[-1]->[0]->append_child ($el);
-          push @{$self->{open_elements}}, [$el, $ao];
+          push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
         } else {
           last;
         }
@@ -444,7 +451,7 @@ sub _construct_tree ($) {
           my $el = $self->{document}->create_element_ns
               (HTML_NS, [undef, $ao]);
           $self->{open_elements}->[-1]->[0]->append_child ($el);
-          push @{$self->{open_elements}}, [$el, $ao];
+          push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
         } else {
           last;
         }
@@ -473,24 +480,51 @@ sub _construct_tree ($) {
         }
       }
 
+      my $im = $self->{open_elements}->[-1]->[2];
       my $ns = HTML_NS;
       my $local_name = $tag_name;
+      my $attr_fixup = {};
 
       if ($local_name =~ s/^t://) {
         $ns = TEMMA_NS;
+      } elsif ($local_name eq 'svg') {
+        $ns = SVG_NS;
+        $im = IM_SVG;
+        $attr_fixup = $Whatpm::HTML::ParserData::SVGAttrNameFixup;
+      } elsif ($local_name eq 'math') {
+        $ns = MML_NS;
+        $im = IM_MML;
+        $attr_fixup = $Whatpm::HTML::ParserData::MathMLAttrNameFixup;
+      } else {
+        if ($self->{open_elements}->[-1]->[2] == IM_SVG) {
+          $ns = SVG_NS;
+          $local_name = $Whatpm::HTML::ParserData::SVGElementNameFixup
+              ->{$local_name} || $local_name;
+          $attr_fixup = $Whatpm::HTML::ParserData::SVGAttrNameFixup;
+        } elsif ($self->{open_elements}->[-1]->[2] == IM_MML) {
+          $ns = MML_NS;
+          $attr_fixup = $Whatpm::HTML::ParserData::MathMLAttrNameFixup;
+        }
       }
 
-      # XXX SVG, MathML
-      my $el = $self->{document}->create_element_ns ($ns, [undef, $local_name]);
+      my $el = $self->{document}->create_element_ns
+          ($ns, [undef, $local_name]);
       $el->set_user_data (manakai_source_line => $self->{t}->{line});
       $el->set_user_data (manakai_source_column => $self->{t}->{column});
 
       my $attrs = $self->{t}->{attributes};
       for my $attr_name (sort {$attrs->{$a}->{index} <=> $attrs->{$b}->{index}}
                          keys %{$attrs}) {
+        my $attr;
         my $attr_t = $attrs->{$attr_name};
-        my $attr = $self->{document}->create_attribute_ns
-            (undef, [undef, $attr_name]);
+        my $nsfix = $Whatpm::HTML::ParserData::ForeignAttrNamespaceFixup
+            ->{$attr_name};
+        if ($nsfix) {
+          $attr = $self->{document}->create_attribute_ns (@$nsfix);
+        } else {
+          $attr = $self->{document}->create_attribute_ns
+              (undef, [undef, $attr_fixup->{$attr_name} || $attr_name]);
+        }
         $attr->value ($attr_t->{value});
         $attr->set_user_data (manakai_source_line => $attr_t->{line});
         $attr->set_user_data (manakai_source_column => $attr_t->{column});
@@ -502,7 +536,7 @@ sub _construct_tree ($) {
       if ($self->{self_closing}) {
         delete $self->{self_closing};
       } else {
-        push @{$self->{open_elements}}, [$el, $tag_name];
+        push @{$self->{open_elements}}, [$el, $tag_name, $im];
 
         if ($RawContent->{$tag_name}) {
           $self->{state} = $RawContent->{$tag_name};

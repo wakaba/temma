@@ -306,3 +306,16 @@ abc&AMPaxx
 |   <body>
 |     <foo>
 |       x="aa&abvc&def\u00A9"
+
+#data
+<x xmlns="abc" xlink:tITle="bb" XML:lang="cc">aa</x>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <x>
+|       xlink title="bb"
+|       xml lang="cc"
+|       xmlns xmlns="abc"
+|       "aa"

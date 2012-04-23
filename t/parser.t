@@ -51,6 +51,8 @@ sub _parsed_tree : Tests {
     html-tables-1.dat
     html-forms-1.dat
     html-text-1.dat
+    svg-1.dat
+    mml-1.dat
   );
 } # _parsed_tree
 

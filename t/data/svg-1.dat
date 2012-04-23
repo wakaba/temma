@@ -1,0 +1,69 @@
+#data
+abc<svg>foo<p>bbb</p>ccc</svg>xx<g></g>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abc"
+|     <svg svg>
+|       "foo"
+|       <svg p>
+|         "bbb"
+|       "ccc"
+|     "xx"
+|     <g>
+
+#data
+abc<svg>fo<altglyph/>o</svg>bbb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abc"
+|     <svg svg>
+|       "fo"
+|       <svg altGlyph>
+|       "o"
+|     "bbb"
+
+#data
+<svg viewbox=abc><g startoffset=31 definitionurl=1 /></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       viewBox="abc"
+|       <svg g>
+|         definitionurl="1"
+|         startOffset="31"
+
+#data
+<svg xmlns="abc" xlink:tITle="bb" XML:lang="cc">aa</svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       xlink title="bb"
+|       xml lang="cc"
+|       xmlns xmlns="abc"
+|       "aa"
+
+#data
+<svg><g xmlns="abc" xlink:tITle="bb" XML:lang="cc">aa</g></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg g>
+|         xlink title="bb"
+|         xml lang="cc"
+|         xmlns xmlns="abc"
+|         "aa"

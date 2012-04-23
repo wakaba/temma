@@ -1,0 +1,69 @@
+#data
+aa<math>bb<foo>baa</foo>bcc</math>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aa"
+|     <math math>
+|       "bb"
+|       <math foo>
+|         "baa"
+|       "bcc"
+|     "a"
+
+#data
+<matH>aa<altglyph/>cc</math>d
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       "aa"
+|       <math altglyph>
+|       "cc"
+|     "d"
+
+#data
+<math definitionurl=abc>aa<x definitionurl=xx repeatdur=1></x>aa</math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       definitionURL="abc"
+|       "aa"
+|       <math x>
+|         definitionURL="xx"
+|         repeatdur="1"
+|       "aa"
+
+#data
+<math xmlns="abc" xlink:tITle="bb" XML:lang="cc">aa</math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       xlink title="bb"
+|       xml lang="cc"
+|       xmlns xmlns="abc"
+|       "aa"
+
+#data
+<math><g xmlns="abc" xlink:tITle="bb" XML:lang="cc">aa</g></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math g>
+|         xlink title="bb"
+|         xml lang="cc"
+|         xmlns xmlns="abc"
+|         "aa"
