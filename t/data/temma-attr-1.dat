@@ -1,0 +1,73 @@
+#data
+<foo t:></foo>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <foo>
+|       t:=""
+
+#data
+<foo T:></foo>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <foo>
+|       t:=""
+
+#data
+<foo t:parse></foo>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <foo>
+|       temma parse=""
+
+#data
+<foo T:parse></foo>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <foo>
+|       temma parse=""
+
+#data
+<svg t:pArse><g T:parsE></g></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       temma parse=""
+|       <svg g>
+|         temma parse=""
+
+#data
+<math t:pArse><g T:parsE></g></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       temma parse=""
+|       <math g>
+|         temma parse=""
+
+#data
+<t:hoge t:parse/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma hoge>
+|       temma parse=""

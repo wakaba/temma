@@ -485,7 +485,7 @@ sub _construct_tree ($) {
       my $local_name = $tag_name;
       my $attr_fixup = {};
 
-      if ($local_name =~ s/^t://) {
+      if ($local_name =~ s/^t:(?=.)//s) {
         $ns = TEMMA_NS;
       } elsif ($local_name eq 'svg') {
         $ns = SVG_NS;
@@ -521,6 +521,9 @@ sub _construct_tree ($) {
             ->{$attr_name};
         if ($nsfix) {
           $attr = $self->{document}->create_attribute_ns (@$nsfix);
+        } elsif ($attr_name =~ s/^t:(?=.)//s) {
+          $attr = $self->{document}->create_attribute_ns
+              (TEMMA_NS, ['t', $attr_name]);
         } else {
           $attr = $self->{document}->create_attribute_ns
               (undef, [undef, $attr_fixup->{$attr_name} || $attr_name]);

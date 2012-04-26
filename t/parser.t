@@ -53,6 +53,7 @@ sub _parsed_tree : Tests {
     html-text-1.dat
     svg-1.dat
     mml-1.dat
+    temma-attr-1.dat
   );
 } # _parsed_tree
 
