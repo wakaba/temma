@@ -67,3 +67,84 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 |         xml lang="cc"
 |         xmlns xmlns="abc"
 |         "aa"
+
+#data
+<math><p>aaaa</math>
+#errors
+1;20;m;not closed;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math p>
+|         "aaaa"
+
+#data
+<math>hoge<br>foo</math>
+#errors
+1;24;m;not closed;;br
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       "hoge"
+|       <math br>
+|         "foo"
+
+#data
+<math><table><tr>foo
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math table>
+|         <math tr>
+|           "foo"
+
+#data
+<math>foo<p>bar<p>bc</math>
+#errors
+1;27;m;not closed;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       "foo"
+|       <math p>
+|         "bar"
+|         <math p>
+|           "bc"
+
+#data
+<math>fo<optgroup>bar<option>aa<optgroup>aa</math>
+#errors
+1;50;m;not closed;;optgroup
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       "fo"
+|       <math optgroup>
+|         "bar"
+|         <math option>
+|           "aa"
+|           <math optgroup>
+|             "aa"
+
+#data
+<math>foo<html>BAR<body>abz</html>aaa</math>
+#errors
+1;16;m;start tag not allowed;;html
+1;25;m;start tag not allowed;;body
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       "fooBARabzaaa"

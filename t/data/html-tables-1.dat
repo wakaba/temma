@@ -216,3 +216,41 @@
 |         <tr>
 |           <td>
 |         <tr>
+
+#data
+<table><colgroup></table>aa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <colgroup>
+|     "aa"
+
+#data
+<table><colgroup><col><col></table>aa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <colgroup>
+|         <col>
+|         <col>
+|     "aa"
+
+#data
+<table><colgroup><col><col>x</table>aa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <colgroup>
+|         <col>
+|         <col>
+|         "x"
+|     "aa"

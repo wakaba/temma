@@ -184,6 +184,7 @@ our $EndTagOptional = {
   rp => 1,
   option => 1,
   optgroup => 1,
+  colgroup => 1,
 };
 
 sub IM_HTML () { 1 }
@@ -205,6 +206,10 @@ sub _construct_tree ($) {
   push @{$self->{open_elements}}, [$el, 'html', IM_HTML];
 
   B: while (1) {
+    if (0) {
+      warn join ' ', map { $_->[1] } @{$self->{open_elements}};
+    }
+
     if ($self->{t}->{type} == CHARACTER_TOKEN) {
       if ($self->{t}->{data} =~ s/^([\x09\x0A\x0C\x0D\x20]+)//) {
         $self->{open_elements}->[-1]->[0]->manakai_append_text ($1);
@@ -215,35 +220,36 @@ sub _construct_tree ($) {
         next B;
       }
 
-      if ($Void->{$self->{open_elements}->[-1]->[1]}) {
-        pop @{$self->{open_elements}};
-      }
-
-      while (1) {
-        my $ac = $AutoClose->{$self->{open_elements}->[-1]->[1]}->{'<text>'};
-        if ($ac) {
-          pop @{$self->{open_elements}};
-        } else {
-          last;
+      if ($self->{open_elements}->[-1]->[2] == IM_HTML) {
+        while (1) {
+          my $ac = $AutoClose->{$self->{open_elements}->[-1]->[1]}->{'<text>'};
+          if ($ac) {
+            pop @{$self->{open_elements}};
+          } else {
+            last;
+          }
         }
-      }
-      
-      while (1) {
-        my $ao = $AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<text>'};
-        if ($ao) {
-          my $el = $self->{document}->create_element_ns
-              (HTML_NS, [undef, $ao]);
-          $self->{open_elements}->[-1]->[0]->append_child ($el);
-          push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
-        } else {
-          last;
+        
+        while (1) {
+          my $ao = $AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<text>'};
+          if ($ao) {
+            my $el = $self->{document}->create_element_ns
+                (HTML_NS, [undef, $ao]);
+            $self->{open_elements}->[-1]->[0]->append_child ($el);
+            push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
+          } else {
+            last;
+          }
         }
       }
 
       while ($self->{t}->{data} =~ s/\x00/\x{FFFD}/) {
-        $self->{parse_error}->(level => $self->{level}->{must}, type => 'NULL', token => $self->{t});
+        $self->{parse_error}->(level => $self->{level}->{must},
+                               type => 'NULL',
+                               token => $self->{t});
       }
-      $self->{open_elements}->[-1]->[0]->manakai_append_text ($self->{t}->{data});
+      $self->{open_elements}->[-1]->[0]->manakai_append_text
+          ($self->{t}->{data});
       
       $self->{t} = $self->_get_next_token;
       next B;
@@ -259,7 +265,7 @@ sub _construct_tree ($) {
                  $self->{open_elements}->[1]->[1] eq 'head' and
                  $tag_name eq 'body')) {
           $self->{parse_error}->(level => $self->{level}->{must},
-                                 type => 'start_tag_not_allowed',
+                                 type => 'start tag not allowed',
                                  text => $tag_name,
                                  token => $self->{t});
 
@@ -288,56 +294,53 @@ sub _construct_tree ($) {
         }
       }
 
-      if (not $tag_name =~ /^t:/ and
-          $Void->{$self->{open_elements}->[-1]->[1]}) {
-        pop @{$self->{open_elements}};
-      }
-
-      while (1) {
-        my $ac = $AutoClose->{$self->{open_elements}->[-1]->[1]}->{$tag_name};
-        $ac = $AutoClose->{$self->{open_elements}->[-1]->[1]}->{'<start>'}
-            if not defined $ac;
-        if ($ac) {
-          pop @{$self->{open_elements}};
-        } else {
-          last;
-        }
-      }
-
-      while (1) {
-        my $ao = $AutoOpen->{$self->{open_elements}->[-1]->[1]}->{$tag_name};
-        $ao = $AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<start>'}
-            if not defined $ao;
-        if ($ao) {
-          my $el = $self->{document}->create_element_ns
-              (HTML_NS, [undef, $ao]);
-          $self->{open_elements}->[-1]->[0]->append_child ($el);
-          push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
-        } else {
-          last;
-        }
-      }
-
-      my $cis = $CloseIfInScope->{$tag_name};
-      if ($cis) {
-        my $i = 0;
-        for (reverse @{$self->{open_elements}}) {
-          my $diff = $cis->{$_->[1]};
-          if (defined $diff) {
-            last if $diff < 0;
-            my @closed = splice @{$self->{open_elements}},
-                -($i + $diff), $i + $diff => ();
-            shift @closed;
-            my @not_closed = grep { not $EndTagOptional->{$_->[1]} } @closed;
-            if (@not_closed) {
-              $self->{parse_error}->(level => $self->{level}->{must},
-                                     type => 'not closed',
-                                     text => $not_closed[-1]->[1],
-                                     token => $self->{t});
-            }
+      if ($self->{open_elements}->[-1]->[2] == IM_HTML) {
+        while (1) {
+          my $ac = $AutoClose->{$self->{open_elements}->[-1]->[1]}->{$tag_name};
+          $ac = $AutoClose->{$self->{open_elements}->[-1]->[1]}->{'<start>'}
+              if not defined $ac;
+          if ($ac) {
+            pop @{$self->{open_elements}};
+          } else {
             last;
           }
-          $i++;
+        }
+
+        while (1) {
+          my $ao = $AutoOpen->{$self->{open_elements}->[-1]->[1]}->{$tag_name};
+          $ao = $AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<start>'}
+              if not defined $ao;
+          if ($ao) {
+            my $el = $self->{document}->create_element_ns
+                (HTML_NS, [undef, $ao]);
+            $self->{open_elements}->[-1]->[0]->append_child ($el);
+            push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
+          } else {
+            last;
+          }
+        }
+
+        my $cis = $CloseIfInScope->{$tag_name};
+        if ($cis) {
+          my $i = 0;
+          for (reverse @{$self->{open_elements}}) {
+            my $diff = $cis->{$_->[1]};
+            if (defined $diff) {
+              last if $diff < 0;
+              my @closed = splice @{$self->{open_elements}},
+                  -($i + $diff), $i + $diff => ();
+              shift @closed;
+              my @not_closed = grep { not $EndTagOptional->{$_->[1]} } @closed;
+              if (@not_closed) {
+                $self->{parse_error}->(level => $self->{level}->{must},
+                                       type => 'not closed',
+                                       text => $not_closed[-1]->[1],
+                                       token => $self->{t});
+              }
+              last;
+            }
+            $i++;
+          }
         }
       }
 
@@ -393,7 +396,7 @@ sub _construct_tree ($) {
         $attr->set_user_data (manakai_source_line => $attr_t->{line});
         $attr->set_user_data (manakai_source_column => $attr_t->{column});
         $el->set_attribute_node_ns ($attr);
-      }
+      } # $attrs
 
       $self->{open_elements}->[-1]->[0]->append_child ($el);
 
@@ -402,7 +405,13 @@ sub _construct_tree ($) {
       } else {
         push @{$self->{open_elements}}, [$el, $tag_name, $im];
 
-        if ($RawContent->{$tag_name}) {
+        if ($attrs->{'t:parse'}) {
+          #
+        } elsif ($im == IM_SVG or $im == IM_MML) {
+          #
+        } elsif ($Void->{$tag_name}) {
+          pop @{$self->{open_elements}};
+        } elsif ($RawContent->{$tag_name}) {
           $self->{state} = $RawContent->{$tag_name};
           delete $self->{escape};
         }
@@ -430,7 +439,10 @@ sub _construct_tree ($) {
             if ($self->{open_elements}->[$i]->[1] eq $tag_name) {
               my @closed = splice @{$self->{open_elements}}, $i;
               shift @closed;
-              @closed = grep { not $EndTagOptional->{$_->[1]} } reverse @closed;
+              @closed = grep {
+                not $EndTagOptional->{$_->[1]} or
+                $_->[2] == IM_SVG or $_->[2] == IM_MML
+              } reverse @closed;
               if (@closed) {
                 $self->{parse_error}->(level => $self->{level}->{must},
                                        type => 'not closed',

@@ -140,3 +140,14 @@ foo<isindex>abc
 |     "foo"
 |     <isindex>
 |     "abc"
+
+#data
+foo<col>aaa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <col>
+|     "aaa"

@@ -67,3 +67,84 @@ abc<svg>fo<altglyph/>o</svg>bbb
 |         xml lang="cc"
 |         xmlns xmlns="abc"
 |         "aa"
+
+#data
+<svg><p>aaaa</svg>
+#errors
+1;18;m;not closed;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg p>
+|         "aaaa"
+
+#data
+<svg>hoge<br>foo</svg>
+#errors
+1;22;m;not closed;;br
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       "hoge"
+|       <svg br>
+|         "foo"
+
+#data
+<svg><table><tr>foo
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg table>
+|         <svg tr>
+|           "foo"
+
+#data
+<svg>foo<p>bar<p>bc</svg>
+#errors
+1;25;m;not closed;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       "foo"
+|       <svg p>
+|         "bar"
+|         <svg p>
+|           "bc"
+
+#data
+<svg>fo<optgroup>bar<option>aa<optgroup>aa</svg>
+#errors
+1;48;m;not closed;;optgroup
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       "fo"
+|       <svg optgroup>
+|         "bar"
+|         <svg option>
+|           "aa"
+|           <svg optgroup>
+|             "aa"
+
+#data
+<svg>foo<html>BAR<body>abz</html>aaa</svg>
+#errors
+1;15;m;start tag not allowed;;html
+1;24;m;start tag not allowed;;body
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       "fooBARabzaaa"
