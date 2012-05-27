@@ -447,6 +447,17 @@ foo<p>abc<pre>xx</pre>yy
 |       "xx"
 |     "yy"
 
+#data escaped
+<pre>\u000Aabc</pre>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <pre>
+|       "
+abc"
+
 #data
 foo<p>abc<listing>xx</listing>yy
 #errors
@@ -460,6 +471,17 @@ foo<p>abc<listing>xx</listing>yy
 |     <listing>
 |       "xx"
 |     "yy"
+
+#data escaped
+<listing>\u000Aabc</listing>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <listing>
+|       "
+abc"
 
 #data
 foo<p>abc<form>xx</form>yy

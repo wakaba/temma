@@ -31,6 +31,8 @@ sub parse_char_string ($$$;$$) {
     $onerror->(line => $self->{line}, column => $self->{column}, @_);
   };
 
+  $self->{enable_cdata_section} = 1;
+
   $self->_initialize_tokenizer;
   $self->_initialize_tree_constructor;
   $self->{t} = $self->_get_next_token;
@@ -67,7 +69,7 @@ sub _terminate_tree_constructor ($) {
 ## Tree construction stage
 
 my @metavoid = qw(link meta base basefont bgsound command);
-my @metacontent = qw(title style script);
+my @metacontent = qw(title style script noscript);
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
   col
@@ -146,6 +148,12 @@ our $Void = {
 our $RawContent = {
   script => SCRIPT_DATA_STATE,
   style => RAWTEXT_STATE,
+  xmp => RAWTEXT_STATE,
+  iframe => RAWTEXT_STATE,
+  noframes => RAWTEXT_STATE,
+  noembed => RAWTEXT_STATE,
+  noscript => RAWTEXT_STATE,
+  title => RCDATA_STATE,
   textarea => RCDATA_STATE,
 };
 

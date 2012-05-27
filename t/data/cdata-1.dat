@@ -1,0 +1,73 @@
+#data
+<![CDATA[]]>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+
+#data
+<![CDATA[abc]]>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "abc"
+
+#data
+<![CDATA[    abc]]>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   "    "
+|   <body>
+|     "abc"
+
+#data
+<p><![CDATA[]]></p>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+
+#data
+<foo><![CDATA[abc]]>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <foo>
+|       "abc"
+
+#data
+<![CDATA[<p>abc]]>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "<p>abc"
+
+#data
+<svg><![CDATA[</svg>]]></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       "</svg>"
+
+#data
+<math>aaa<![CDATA[bb]]]]></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       "aaabb]]"

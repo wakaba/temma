@@ -1,0 +1,56 @@
+#data
+<title>f&amp;b<p>a</title>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <title>
+|       "f&b<p>a"
+
+#data
+<title t:parse>f&amp;b<p>a</title>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <title>
+|       temma parse=""
+|       "f&b"
+|       <p>
+|         "a"
+
+#data
+<textarea>f&amp;b<p>a</textarea>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <textarea>
+|       "f&b<p>a"
+
+#data
+<textarea t:parse>f&amp;b<p>a</textarea>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <textarea>
+|       temma parse=""
+|       "f&b"
+|       <p>
+|         "a"
+
+#data escaped
+<textarea>\u000Aabc</textarea>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <textarea>
+|       "
+abc"

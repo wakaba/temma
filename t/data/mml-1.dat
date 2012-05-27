@@ -148,3 +148,45 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 |   <body>
 |     <math math>
 |       "fooBARabzaaa"
+
+#data
+<math><title>foo<p>bar</p>&amp;</title></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math title>
+|         "foo"
+|         <math p>
+|           "bar"
+|         "&"
+
+#data
+<math><xmp>foo<p>bar</p>&amp;</xmp></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math xmp>
+|         "foo"
+|         <math p>
+|           "bar"
+|         "&"
+
+#data
+<math><plaintext>foo<p>bar</p>&amp;</plaintext></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math plaintext>
+|         "foo"
+|         <math p>
+|           "bar"
+|         "&"

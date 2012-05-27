@@ -1,0 +1,318 @@
+#data
+<style>foo<p>bar</p>bb</style>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <style>
+|       "foo<p>bar</p>bb"
+|   <body>
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<style t:parse>foo<p>bar</p>bb</style>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <style>
+|       temma parse=""
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
+|   <body>
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<style>&amp;</style><style t:parse>&amp;</style>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <style>
+|       "&amp;"
+|     <style>
+|       temma parse=""
+|       "&"
+
+#data
+<script>foo<p>bar</p>bb</script>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <script>
+|       "foo<p>bar</p>bb"
+|   <body>
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<script t:parse>foo<p>bar</p>bb</script>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <script>
+|       temma parse=""
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
+|   <body>
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<script>&amp;</script><script t:parse>&amp;</script>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <script>
+|       "&amp;"
+|     <script>
+|       temma parse=""
+|       "&"
+
+#data
+<xmp>foo<p>bar</p>bb</xmp>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <xmp>
+|       "foo<p>bar</p>bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<xmp t:parse>foo<p>bar</p>bb</xmp>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <xmp>
+|       temma parse=""
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<xmp>&amp;</xmp><xmp t:parse>&amp;</xmp>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <xmp>
+|       "&amp;"
+|     <xmp>
+|       temma parse=""
+|       "&"
+
+#data
+<iframe>foo<p>bar</p>bb</iframe>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <iframe>
+|       "foo<p>bar</p>bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<iframe t:parse>foo<p>bar</p>bb</iframe>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <iframe>
+|       temma parse=""
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<iframe>&amp;</iframe><iframe t:parse>&amp;</iframe>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <iframe>
+|       "&amp;"
+|     <iframe>
+|       temma parse=""
+|       "&"
+
+#data
+<noframes>foo<p>bar</p>bb</noframes>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <noframes>
+|       "foo<p>bar</p>bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<noframes t:parse>foo<p>bar</p>bb</noframes>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <noframes>
+|       temma parse=""
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<noframes>&amp;</noframes><noframes t:parse>&amp;</noframes>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <noframes>
+|       "&amp;"
+|     <noframes>
+|       temma parse=""
+|       "&"
+
+#data
+<noembed>foo<p>bar</p>bb</noembed>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <noembed>
+|       "foo<p>bar</p>bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<noembed t:parse>foo<p>bar</p>bb</noembed>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <noembed>
+|       temma parse=""
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<noembed>&amp;</noembed><noembed t:parse>&amp;</noembed>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <noembed>
+|       "&amp;"
+|     <noembed>
+|       temma parse=""
+|       "&"
+
+#data
+<noscript>foo<p>bar</p>bb</noscript>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <noscript>
+|       "foo<p>bar</p>bb"
+|   <body>
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<noscript t:parse>foo<p>bar</p>bb</noscript>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <noscript>
+|       temma parse=""
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
+|   <body>
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<noscript>&amp;</noscript><noscript t:parse>&amp;</noscript>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <noscript>
+|       "&amp;"
+|     <noscript>
+|       temma parse=""
+|       "&"
+
+#data
+<plaintext>foo<p>bar&amp;</plaintext>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <plaintext>
+|       "foo"
+|       <p>
+|         "bar&"

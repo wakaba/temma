@@ -148,3 +148,45 @@ abc<svg>fo<altglyph/>o</svg>bbb
 |   <body>
 |     <svg svg>
 |       "fooBARabzaaa"
+
+#data
+<svg><title>foo<p>bar</p>&amp;</title></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg title>
+|         "foo"
+|         <svg p>
+|           "bar"
+|         "&"
+
+#data
+<svg><xmp>foo<p>bar</p>&amp;</xmp></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg xmp>
+|         "foo"
+|         <svg p>
+|           "bar"
+|         "&"
+
+#data
+<svg><plaintext>foo<p>bar</p>&amp;</plaintext></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg plaintext>
+|         "foo"
+|         <svg p>
+|           "bar"
+|         "&"

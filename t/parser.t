@@ -43,6 +43,9 @@ sub _parsed_tree : Tests {
     eq_or_diff [sort { $a cmp $b } @error],
         [sort { $a cmp $b } @{$test->{errors}->[0]}];
   } for map { $test_data_d->file ($_) } qw(
+    cdata-1.dat
+    cdata-2.dat
+    rcdata-1.dat
     html-1.dat
     html-meta-1.dat
     html-void-1.dat
