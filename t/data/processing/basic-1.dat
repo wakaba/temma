@@ -1,0 +1,51 @@
+#data
+#errors
+#output
+<!DOCTYPE html><html></html>
+
+#data
+aaa
+#errors
+#output
+<!DOCTYPE html><html><body>aaa</body></html>
+
+#data
+<!DOCTYPE html>aaa
+#output
+<!DOCTYPE html><html><body>aaa</body></html>
+
+#data
+<!DOCTYPE 124550>abcd
+#output
+<!DOCTYPE html><html><body>abcd</body></html>
+
+#data
+<!-- foo bar --><p>abc<!-- ddd --> xxx</p><!-- xxx -->
+#output
+<!DOCTYPE html><html><body><p>abc xxx</p></body></html>
+
+#data
+<FoO bAr=xYz aaa><img src="">abc</foo>
+#output
+<!DOCTYPE html><html><body><foo aaa="" bar="xYz"><img src="">abc</foo></body></html>
+
+#data
+<svg><img/>hoge</svg>
+#output
+<!DOCTYPE html><html><body><svg><img></img>hoge</svg></body></html>
+
+#data escaped
+aa"&lt;&>b'ax&copy;
+#output escaped
+<!DOCTYPE html><html><body>aa&quot;&lt;&amp;&gt;b'ax\u00A9</body></html>
+
+#data escaped
+aaa\u4E00\u4E01\uD800
+#errors
+#output escaped
+<!DOCTYPE html><html><body>aaa\u4E00\u4E01\uD800</body></html>
+
+#data escaped
+<foo a="&quot;ab&amp;&apos;&lt;&gt;a\uD800"/>
+#output escaped
+<!DOCTYPE html><html><body><foo a="&quot;ab&amp;'&lt;&gt;a\uD800"></foo></body></html>
