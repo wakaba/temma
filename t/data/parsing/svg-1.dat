@@ -159,9 +159,22 @@ abc<svg>fo<altglyph/>o</svg>bbb
 |     <svg svg>
 |       <svg title>
 |         "foo"
-|         <svg p>
+|         <p>
 |           "bar"
 |         "&"
+
+#data
+<svg><title>foo<p>bar&amp;</title></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg title>
+|         "foo"
+|         <p>
+|           "bar&"
 
 #data
 <svg><xmp>foo<p>bar</p>&amp;</xmp></svg>
@@ -190,3 +203,80 @@ abc<svg>fo<altglyph/>o</svg>bbb
 |         <svg p>
 |           "bar"
 |         "&"
+
+#data
+<svg><foreignobject>a<p>b</foreignobject>c</svg>d
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg foreignObject>
+|         "a"
+|         <p>
+|           "b"
+|       "c"
+|     "d"
+
+#data
+<svg><title>foo<svg><foo/></svg>hoge<p>bar</title></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg title>
+|         "foo"
+|         <svg svg>
+|           <svg foo>
+|         "hoge"
+|         <p>
+|           "bar"
+
+#data
+<svg><desc>foo<svg><foo/></svg>hoge<p>bar</desc></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg desc>
+|         "foo"
+|         <svg svg>
+|           <svg foo>
+|         "hoge"
+|         <p>
+|           "bar"
+
+#data
+<svg><title>foo<math><foo/></math>hoge<p>bar</title></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg title>
+|         "foo"
+|         <math math>
+|           <math foo>
+|         "hoge"
+|         <p>
+|           "bar"
+
+#data
+<svg><foreignobject><math><annotation-xml><svg><g/></svg></annotation-xml></math></foreignobject></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg foreignObject>
+|         <math math>
+|           <math annotation-xml>
+|             <svg svg>
+|               <svg g>

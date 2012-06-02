@@ -190,3 +190,229 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 |         <math p>
 |           "bar"
 |         "&"
+
+#data
+<math><mi><P>foo</mi></matH>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math mi>
+|         <p>
+|           "foo"
+
+#data
+<math><mo><P>foo</mo></matH>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math mo>
+|         <p>
+|           "foo"
+
+#data
+<math><ms><P>foo</ms></matH>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math ms>
+|         <p>
+|           "foo"
+
+#data
+<math><mn><P>foo</mn></matH>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math mn>
+|         <p>
+|           "foo"
+
+#data
+<math><mtext><P>foo</mText></matH>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math mtext>
+|         <p>
+|           "foo"
+
+#data
+<math><annotation-XML><P>foo</annotation-XML></matH>
+#errors
+1;46;m;not closed;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math annotation-xml>
+|         <math p>
+|           "foo"
+
+#data
+<math><annotation-XML encoding><P>foo</annotation-XML></matH>
+#errors
+1;55;m;not closed;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math annotation-xml>
+|         encoding=""
+|         <math p>
+|           "foo"
+
+#data
+<math><annotation-XML encoding=text/xml><P>foo</annotation-XML></matH>
+#errors
+1;64;m;not closed;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math annotation-xml>
+|         encoding="text/xml"
+|         <math p>
+|           "foo"
+
+#data
+<math><annotation-XML encoding=text/HTml><P>foo</annotation-XML></matH>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math annotation-xml>
+|         encoding="text/HTml"
+|         <p>
+|           "foo"
+
+#data
+<math><annotation-XML encoding=
+application/xhtml+xml><P>foo</annotation-XML></matH>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math annotation-xml>
+|         encoding="application/xhtml+xml"
+|         <p>
+|           "foo"
+
+#data
+<math><annotation-XML encoding="text/HTml "><P>foo</annotation-XML></matH>
+#errors
+1;68;m;not closed;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math annotation-xml>
+|         encoding="text/HTml "
+|         <math p>
+|           "foo"
+
+#data
+<math><annotation-XML encoding=text/HTml><P>foo</annotation-XML></matH>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math annotation-xml>
+|         encoding="text/HTml"
+|         <p>
+|           "foo"
+
+#data
+<math><annotation-xml encoding="text/html"><svg><g/></svg></annotation-xml></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math annotation-xml>
+|         encoding="text/html"
+|         <svg svg>
+|           <svg g>
+
+#data
+<math><mi><svg><P>foo</svg></mi></matH>
+#errors
+1;28;m;not closed;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math mi>
+|         <svg svg>
+|           <svg p>
+|             "foo"
+
+#data
+<math><mi><mglyph/>a</mi></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math mi>
+|         <math mglyph>
+|         "a"
+
+#data
+<math><mi><malignmark/>a</mi></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math mi>
+|         <math malignmark>
+|         "a"
+
+#data
+<mglyph><hoge/></mglyph>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math mglyph>
+|       <math hoge>
+
+#data
+<malignmark><hoge/></malignmark>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math malignmark>
+|       <math hoge>

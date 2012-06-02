@@ -232,7 +232,9 @@ sub _construct_tree ($) {
         $ns = SVG_NS;
         $im = IM_SVG;
         $attr_fixup = $Whatpm::HTML::ParserData::SVGAttrNameFixup;
-      } elsif ($local_name eq 'math') {
+      } elsif ($local_name eq 'math' or
+               $local_name eq 'mglyph' or
+               $local_name eq 'malignmark') {
         $ns = MML_NS;
         $im = IM_MML;
         $attr_fixup = $Whatpm::HTML::ParserData::MathMLAttrNameFixup;
@@ -280,11 +282,30 @@ sub _construct_tree ($) {
       if ($self->{self_closing}) {
         delete $self->{self_closing};
       } else {
+        my $orig_im = $im;
+        if ($ns eq SVG_NS) {
+          if ($Whatpm::HTML::ParserData::SVGHTMLIntegrationPoints->{$local_name}) {
+            $im = IM_HTML;
+          }
+        } elsif ($ns eq MML_NS) {
+          if ($Whatpm::HTML::ParserData::MathMLTextIntegrationPoints->{$local_name} or
+              $Whatpm::HTML::ParserData::MathMLHTMLIntegrationPoints->{$local_name} or
+              ($local_name eq 'annotation-xml' and
+               $attrs->{encoding} and
+               do {
+                 my $enc = $attrs->{encoding}->{value};
+                 $enc =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
+                 ($enc eq 'text/html' or $enc eq 'application/xhtml+xml');
+               })) {
+            $im = IM_HTML;
+          }
+        }
+        
         push @{$self->{open_elements}}, [$el, $tag_name, $im];
 
         if ($attrs->{'t:parse'}) {
           #
-        } elsif ($im == IM_SVG or $im == IM_MML) {
+        } elsif ($orig_im == IM_SVG or $orig_im == IM_MML) {
           #
         } elsif ($Temma::Defs::Void->{$tag_name}) {
           pop @{$self->{open_elements}};
