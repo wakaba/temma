@@ -11,7 +11,7 @@ use Message::DOM::DOMImplementation;
 use Whatpm::HTML::Dumper;
 use base qw(Test::Class);
 
-my $test_data_d = file (__FILE__)->dir->subdir ('data');
+my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('parsing');
 
 sub _parsed_tree : Tests {
   my $dom = Message::DOM::DOMImplementation->new;
