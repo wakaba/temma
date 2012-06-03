@@ -49,3 +49,41 @@ aaa\u4E00\u4E01\uD800
 <foo a="&quot;ab&amp;&apos;&lt;&gt;a\uD800"/>
 #output escaped
 <!DOCTYPE html><html><body><foo a="&quot;ab&amp;'&lt;&gt;a\uD800"></foo></body></html>
+
+#data
+aaaa<t:hoge/>bbb
+#errors
+1;5;m;temma:unknown element;hoge;
+#output
+<!DOCTYPE html><html><body>aaaabbb</body></html>
+
+#data
+aaaa<svg><foreignobject><p>foo<math>bar</math></foreignObject>aa</svg>b
+#output
+<!DOCTYPE html><html><body>aaaa<svg><foreignObject><p>foo<math>bar</math></p></foreignObject>aa</svg>b</body></html>
+
+#data
+aa<svg><desc><g><br></g></desc></svg>
+#output
+<!DOCTYPE html><html><body>aa<svg><desc><g><br></g></desc></svg></body></html>
+
+#data
+aa<svg><desc><p>x</desc></svg>
+#output
+<!DOCTYPE html><html><body>aa<svg><desc><p>x</p></desc></svg></body></html>
+
+#data
+aa<svg><title><p>x</title></svg>
+#output
+<!DOCTYPE html><html><body>aa<svg><title><p>x</p></title></svg></body></html>
+
+#data
+aa<svg><title><math><mi><svg><g/></svg></mi></math><p>x</title></svg>b
+#output
+<!DOCTYPE html><html><body>aa<svg><title><math><mi><svg><g></g></svg></mi></math><p>x</p></title></svg>b</body></html>
+
+#data
+aaa<mglyph>aaa</mglyph>bbb
+#errors
+#output
+<!DOCTYPE html><html><body>aaa<mglyph>aaa</mglyph>bbb</body></html>

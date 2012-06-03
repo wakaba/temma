@@ -29,6 +29,10 @@ sub _processed : Tests {
     my $parser = Temma::Parser->new;
     my $onerror = sub {
       my %opt = @_;
+      if ($opt{node}) {
+        $opt{line} //= $opt{node}->get_user_data ('manakai_source_line');
+        $opt{column} //= $opt{node}->get_user_data ('manakai_source_column');
+      }
       push @error, join ';', map { 
         defined $_ ? $_ : '';
       } @opt{qw(line column level type value text)};
@@ -52,6 +56,7 @@ sub _processed : Tests {
         [sort { $a cmp $b } @{$test->{errors}->[0] or []}];
   } for map { $test_data_d->file ($_) } qw(
     basic-1.dat
+    element-1.dat
   );
 } # _processed
 

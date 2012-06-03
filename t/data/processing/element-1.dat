@@ -1,0 +1,19 @@
+#data
+<t:element name="'p'">foo</t:element>
+#output
+<!DOCTYPE html><html><body><p>foo</p></body></html>
+
+#data
+<t:element name="'DiV'"><p>hoge</t:element>aaaa
+#output
+<!DOCTYPE html><html><body><div><p>hoge</p></div>aaaa</body></html>
+
+#data
+foo<t:element name="'br'">abc</t:element>xxx
+#output
+<!DOCTYPE html><html><body>foo<br>xxx</body></html>
+
+#data
+foo<t:element name="'BR'">abc</t:element>xxx
+#output
+<!DOCTYPE html><html><body>foo<br>xxx</body></html>
