@@ -49,6 +49,24 @@ sub htescape ($) {
   return $s;
 } # htescape
 
+my $TemmaContextNode = sub ($) {
+  my $node = $_[0];
+  while (1) {
+    my $url = $node->namespace_uri || '';
+    if ($url eq TEMMA_NS) {
+      my $parent = $node->parent_node;
+      if ($parent) {
+        $node = $parent;
+      } else {
+        last;
+      }
+    } else {
+      last;
+    }
+  }
+  return $node;
+}; # $TemmaContextNode
+
 sub process_document ($$$) {
   my ($self, $doc => $fh) = @_;
 
@@ -69,11 +87,10 @@ sub process_document ($$$) {
         my $attrs = [];
         if ($ns eq TEMMA_NS) {
           if ($ln eq 'element') {
-            $ns = HTML_NS; # XXX
             $ln = $self->eval_attr_value ($node, 'name'); # XXX
             $ln = '' unless defined $ln;
             $ln =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
-            
+            $ns = $node->$TemmaContextNode->manakai_get_child_namespace_uri ($ln);
           } else {
             $self->{onerror}->(type => 'temma:unknown element',
                                node => $node,

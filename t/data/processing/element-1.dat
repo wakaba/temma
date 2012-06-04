@@ -17,3 +17,18 @@ foo<t:element name="'br'">abc</t:element>xxx
 foo<t:element name="'BR'">abc</t:element>xxx
 #output
 <!DOCTYPE html><html><body>foo<br>xxx</body></html>
+
+#data
+<svg>foo<t:element name="'BR'">abc</t:element>xxx</svg>
+#output
+<!DOCTYPE html><html><body><svg>foo<br>abc</br>xxx</svg></body></html>
+
+#data
+<svg>foo<t:element name="'desc'">a<br>b</br>c</t:element>xxx</svg>
+#output
+<!DOCTYPE html><html><body><svg>foo<desc>a<br>b</br>c</desc>xxx</svg></body></html>
+
+#data
+<svg>foo<t:element name="'desc'">a<t:element name='"br"'>b</t:element>c</t:element>xxx</svg>
+#output
+<!DOCTYPE html><html><body><svg>foo<desc>a<br>b</br>c</desc>xxx</svg></body></html>
