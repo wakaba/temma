@@ -87,3 +87,10 @@ aaa<mglyph>aaa</mglyph>bbb
 #errors
 #output
 <!DOCTYPE html><html><body>aaa<mglyph>aaa</mglyph>bbb</body></html>
+
+#data
+<foo:bar>aaa</foo:bar>xxxx
+#errors
+1;1;m;temma:name not serializable;foo:bar;
+#output
+<!DOCTYPE html><html><body>aaaxxxx</body></html>

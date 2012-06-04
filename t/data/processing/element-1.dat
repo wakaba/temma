@@ -32,3 +32,8 @@ foo<t:element name="'BR'">abc</t:element>xxx
 <svg>foo<t:element name="'desc'">a<t:element name='"br"'>b</t:element>c</t:element>xxx</svg>
 #output
 <!DOCTYPE html><html><body><svg>foo<desc>a<br>b</br>c</desc>xxx</svg></body></html>
+
+#data
+<svg>foo<t:element name="'ForeignobjecT'">a</t:element>xxx</svg><foreignobjeCT>aaa</foreiGNOBJECT>
+#output
+<!DOCTYPE html><html><body><svg>foo<foreignObject>a</foreignObject>xxx</svg><foreignobject>aaa</foreignobject></body></html>

@@ -87,10 +87,13 @@ sub process_document ($$$) {
         my $attrs = [];
         if ($ns eq TEMMA_NS) {
           if ($ln eq 'element') {
-            $ln = $self->eval_attr_value ($node, 'name'); # XXX
+            $ln = $self->eval_attr_value ($node, 'name');
             $ln = '' unless defined $ln;
             $ln =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
             $ns = $node->$TemmaContextNode->manakai_get_child_namespace_uri ($ln);
+            if ($ns eq SVG_NS) {
+              $ln = $Whatpm::HTML::ParserData::SVGElementNameFixup->{$ln} || $ln;
+            }
           } else {
             $self->{onerror}->(type => 'temma:unknown element',
                                node => $node,
@@ -103,8 +106,8 @@ sub process_document ($$$) {
         }
 
         my $current_mode = $self->{mode};
-
-          print $fh '<' . $ln; # XXX
+        if ($ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
+          print $fh '<' . $ln;
           
           for my $attr (@$attrs) {
             print $fh ' ' . $attr->node_name . '="' . # XXX
@@ -116,22 +119,33 @@ sub process_document ($$$) {
           if ($ns eq HTML_NS and not $ln =~ /:/ and
               $Temma::Defs::Void->{$ln}) {
             #
-        } else {
-          if ($current_mode != $self->{mode}) {
-            unshift @process,
-                {type => 'end tag', tag_name => $ln, # XXX
-                 mode => $current_mode};
           } else {
-            unshift @process,
-                {type => 'end tag', tag_name => $ln}; # XXX
+            if ($current_mode != $self->{mode}) {
+              unshift @process,
+                  {type => 'end tag', tag_name => $ln, # XXX
+                   mode => $current_mode};
+            } else {
+              unshift @process,
+                  {type => 'end tag', tag_name => $ln}; # XXX
+            }
           }
+        } else {
+          $self->{onerror}->(type => 'temma:name not serializable',
+                             node => $node,
+                             value => $ln,
+                             level => 'm');
+        }
             
-            unshift @process,
-                map { {type => 'node', node => $_} } 
-                grep { $_->node_type == ELEMENT_NODE or
-                       $_->node_type == TEXT_NODE }
-                @{$node->child_nodes->to_a};
-          }
+        if ($ns eq HTML_NS and not $ln =~ /:/ and
+            $Temma::Defs::Void->{$ln}) {
+          #
+        } else {
+          unshift @process,
+              map { {type => 'node', node => $_} } 
+              grep { $_->node_type == ELEMENT_NODE or
+                     $_->node_type == TEXT_NODE }
+              @{$node->child_nodes->to_a};
+        }
       } elsif ($nt == DOCUMENT_TYPE_NODE) {
         my $nn = $node->node_name;
         $nn =~ s/[^0-9A-Za-z_-]/_/g;
