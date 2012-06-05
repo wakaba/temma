@@ -65,7 +65,7 @@ sub process_document ($$$) {
   my ($self, $doc => $fh) = @_;
 
   $self->{processes} = [];
-  push @{$self->{processes}}, {type => 'node', node => $doc};
+  push @{$self->{processes}}, {type => 'node', node => $doc}, {type => 'end'};
 
   while (@{$self->{processes}}) {
     my $process = shift @{$self->{processes}};
@@ -74,8 +74,12 @@ sub process_document ($$$) {
       my $node = $process->{node};
       my $nt = $node->node_type;
       if ($nt == TEXT_NODE) {
+        next if $self->_close_start_tag ($process, $fh);
+
         print $fh htescape $node->data;
       } elsif ($nt == ELEMENT_NODE) {
+        next if $self->_close_start_tag ($process, $fh);
+
         my $ns = $node->namespace_uri || '';
         my $ln = $node->manakai_local_name;
         my $attrs = [];
@@ -101,10 +105,8 @@ sub process_document ($$$) {
 
         if ($ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
           print $fh '<' . $ln;
-          $self->{allow_attr} = 1;
-          
-          my $node_info = {node => $node, ns => $ns, ln => $ln, lnn => $ln,
-                           attrs => {}};
+          my $node_info = $self->{current_tag} =
+              {node => $node, ns => $ns, ln => $ln, lnn => $ln, attrs => {}};
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
           
           for my $attr (@$attrs) {
@@ -114,7 +116,21 @@ sub process_document ($$$) {
                 (htescape $attr->node_value) . '"';
           }
 
-          $self->_close_start_tag ($node_info => $fh);
+          if ($node_info->{ns} eq HTML_NS and
+              $Whatpm::HTML::ParserData::AllVoidElements->{$node_info->{lnn}}) {
+            # XXX attr child node should be processed
+            
+            #
+          } else {
+            unshift @{$self->{processes}},
+                {type => 'end tag', tag_name => $node_info->{ln}};
+            
+            unshift @{$self->{processes}},
+                map { {type => 'node', node => $_} } 
+                grep { $_->node_type == ELEMENT_NODE or
+                       $_->node_type == TEXT_NODE }
+                @{$node_info->{node}->child_nodes->to_a};
+          }
         } else {
           ## The element is not in the temma namespace and its local
           ## name is not serializable.  The element is ignored but its
@@ -134,6 +150,8 @@ sub process_document ($$$) {
               @{$node->child_nodes->to_a};
         }
       } elsif ($nt == DOCUMENT_TYPE_NODE) {
+        next if $self->_close_start_tag ($process, $fh);
+
         my $nn = $node->node_name;
         $nn =~ s/[^0-9A-Za-z_-]/_/g;
         print $fh '<!DOCTYPE ' . $nn . '>';
@@ -148,35 +166,24 @@ sub process_document ($$$) {
       }
 
     } elsif ($process->{type} eq 'end tag') {
+      next if $self->_close_start_tag ($process, $fh);
+
       print $fh '</' . $process->{tag_name} . '>';
+    } elsif ($process->{type} eq 'end') {
+      next if $self->_close_start_tag ($process, $fh);
     } else {
       die "Process type |$process->{type}| is not supported";
     }
   }
-
 } # proess_document
 
 sub _close_start_tag ($$$) {
-  my ($self, $node_info => $fh) = @_;
-
-  delete $self->{allow_attr};
-  print $fh '>';
+  my ($self, $current_process, $fh) = @_;
+  return 0 unless my $node_info = delete $self->{current_tag};
   
-  if ($node_info->{ns} eq HTML_NS and
-      $Whatpm::HTML::ParserData::AllVoidElements->{$node_info->{lnn}}) {
-    # XXX attr child node should be processed
-
-    #
-  } else {
-    unshift @{$self->{processes}},
-        {type => 'end tag', tag_name => $node_info->{ln}};
-    
-    unshift @{$self->{processes}},
-        map { {type => 'node', node => $_} } 
-        grep { $_->node_type == ELEMENT_NODE or
-               $_->node_type == TEXT_NODE }
-            @{$node_info->{node}->child_nodes->to_a};
-  }
+  unshift @{$self->{processes}}, $current_process;
+  print $fh '>';
+  return 1;
 } # _close_start_tag
 
 sub eval_attr_value ($$$) {
