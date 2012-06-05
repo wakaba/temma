@@ -94,3 +94,8 @@ aaa<mglyph>aaa</mglyph>bbb
 1;1;m;temma:name not serializable;foo:bar;
 #output
 <!DOCTYPE html><html><body>aaaxxxx</body></html>
+
+#data
+<bgsound src=foo><svg><frame src=bar /></svg>
+#output
+<!DOCTYPE html><html><head><bgsound src="foo"></head><body><svg><frame src="bar"></frame></svg></body></html>
