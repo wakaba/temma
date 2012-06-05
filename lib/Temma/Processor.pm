@@ -74,17 +74,25 @@ sub process_document ($$$) {
       my $node = $process->{node};
       my $nt = $node->node_type;
       if ($nt == TEXT_NODE) {
-        next if $self->_close_start_tag ($process, $fh);
+        my $data = $node->data;
+        if ($data =~ /[^\x09\x0A\x0C\x0D\x20]/) {
+          next if $self->_close_start_tag ($process, $fh);
+        } elsif ($self->{current_tag}) {
+          ## Ignore white space characters between t:attr elements.
+          next;
+        }
+
+        # XXX interspace white space consideration
 
         print $fh htescape $node->data;
       } elsif ($nt == ELEMENT_NODE) {
-        next if $self->_close_start_tag ($process, $fh);
-
         my $ns = $node->namespace_uri || '';
         my $ln = $node->manakai_local_name;
         my $attrs = [];
         if ($ns eq TEMMA_NS) {
           if ($ln eq 'element') {
+            next if $self->_close_start_tag ($process, $fh);
+
             $ln = $self->eval_attr_value ($node, 'name');
             $ln = '' unless defined $ln;
             $ln =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
@@ -92,7 +100,28 @@ sub process_document ($$$) {
             if ($ns eq SVG_NS) {
               $ln = $Whatpm::HTML::ParserData::SVGElementNameFixup->{$ln} || $ln;
             }
+          } elsif ($ln eq 'attr') {
+            if ($self->{current_tag}) {
+              my $attr_name = $self->eval_attr_value ($node, 'name'); # XXX case
+              unless ($self->{current_tag}->{attrs}->{$attr_name}) {
+                $self->{current_tag}->{attrs}->{$attr_name} = 1;
+                my $value = $self->eval_attr_value ($node, 'value'); # XXX element content?
+                print $fh ' ' . $attr_name . '="' . (htescape $value) . '"';
+              } else {
+                $self->{onerror}->(type => 'temma:duplicate attr',
+                                   node => $node,
+                                   value => $attr_name,
+                                   level => 'm');
+              }
+            } else {
+              $self->{onerror}->(type => 'temma:start tag already closed',
+                                 node => $node,
+                                 level => 'm');
+            }
+            next;
           } else {
+            next if $self->_close_start_tag ($process, $fh);
+
             $self->{onerror}->(type => 'temma:unknown element',
                                node => $node,
                                value => $ln,
@@ -100,6 +129,7 @@ sub process_document ($$$) {
             next;
           }
         } else {
+          next if $self->_close_start_tag ($process, $fh);
           $attrs = $node->attributes;
         }
 
@@ -111,6 +141,8 @@ sub process_document ($$$) {
           
           for my $attr (@$attrs) {
             my $attr_name = $attr->node_name; # XXX
+            next if $attr_name =~ /^t:/; # XXX
+
             $node_info->{attrs}->{$attr_name} = 1;
             print $fh ' ' . $attr_name . '="' .
                 (htescape $attr->node_value) . '"';
@@ -120,7 +152,7 @@ sub process_document ($$$) {
               $Whatpm::HTML::ParserData::AllVoidElements->{$node_info->{lnn}}) {
             # XXX attr child node should be processed
             
-            #
+            unshift @{$self->{processes}}, {type => 'end'};
           } else {
             unshift @{$self->{processes}},
                 {type => 'end tag', tag_name => $node_info->{ln}};

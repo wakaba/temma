@@ -57,6 +57,7 @@ sub _processed : Tests {
   } for map { $test_data_d->file ($_) } qw(
     basic-1.dat
     element-1.dat
+    attr-1.dat
   );
 } # _processed
 

@@ -1,0 +1,72 @@
+#data
+<hoge><t:attr name="'foo'" value="'bar'"/>aaa</hoge>
+#output
+<!DOCTYPE html><html><body><hoge foo="bar">aaa</hoge></body></html>
+
+#data
+<hoge><t:attr name="'foo'" value="'bar'"/>
+<!--
+aaaa
+--><t:attr name="'bar'" value="'baz'"/>aaa</hoge>
+#output
+<!DOCTYPE html><html><body><hoge foo="bar" bar="baz">aaa</hoge></body></html>
+
+#data
+<hoge><t:attr name="'foo'" value="'bar'"/><t:attr name="'foo'" value="'bar2'"/>aaa</hoge>
+#errors
+1;43;m;temma:duplicate attr;foo;
+#output
+<!DOCTYPE html><html><body><hoge foo="bar">aaa</hoge></body></html>
+
+#data
+<hoge foo=124><t:attr name="'foo'" value="'bar'"/>aaa</hoge>
+#errors
+1;15;m;temma:duplicate attr;foo;
+#output
+<!DOCTYPE html><html><body><hoge foo="124">aaa</hoge></body></html>
+
+#data
+<hoge abc>aaa<t:attr name="'abc'" value="'foo'"/></hoge>
+#errors
+1;14;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><hoge abc="">aaa</hoge></body></html>
+
+#data
+<hoge abc><t:unknown><t:attr name="'xyz'" value="'foo'"/></t:unknown></hoge>
+#errors
+1;11;m;temma:unknown element;unknown;
+#output
+<!DOCTYPE html><html><body><hoge abc=""></hoge></body></html>
+
+#data
+<div><t:attr name="'xyz'" value="'aa bb'"/>aaa</div>bbb
+#errors
+#output
+<!DOCTYPE html><html><body><div xyz="aa bb">aaa</div>bbb</body></html>
+
+#data
+<svg><br t:parse><t:attr name="'xyz'" value="'aa bb'"/>aaa</br>bbb</svg>
+#errors
+#output
+<!DOCTYPE html><html><body><svg><br xyz="aa bb">aaa</br>bbb</svg></body></html>
+
+#data
+<br><t:attr name="'xyz'" value="'aa bb'"/>aaa</br>bbb
+#errors
+1;5;m;temma:start tag already closed;;
+1;51;m;unmatched end tag;;br
+#output
+<!DOCTYPE html><html><body><br>aaabbb</body></html>
+
+#data
+<t:attr name="'fpp'" value="''"/>
+#errors
+#output
+<!DOCTYPE html><html><body fpp=""></body></html>
+
+#data
+<!-- abc --><t:attr name="'fpp'" value="''"/>
+#errors
+#output
+<!DOCTYPE html><html><body fpp=""></body></html>

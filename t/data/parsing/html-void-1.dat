@@ -151,3 +151,17 @@ foo<col>aaa
 |     "foo"
 |     <col>
 |     "aaa"
+
+#data
+<br><t:attr name="'xyz'" value="'aa bb'"/>aaa</br>bbb
+#errors
+1;51;m;unmatched end tag;;br
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <br>
+|     <temma attr>
+|       name="'xyz'"
+|       value="'aa bb'"
+|     "aaabbb"
