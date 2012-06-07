@@ -99,3 +99,36 @@ aaa<mglyph>aaa</mglyph>bbb
 <bgsound src=foo><svg><frame src=bar /></svg>
 #output
 <!DOCTYPE html><html><head><bgsound src="foo"></head><body><svg><frame src="bar"></frame></svg></body></html>
+
+#data
+<p>aa<br t:parse>abc</br>xx</p>
+#errors
+1;6;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body><p>aa<br>xx</p></body></html>
+
+#data
+<p>aa<br t:parse><t:attr name="'gg'" 
+value="'xx'"/>
+</br>xx</p>
+#errors
+#output
+<!DOCTYPE html><html><body><p>aa<br gg="xx">xx</p></body></html>
+
+#data
+<p>aa<br t:parse><t:attr name="'gg'" 
+value="'xx'"/> <t:attr name="'abc'" value="'ddd'"/>
+</br>xx</p>
+#errors
+#output
+<!DOCTYPE html><html><body><p>aa<br gg="xx" abc="ddd">xx</p></body></html>
+
+#data
+<div>aa<br t:parse><t:attr name="'gg'" 
+value="'xx'"/> <p>aa</p> <t:attr name="'abc'" value="'ddd'"/>
+</br>xx</div>
+#errors
+2;16;m;temma:child not allowed;;
+2;26;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><div>aa<br gg="xx">xx</div></body></html>

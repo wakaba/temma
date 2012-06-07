@@ -564,3 +564,59 @@ foo<p>abc<xmp>xx</xmp>yy
 |     <xmp>
 |       "xx"
 |     "yy"
+
+#data
+<div>aa<br t:parse><t:attr name="'gg'" 
+value="'xx'"/> <p>aa</p> <t:attr name="'abc'" value="'ddd'"/>
+</br>xx</div>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <div>
+|       "aa"
+|       <br>
+|         temma parse=""
+|         <temma attr>
+|           name="'gg'"
+|           value="'xx'"
+|         " "
+|         <p>
+|           "aa"
+|         " "
+|         <temma attr>
+|           name="'abc'"
+|           value="'ddd'"
+|         "
+"
+|       "xx"
+
+#data
+<p>aa<br t:parse><t:attr name="'gg'" 
+value="'xx'"/> <p>aa</p> <t:attr name="'abc'" value="'ddd'"/>
+</br>xx</p>
+#errors
+2;19;m;not closed;;br
+3;6;m;unmatched end tag;;br
+3;11;m;unmatched end tag;;p
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       "aa"
+|       <br>
+|         temma parse=""
+|         <temma attr>
+|           name="'gg'"
+|           value="'xx'"
+|         " "
+|     <p>
+|       "aa"
+|     " "
+|     <temma attr>
+|       name="'abc'"
+|       value="'ddd'"
+|     "
+xx"

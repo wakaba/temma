@@ -14,11 +14,16 @@ sub new ($) {
       $msg .= ' (' . $args{value} . ')' if defined $args{value};
       if ($args{node}) {
         $msg .= ' at node ' . $args{node}->manakai_local_name;
-        my $line = $args{node}->get_user_data ('manakai_source_line');
-        my $column = $args{node}->get_user_data ('manakai_source_column');
-        if ($line or $column) {
-          $msg .= sprintf ' at line %d column %d',
-              $line || 0, $column || 0;
+        my $node = $args{node};
+        while ($node) {
+          my $line = $node->get_user_data ('manakai_source_line');
+          my $column = $node->get_user_data ('manakai_source_column');
+          if (defined $line and defined $column) {
+            $msg .= sprintf ' at line %d column %d',
+                $line || 0, $column || 0;
+            last;
+          }
+          $node = $node->parent_node;
         }
       }
       warn "$msg\n";
@@ -65,7 +70,9 @@ sub process_document ($$$) {
   my ($self, $doc => $fh) = @_;
 
   $self->{processes} = [];
-  push @{$self->{processes}}, {type => 'node', node => $doc}, {type => 'end'};
+  push @{$self->{processes}},
+      {type => 'node', node => $doc, node_info => {allow_children => 1}},
+      {type => 'end'};
 
   while (@{$self->{processes}}) {
     my $process = shift @{$self->{processes}};
@@ -83,6 +90,16 @@ sub process_document ($$$) {
         }
 
         # XXX interspace white space consideration
+
+        unless ($process->{node_info}->{allow_children}) {
+          unless ($process->{node_info}->{children_not_allowed_error}) {
+            $self->{onerror}->(type => 'temma:child not allowed',
+                               node => $node,
+                               level => 'm');
+            $process->{node_info}->{children_not_allowed_error} = 1;
+          }
+          next;
+        }
 
         print $fh htescape $node->data;
       } elsif ($nt == ELEMENT_NODE) {
@@ -133,6 +150,16 @@ sub process_document ($$$) {
           $attrs = $node->attributes;
         }
 
+        unless ($process->{node_info}->{allow_children}) {
+          unless ($process->{node_info}->{children_not_allowed_error}) {
+            $self->{onerror}->(type => 'temma:child not allowed',
+                               node => $node,
+                               level => 'm');
+            $process->{node_info}->{children_not_allowed_error} = 1;
+          }
+          next;
+        }
+
         if ($ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
           print $fh '<' . $ln;
           my $node_info = $self->{current_tag} =
@@ -150,15 +177,20 @@ sub process_document ($$$) {
 
           if ($node_info->{ns} eq HTML_NS and
               $Whatpm::HTML::ParserData::AllVoidElements->{$node_info->{lnn}}) {
-            # XXX attr child node should be processed
-            
             unshift @{$self->{processes}}, {type => 'end'};
+
+            unshift @{$self->{processes}},
+                map { {type => 'node', node => $_, node_info => $node_info} } 
+                grep { $_->node_type == ELEMENT_NODE or
+                       $_->node_type == TEXT_NODE }
+                @{$node_info->{node}->child_nodes->to_a};
           } else {
             unshift @{$self->{processes}},
-                {type => 'end tag', tag_name => $node_info->{ln}};
+                {type => 'end tag', node_info => $node_info};
             
+            $node_info->{allow_children} = 1;
             unshift @{$self->{processes}},
-                map { {type => 'node', node => $_} } 
+                map { {type => 'node', node => $_, node_info => $node_info} } 
                 grep { $_->node_type == ELEMENT_NODE or
                        $_->node_type == TEXT_NODE }
                 @{$node_info->{node}->child_nodes->to_a};
@@ -176,7 +208,8 @@ sub process_document ($$$) {
           # XXX attrs should be ignored
 
           unshift @{$self->{processes}},
-              map { {type => 'node', node => $_} } 
+              map { {type => 'node', node => $_,
+                     node_info => {allow_children => 1}} } 
               grep { $_->node_type == ELEMENT_NODE or
                      $_->node_type == TEXT_NODE }
               @{$node->child_nodes->to_a};
@@ -189,10 +222,13 @@ sub process_document ($$$) {
         print $fh '<!DOCTYPE ' . $nn . '>';
       } elsif ($nt == DOCUMENT_NODE) {
         unshift @{$self->{processes}},
-            map { {type => 'node', node => $_} } 
+            map { {type => 'node', node => $_,
+                   node_info => {allow_children => 1}} } 
             grep { $_->node_type == ELEMENT_NODE or
                    $_->node_type == DOCUMENT_TYPE_NODE }
             @{$node->child_nodes->to_a};
+
+        # XXX second element? text children?
       } else {
         die "Unknown node type |$nt|";
       }
@@ -200,7 +236,7 @@ sub process_document ($$$) {
     } elsif ($process->{type} eq 'end tag') {
       next if $self->_close_start_tag ($process, $fh);
 
-      print $fh '</' . $process->{tag_name} . '>';
+      print $fh '</' . $process->{node_info}->{ln} . '>';
     } elsif ($process->{type} eq 'end') {
       next if $self->_close_start_tag ($process, $fh);
     } else {

@@ -29,9 +29,12 @@ sub _processed : Tests {
     my $parser = Temma::Parser->new;
     my $onerror = sub {
       my %opt = @_;
-      if ($opt{node}) {
-        $opt{line} //= $opt{node}->get_user_data ('manakai_source_line');
-        $opt{column} //= $opt{node}->get_user_data ('manakai_source_column');
+      my $node = $opt{node};
+      while ($node) {
+        $opt{line} //= $node->get_user_data ('manakai_source_line');
+        $opt{column} //= $node->get_user_data ('manakai_source_column');
+        last if defined $opt{line} and defined $opt{column};
+        $node = $node->parent_node;
       }
       push @error, join ';', map { 
         defined $_ ? $_ : '';

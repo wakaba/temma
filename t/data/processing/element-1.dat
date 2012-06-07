@@ -10,13 +10,88 @@
 
 #data
 foo<t:element name="'br'">abc</t:element>xxx
+#errors
+1;4;m;temma:child not allowed;;
 #output
 <!DOCTYPE html><html><body>foo<br>xxx</body></html>
 
 #data
 foo<t:element name="'BR'">abc</t:element>xxx
+#errors
+1;4;m;temma:child not allowed;;
 #output
 <!DOCTYPE html><html><body>foo<br>xxx</body></html>
+
+#data
+foo<t:element name="'BR'"><div>a</div>bc</t:element>xxx
+#errors
+1;27;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body>foo<br>xxx</body></html>
+
+#data
+foo<t:element name="'BR'">abc<p>aa</p>xyz</t:element>xxx
+#errors
+1;4;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body>foo<br>xxx</body></html>
+
+#data
+foo<t:element name="'BR'"><p>abc</p></t:element>xxx
+#errors
+1;27;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body>foo<br>xxx</body></html>
+
+#data
+foo<t:element name="'BR'">
+<t:attr name="'a'" value="'b'"/>
+<p>abc</p></t:element>xxx
+#errors
+3;1;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body>foo<br a="b">xxx</body></html>
+
+#data
+foo<t:element name="'BR'">
+<t:attr name="'a'" value="'b'"/>
+</t:element>xxx
+#errors
+#output
+<!DOCTYPE html><html><body>foo<br a="b">xxx</body></html>
+
+#data
+foo<t:element name="'BR'">
+<t:attr name="'a'" value="'b'"/>
+<t:attr name="'b'" value="'b'"/>
+</t:element>xxx
+#errors
+#output
+<!DOCTYPE html><html><body>foo<br a="b" b="b">xxx</body></html>
+
+#data
+foo<t:element name="'BR'">
+<t:attr name="'a'" value="'b'"/>
+<p>foo</p>
+<t:attr name="'b'" value="'b'"/>
+</t:element>xxx
+#errors
+3;1;m;temma:child not allowed;;
+4;1;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body>foo<br a="b">xxx</body></html>
+
+#data
+foo<t:element name="'BR'">
+<t:attr name="'a'" value="'b'"/>
+<p>
+<t:attr name="'b'" value="'b'"/>
+</p>
+</t:element>xxx
+#errors
+3;1;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body>foo<br a="b">xxx</body></html>
 
 #data
 <svg>foo<t:element name="'BR'">abc</t:element>xxx</svg>
