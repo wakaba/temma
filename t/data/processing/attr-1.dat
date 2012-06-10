@@ -70,3 +70,95 @@ aaaa
 #errors
 #output
 <!DOCTYPE html><html><body fpp=""></body></html>
+
+#data
+<p><t:attr name="'122'" value=124 />aa</p>
+#errors
+1;4;m;temma:name not serializable;122;
+#output
+<!DOCTYPE html><html><body><p>aa</p></body></html>
+
+#data
+<svg xlink:href="foo"/>
+#errors
+#output
+<!DOCTYPE html><html><body><svg xlink:href="foo"></svg></body></html>
+
+#data
+<p viewbox=123/>
+#output
+<!DOCTYPE html><html><body><p viewbox="123/"></p></body></html>
+
+#data
+<svg viewbox=123/>
+#output
+<!DOCTYPE html><html><body><svg viewBox="123/"></svg></body></html>
+
+#data
+<p><t:attr name='"viewbox"' value=12 />
+#output
+<!DOCTYPE html><html><body><p viewbox="12"></p></body></html>
+
+#data
+<svg><t:attr name='"viewbox"' value=12 /></svg>
+#output
+<!DOCTYPE html><html><body><svg viewBox="12"></svg></body></html>
+
+#data
+<svg viewBox=30><t:attr name='"viewbox"' value=12 /></svg>
+#errors
+1;17;m;temma:duplicate attr;viewBox;
+#output
+<!DOCTYPE html><html><body><svg viewBox="30"></svg></body></html>
+
+#data
+<math viewBox=30><t:attr name='"viewbox"' value=12 /></math>
+#errors
+1;18;m;temma:duplicate attr;viewbox;
+#output
+<!DOCTYPE html><html><body><math viewbox="30"></math></body></html>
+
+#data
+<math DefinitionUrl=12 />
+#errors
+#output
+<!DOCTYPE html><html><body><math definitionURL="12"></math></body></html>
+
+#data
+<math><t:attr name='"definitionurl"' value=12 /></math>
+#errors
+#output
+<!DOCTYPE html><html><body><math definitionURL="12"></math></body></html>
+
+#data
+<p XML:lang=ja lang=en>hoge
+#output
+<!DOCTYPE html><html><body><p lang="en" xml:lang="ja">hoge</p></body></html>
+
+#data
+<p xmlNS=http://hoge>
+#output
+<!DOCTYPE html><html><body><p xmlns="http://hoge"></p></body></html>
+
+#data
+<svg><g xmlns=abc /></svg>
+#output
+<!DOCTYPE html><html><body><svg><g xmlns="abc"></g></svg></body></html>
+
+#data
+<p t:parse>hoge
+#output
+<!DOCTYPE html><html><body><p>hoge</p></body></html>
+
+#data
+<br><t:attr name="'t:parse'" value=""/></br>
+#errors
+1;5;m;temma:start tag already closed;;
+1;44;m;unmatched end tag;;br
+#output
+<!DOCTYPE html><html><body><br></body></html>
+
+#data
+<div><t:attr name="'t:parse'" value="''"/></div>
+#output
+<!DOCTYPE html><html><body><div t:parse=""></div></body></html>

@@ -112,3 +112,63 @@ foo<t:element name="'BR'">
 <svg>foo<t:element name="'ForeignobjecT'">a</t:element>xxx</svg><foreignobjeCT>aaa</foreiGNOBJECT>
 #output
 <!DOCTYPE html><html><body><svg>foo<foreignObject>a</foreignObject>xxx</svg><foreignobject>aaa</foreignobject></body></html>
+
+#data
+hoge<t:element name="'12abc'">x</t:element>y
+#errors
+1;5;m;temma:name not serializable;12abc;
+#output
+<!DOCTYPE html><html><body>hogexy</body></html>
+
+#data
+hoge<t:element name="'&#x4100;12abc'">x</t:element>y
+#errors escaped
+1;5;m;temma:name not serializable;\u410012abc;
+#output
+<!DOCTYPE html><html><body>hogexy</body></html>
+
+#data
+hoge<t:element name="''">x</t:element>y
+#errors escaped
+1;5;m;temma:name not serializable;;
+#output
+<!DOCTYPE html><html><body>hogexy</body></html>
+
+#data
+hoge<t:element name=" undef ">x</t:element>y
+#errors escaped
+1;5;m;temma:name not serializable;;
+#output
+<!DOCTYPE html><html><body>hogexy</body></html>
+
+#data
+hoge<t:element name="
+  {
+    package test::temma::processing::element::package1;
+    use overload '&quot;&quot;' => sub { 'abcdef' };
+  }
+  bless {}, 'test::temma::processing::element::package1';
+">x</t:element>y
+#errors escaped
+#output
+<!DOCTYPE html><html><body>hoge<abcdef>x</abcdef>y</body></html>
+
+#data
+hoge<t:element name="
+  {
+    package test::temma::processing::element::package1;
+    use overload '&quot;&quot;' => sub { 'abc def' };
+  }
+  bless {}, 'test::temma::processing::element::package1';
+">x</t:element>y
+#errors escaped
+1;5;m;temma:name not serializable;abc def;
+#output
+<!DOCTYPE html><html><body>hogexy</body></html>
+
+#data
+foo<t:element name="'t:hoge'">aa</t:element>bar
+#errors
+1;4;m;temma:name not serializable;t:hoge;
+#output
+<!DOCTYPE html><html><body>fooaabar</body></html>

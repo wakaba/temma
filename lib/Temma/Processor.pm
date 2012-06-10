@@ -119,17 +119,37 @@ sub process_document ($$$) {
             }
           } elsif ($ln eq 'attr') {
             if ($self->{current_tag}) {
-              my $attr_name = $self->eval_attr_value ($node, 'name'); # XXX case
-              unless ($self->{current_tag}->{attrs}->{$attr_name}) {
-                $self->{current_tag}->{attrs}->{$attr_name} = 1;
-                my $value = $self->eval_attr_value ($node, 'value'); # XXX element content?
-                print $fh ' ' . $attr_name . '="' . (htescape $value) . '"';
-              } else {
+              my $attr_name = $self->eval_attr_value ($node, 'name');
+              $attr_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
+              my $element_ns = $self->{current_tag}->{ns};
+              if ($element_ns eq SVG_NS) {
+                $attr_name = $Whatpm::HTML::ParserData::SVGAttrNameFixup->{$attr_name} || $attr_name;
+              } elsif ($element_ns eq MML_NS) {
+                $attr_name = $Whatpm::HTML::ParserData::MathMLAttrNameFixup->{$attr_name} || $attr_name;
+              }
+              ## $Whatpm::HTML::ParserData::ForeignAttrNamespaceFixup
+              ## is ignored here as the mapping is no-op for the
+              ## purpose of qualified name serialization.
+
+              unless ($attr_name =~ /\A[A-Za-z_-][A-Za-z0-9_:-]*\z/) {
+                $self->{onerror}->(type => 'temma:name not serializable',
+                                   node => $node,
+                                   value => $attr_name,
+                                   level => 'm');
+                next;
+              }
+
+              if ($self->{current_tag}->{attrs}->{$attr_name}) {
                 $self->{onerror}->(type => 'temma:duplicate attr',
                                    node => $node,
                                    value => $attr_name,
                                    level => 'm');
+                next;
               }
+
+              $self->{current_tag}->{attrs}->{$attr_name} = 1;
+              my $value = $self->eval_attr_value ($node, 'value'); # XXX element content?
+              print $fh ' ' . $attr_name . '="' . (htescape $value) . '"';
             } else {
               $self->{onerror}->(type => 'temma:start tag already closed',
                                  node => $node,
@@ -167,7 +187,14 @@ sub process_document ($$$) {
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
           
           for my $attr (@$attrs) {
-            my $attr_name = $attr->node_name; # XXX
+            ## Note that if there are multiple attributes with only
+            ## case differences in their names, in HTML serialization,
+            ## the only first one has effect (and the name is
+            ## interpreted ASCII case-insensitively by parser).  We
+            ## don't try to detect such an error as it is unlikely
+            ## happens in typical use cases.
+
+            my $attr_name = $attr->node_name; # XXX serializability check
             next if $attr_name =~ /^t:/; # XXX
 
             $node_info->{attrs}->{$attr_name} = 1;
@@ -268,7 +295,9 @@ sub eval_attr_value ($$$) {
     $error = $@;
   }
   if ($error) {
-    die $error; # XXX
+    # XXX Throw an exception
+    warn $value;
+    warn $error; # XXX
   }
 
   return $evaled;
