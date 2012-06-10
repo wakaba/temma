@@ -83,12 +83,12 @@ b<noscript>hoge<noscript>abc</noscript>d</noscript>
 #data
 <textarea t:parse>abc<p>foo<script><!--cc-->x</script>x</textarea>
 #output
-<!DOCTYPE html><html><body><textarea>abc<p>foo<script>&lt;!--cc--&gt;x</script>x</p></textarea></body></html>
+<!DOCTYPE html><html><body><textarea>abc<p>foo<script><!--cc-->x</script>x</p></textarea></body></html>
 
 #data
 <textarea t:parse>abc<p>fo<textarea/>o<script><!--cc-->x</script>x</textarea>
 #output
-<!DOCTYPE html><html><body><textarea>abc<p>fo<textarea></textarea>o<script>&lt;!--cc--&gt;x</script>x</p></textarea></body></html>
+<!DOCTYPE html><html><body><textarea>abc<p>fo<textarea></textarea>o<script><!--cc-->x</script>x</p></textarea></body></html>
 
 #data
 <xmp>hoge <script>aaa</script>bb</xmp>
@@ -114,3 +114,160 @@ b<noscript>hoge<noscript>abc</noscript>d</noscript>
 <plaintext>hoge<plaintext>aa&amp;lt;script></plaintext>a<p>aa
 #output
 <!DOCTYPE html><html><body><plaintext>hoge<plaintext>aa&amp;lt;script&gt;</plaintext>a<p>aa</p></plaintext></body></html>
+
+#data
+<script>alert(3)</script>
+#output
+<!DOCTYPE html><html><head><script>alert(3)</script></head></html>
+
+#data
+<script t:parse>alert(3)<!--
+-->alert(2)</script>
+#output
+<!DOCTYPE html><html><head><script>alert(3)alert(2)</script></head></html>
+
+#data
+<script t:parse>alert(3)&quot;<p>aaa</p>hhh</script>
+#errors
+1;31;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><head><script>alert(3)"hhh</script></head></html>
+
+#data
+<script t:parse>alert(3)&quot;<script>aaa</script>hhh</script>
+#errors
+1;31;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><head><script>alert(3)"hhh</script></head></html>
+
+#data
+<style>alert(3)</style>
+#output
+<!DOCTYPE html><html><head><style>alert(3)</style></head></html>
+
+#data
+<style t:parse>alert(3)<!--
+-->alert(2)</style>
+#output
+<!DOCTYPE html><html><head><style>alert(3)alert(2)</style></head></html>
+
+#data
+<style>aa <!-- p { color: blue } --></style>
+#output
+<!DOCTYPE html><html><head><style>aa <!-- p { color: blue } --></style></head></html>
+
+#data
+<style t:parse>hoge<t:element name="'x'">aa</t:element>baaa</style>
+#errors
+1;20;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><head><style>hogebaaa</style></head></html>
+
+#data
+<style t:parse><t:attr name="'title'" value="'abcde'"/>xyz</style>
+#output
+<!DOCTYPE html><html><head><style title="abcde">xyz</style></head></html>
+
+#data
+<style t:parse>abc<t:attr name="'title'" value="'abcde'"/>xyz</style>
+#errors
+1;19;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><head><style>abcxyz</style></head></html>
+
+#data
+<style t:parse>   <t:attr name="'title'" value="'abcde'"/><!--
+-->     <!---->xyz</style>
+#output
+<!DOCTYPE html><html><head><style title="abcde">xyz</style></head></html>
+
+#data
+<script t:parse>foo&lt;/script>bar&lt;p></script>
+#errors
+1;1;m;temma:not representable in raw text;;
+#output
+<!DOCTYPE html><html><head><script>foo</script></head></html>
+
+#data
+<script><!-- document.write ('<script> alert(2) </script>') --></script>
+#output
+<!DOCTYPE html><html><head><script><!-- document.write ('<script> alert(2) </script>') --></script></head></html>
+
+#data
+<script><!--
+  document.write ('<style><!-- p { color: blue } --></style>');
+// --></script>
+#output
+<!DOCTYPE html><html><head><script><!--
+  document.write ('<style><!-- p { color: blue } --></style>');
+// --></script></head></html>
+
+#data
+<Script><![CDATA[
+ hoge <p> fugax
+]]></Script>
+#output
+<!DOCTYPE html><html><head><script><![CDATA[
+ hoge <p> fugax
+]]></script></head></html>
+
+#data
+<style t:parse>
+  &lt;script> alert (2) &lt;/script>
+</style>
+#output
+<!DOCTYPE html><html><head><style>
+  <script> alert (2) </script>
+</style></head></html>
+
+#data
+<style>hoge&lt;style>foo&lt;/StylE>aaa</style>
+#output
+<!DOCTYPE html><html><head><style>hoge&lt;style>foo&lt;/StylE>aaa</style></head></html>
+
+#data
+<style t:parse>hoge&lt;style>foo&lt;/StylE>aaa</style>
+#errors
+1;1;m;temma:not representable in raw text;;
+#output
+<!DOCTYPE html><html><head><style>hoge<style>foo</style></head></html>
+
+#data
+<svg>foo<script>hoge <![CDATA[ foo ]]><!-- abc --> xyz</script>aaa</svg>
+#errors
+#output
+<!DOCTYPE html><html><body><svg>foo<script>hoge  foo  xyz</script>aaa</svg></body></html>
+
+#data
+<svg>foo<script> if (a < 21) { document.write ('<script></script>') } ab</script>aa</svg>
+#errors
+1;24;m;bare stago;;
+#output
+<!DOCTYPE html><html><body><svg>foo<script> if (a &lt; 21) { document.write ('<script></script>') } ab</script>aa</svg></body></html>
+
+#data
+<math>foo<script><!-- 
+document.write ('<script>hoge</script>')
+//--></script>
+</math>
+#output
+<!DOCTYPE html><html><body><math>foo<script></script>
+</math></body></html>
+
+#data
+<foo><t:element name="'script'">
+<script><!-- alert (2) --></script>
+</t:element>foo</foo>
+#errors
+2;1;m;temma:child not allowed;;
+#output escaped
+<!DOCTYPE html><html><body><foo><script>\u000A</script>foo</foo></body></html>
+
+#data
+<t:element name="'SCRIpt'"><![CDATA[<!--
+  document.write ('<script>ho<br>ge</script>');
+//--></t:element>
+#output
+<!DOCTYPE html><html><body><script><!--
+  document.write ('<script>ho<br>ge</script>');
+//--></t:element></script></body></html>

@@ -101,7 +101,11 @@ sub process_document ($$$) {
           next;
         }
 
-        print $fh htescape $node->data;
+        if ($process->{node_info}->{rawtext}) {
+          $process->{node_info}->{rawtext_value} .= $node->data;
+        } else {
+          print $fh htescape $node->data;
+        }
       } elsif ($nt == ELEMENT_NODE) {
         my $ns = $node->namespace_uri || '';
         my $ln = $node->manakai_local_name;
@@ -170,7 +174,8 @@ sub process_document ($$$) {
           $attrs = $node->attributes;
         }
 
-        unless ($process->{node_info}->{allow_children}) {
+        if (not $process->{node_info}->{allow_children} or
+            $process->{node_info}->{rawtext}) {
           unless ($process->{node_info}->{children_not_allowed_error}) {
             $self->{onerror}->(type => 'temma:child not allowed',
                                node => $node,
@@ -234,10 +239,17 @@ sub process_document ($$$) {
                        $_->node_type == TEXT_NODE }
                 @{$node_info->{node}->child_nodes->to_a};
           } else {
+            $node_info->{allow_children} = 1;
+            if ($node_info->{ns} eq HTML_NS and
+                ($node_info->{lnn} eq 'script' or
+                 $node_info->{lnn} eq 'style')) {
+              $node_info->{rawtext} = 1;
+              $node_info->{rawtext_value} = '';
+            }
+
             unshift @{$self->{processes}},
                 {type => 'end tag', node_info => $node_info};
             
-            $node_info->{allow_children} = 1;
             unshift @{$self->{processes}},
                 map { {type => 'node', node => $_, node_info => $node_info} } 
                 grep { $_->node_type == ELEMENT_NODE or
@@ -282,6 +294,27 @@ sub process_document ($$$) {
 
     } elsif ($process->{type} eq 'end tag') {
       next if $self->_close_start_tag ($process, $fh);
+
+      if ($process->{node_info}->{rawtext}) {
+        my $value = $process->{node_info}->{rawtext_value};
+
+        my $dom = $process->{node_info}->{node}->owner_document->implementation;
+        my $doc = $dom->create_document;
+        $doc->manakai_is_html (1);
+
+        my $el = $doc->create_element ('div');
+        $el->inner_html ('<' . $process->{node_info}->{ln} . '>' .
+                         $value .
+                         '</' . $process->{node_info}->{ln} . '>');
+        my $value2 = $el->first_child->text_content;
+        if ($value ne $value2) {
+          $self->{onerror}->(type => 'temma:not representable in raw text',
+                             node => $process->{node_info}->{node},
+                             level => 'm');
+        }
+        
+        print $fh $value2;
+      }
 
       print $fh '</' . $process->{node_info}->{ln} . '>';
     } elsif ($process->{type} eq 'end') {
