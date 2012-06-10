@@ -188,18 +188,40 @@ sub process_document ($$$) {
           
           for my $attr (@$attrs) {
             ## Note that if there are multiple attributes with only
-            ## case differences in their names, in HTML serialization,
-            ## the only first one has effect (and the name is
-            ## interpreted ASCII case-insensitively by parser).  We
-            ## don't try to detect such an error as it is unlikely
-            ## happens in typical use cases.
+            ## case differences in their names, or with same qualified
+            ## name but in different namespaces, then, in HTML
+            ## serialization, the only first one has effect (and the
+            ## name is interpreted ASCII case-insensitively by
+            ## parser).  We don't try to detect such an error as it is
+            ## unlikely happens in typical use cases.
 
-            my $attr_name = $attr->node_name; # XXX serializability check
-            next if $attr_name =~ /^t:/; # XXX
+            my $attr_ns = $attr->namespace_uri;
+            my $attr_name;
+            if (not defined $attr_ns) {
+              $attr_name = $attr->manakai_local_name;
+            } elsif ($attr_ns eq XML_NS) {
+              $attr_name = 'xml:' . $attr->manakai_local_name;
+            } elsif ($attr_ns eq XMLNS_NS) {
+              $attr_name = 'xmlns:' . $attr->manakai_local_name;
+              $attr_name = 'xmlns' if $attr_name eq 'xmlns:xmlns';
+            } elsif ($attr_ns eq XLINK_NS) {
+              $attr_name = 'xlink:' . $attr->manakai_local_name;
+            } elsif ($attr_ns eq TEMMA_NS) {
+              next;
+            } else {
+              $attr_name = $attr->name;
+            }
+
+            unless ($attr_name =~ /\A[A-Za-z_-][A-Za-z0-9_:-]*\z/) {
+              $self->{onerror}->(type => 'temma:name not serializable',
+                                 node => $attr,
+                                 value => $attr_name,
+                                 level => 'm');
+              next;
+            }
 
             $node_info->{attrs}->{$attr_name} = 1;
-            print $fh ' ' . $attr_name . '="' .
-                (htescape $attr->node_value) . '"';
+            print $fh ' ' . $attr_name . '="' . (htescape $attr->value) . '"';
           }
 
           if ($node_info->{ns} eq HTML_NS and

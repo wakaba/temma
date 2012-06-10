@@ -3,13 +3,17 @@ use strict;
 use warnings;
 our $VERSION = '1.0';
 use Whatpm::HTML::Defs;
+use Whatpm::HTML::ParserData;
 use Exporter::Lite;
 
-our @EXPORT = qw(HTML_NS MML_NS SVG_NS TEMMA_NS);
+our @EXPORT = qw(HTML_NS MML_NS SVG_NS TEMMA_NS XML_NS XMLNS_NS XLINK_NS);
 
-sub HTML_NS () { q<http://www.w3.org/1999/xhtml> }
-sub MML_NS () { q<http://www.w3.org/1998/Math/MathML> }
-sub SVG_NS () { q<http://www.w3.org/2000/svg> }
+*HTML_NS = \&Whatpm::HTML::ParserData::HTML_NS;
+*SVG_NS = \&Whatpm::HTML::ParserData::SVG_NS;
+*MML_NS = \&Whatpm::HTML::ParserData::MML_NS;
+*XML_NS = \&Whatpm::HTML::ParserData::XML_NS;
+*XMLNS_NS = \&Whatpm::HTML::ParserData::XMLNS_NS;
+*XLINK_NS = \&Whatpm::HTML::ParserData::XLINK_NS;
 sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 
 my @metavoid = qw(link meta base basefont bgsound command);
