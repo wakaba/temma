@@ -52,3 +52,65 @@ b<noscript>hoge<noscript>abc</noscript>d</noscript>
 1;18;m;no refc;;
 #output escaped
 <!DOCTYPE html><html><head><noscript>aa\u00a9 </noscript></head></html>
+
+#data
+<title>aaa& <div>fo<!--o</title>xyx
+#output
+<!DOCTYPE html><html><head><title>aaa&amp; &lt;div&gt;fo&lt;!--o</title></head><body>xyx</body></html>
+
+#data
+<title t:parse>aaa& <div>fo<!--o</title>xyx
+#errors
+1;43;m;unclosed comment;;
+#output
+<!DOCTYPE html><html><head><title>aaa&amp; <div>fo</div></title></head></html>
+
+#data
+<title t:parse>abc<a>foo <title>a</title>aa</a>xyz</title>
+#output
+<!DOCTYPE html><html><head><title>abc<a>foo <title>a</title>aa</a>xyz</title></head></html>
+
+#data
+<svg><title>f<a>oo</a>x&lt;yz</title>aa</svg>
+#output
+<!DOCTYPE html><html><body><svg><title>f<a>oo</a>x&lt;yz</title>aa</svg></body></html>
+
+#data
+<textarea>abc<p>foo<!--cc-->xx</textarea>
+#output
+<!DOCTYPE html><html><body><textarea>abc&lt;p&gt;foo&lt;!--cc--&gt;xx</textarea></body></html>
+
+#data
+<textarea t:parse>abc<p>foo<script><!--cc-->x</script>x</textarea>
+#output
+<!DOCTYPE html><html><body><textarea>abc<p>foo<script>&lt;!--cc--&gt;x</script>x</p></textarea></body></html>
+
+#data
+<textarea t:parse>abc<p>fo<textarea/>o<script><!--cc-->x</script>x</textarea>
+#output
+<!DOCTYPE html><html><body><textarea>abc<p>fo<textarea></textarea>o<script>&lt;!--cc--&gt;x</script>x</p></textarea></body></html>
+
+#data
+<xmp>hoge <script>aaa</script>bb</xmp>
+#output
+<!DOCTYPE html><html><body><xmp>hoge &lt;script&gt;aaa&lt;/script&gt;bb</xmp></body></html>
+
+#data
+<xmp t:parse>hoge&lt;/xmp>a<script>alert(2)</script>a</xmp>
+#output
+<!DOCTYPE html><html><body><xmp>hoge&lt;/xmp&gt;a<script>alert(2)</script>a</xmp></body></html>
+
+#data
+<xmp t:parse><xmp/>&lt;script></xmp>
+#output
+<!DOCTYPE html><html><body><xmp><xmp></xmp>&lt;script&gt;</xmp></body></html>
+
+#data
+<plaintext>avc&lt;script>aaa
+#output
+<!DOCTYPE html><html><body><plaintext>avc&lt;script&gt;aaa</plaintext></body></html>
+
+#data
+<plaintext>hoge<plaintext>aa&amp;lt;script></plaintext>a<p>aa
+#output
+<!DOCTYPE html><html><body><plaintext>hoge<plaintext>aa&amp;lt;script&gt;</plaintext>a<p>aa</p></plaintext></body></html>

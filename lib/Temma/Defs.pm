@@ -103,6 +103,7 @@ our $RawContent = {
   #noscript => RAWTEXT_STATE,
   title => RCDATA_STATE,
   textarea => RCDATA_STATE,
+  #plaintext
 };
 
 our $CloseIfInScope = {
