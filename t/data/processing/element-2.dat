@@ -1,0 +1,54 @@
+#data
+<iframe>hoge<p>ab&amp;lt;c</p>d</iframe>
+#errors
+#output
+<!DOCTYPE html><html><body><iframe>hoge<p>ab&amp;lt;c</p>d</iframe></body></html>
+
+#data
+<iframe>hoge<iframe>abc</iframe>d</iframe>
+#errors
+#output
+<!DOCTYPE html><html><body><iframe>hoge<iframe>abc</iframe>d</iframe></body></html>
+
+#data
+<noframes>hoge<p>ab&amp;lt;c</p>d</noframes>
+#errors
+#output
+<!DOCTYPE html><html><body><noframes>hoge<p>ab&amp;lt;c</p>d</noframes></body></html>
+
+#data
+<noframes>hoge<noframes>abc</noframes>d</noframes>
+#errors
+#output
+<!DOCTYPE html><html><body><noframes>hoge<noframes>abc</noframes>d</noframes></body></html>
+
+#data
+<noembed>hoge<p>ab&amp;lt;c</p>d</noembed>
+#errors
+#output
+<!DOCTYPE html><html><body><noembed>hoge<p>ab&amp;lt;c</p>d</noembed></body></html>
+
+#data
+<noembed>hoge<noembed>abc</noembed>d</noembed>
+#errors
+#output
+<!DOCTYPE html><html><body><noembed>hoge<noembed>abc</noembed>d</noembed></body></html>
+
+#data
+a<noscript>hoge<p>ab&amp;lt;c</p>d</noscript>
+#errors
+#output
+<!DOCTYPE html><html><body>a<noscript>hoge<p>ab&amp;lt;c</p>d</noscript></body></html>
+
+#data
+b<noscript>hoge<noscript>abc</noscript>d</noscript>
+#errors
+#output
+<!DOCTYPE html><html><body>b<noscript>hoge<noscript>abc</noscript>d</noscript></body></html>
+
+#data
+<noscript>aa&COPY </noscript>
+#errors
+1;18;m;no refc;;
+#output escaped
+<!DOCTYPE html><html><head><noscript>aa\u00a9 </noscript></head></html>

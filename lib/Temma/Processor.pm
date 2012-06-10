@@ -254,8 +254,6 @@ sub process_document ($$$) {
                              value => $ln,
                              level => 'm');
 
-          # XXX attrs should be ignored
-
           unshift @{$self->{processes}},
               map { {type => 'node', node => $_,
                      node_info => {allow_children => 1}} } 

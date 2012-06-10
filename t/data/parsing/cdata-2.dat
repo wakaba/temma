@@ -139,7 +139,10 @@
 | <html>
 |   <body>
 |     <iframe>
-|       "foo<p>bar</p>bb"
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
 |     "aa"
 |     <p>
 |       "bb"
@@ -169,7 +172,7 @@
 | <html>
 |   <body>
 |     <iframe>
-|       "&amp;"
+|       "&"
 |     <iframe>
 |       temma parse=""
 |       "&"
@@ -182,7 +185,42 @@
 | <html>
 |   <body>
 |     <noframes>
-|       "foo<p>bar</p>bb"
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<noframes>foo<noframes>bar</noframes>bb</noframes>aa<p>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <noframes>
+|       "foo"
+|       <noframes>
+|         "bar"
+|       "bb"
+|     "aa"
+|     <p>
+|       "bb"
+
+#data
+<noframes>foo<hoge>barbb</noframes>aa<p>bb
+#errors
+1;36;m;not closed;;hoge
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <noframes>
+|       "foo"
+|       <hoge>
+|         "barbb"
 |     "aa"
 |     <p>
 |       "bb"
@@ -212,7 +250,7 @@
 | <html>
 |   <body>
 |     <noframes>
-|       "&amp;"
+|       "&"
 |     <noframes>
 |       temma parse=""
 |       "&"
@@ -225,7 +263,10 @@
 | <html>
 |   <body>
 |     <noembed>
-|       "foo<p>bar</p>bb"
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
 |     "aa"
 |     <p>
 |       "bb"
@@ -255,7 +296,7 @@
 | <html>
 |   <body>
 |     <noembed>
-|       "&amp;"
+|       "&"
 |     <noembed>
 |       temma parse=""
 |       "&"
@@ -268,7 +309,10 @@
 | <html>
 |   <head>
 |     <noscript>
-|       "foo<p>bar</p>bb"
+|       "foo"
+|       <p>
+|         "bar"
+|       "bb"
 |   <body>
 |     "aa"
 |     <p>
@@ -300,7 +344,7 @@
 | <html>
 |   <head>
 |     <noscript>
-|       "&amp;"
+|       "&"
 |     <noscript>
 |       temma parse=""
 |       "&"

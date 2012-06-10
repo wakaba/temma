@@ -162,3 +162,11 @@ aaaa
 <div><t:attr name="'t:parse'" value="''"/></div>
 #output
 <!DOCTYPE html><html><body><div t:parse=""></div></body></html>
+
+#data
+<div><t:element name="'1244'"><t:attr name="'a'" value="'b'"/>x</t:element></div>
+#errors
+1;6;m;temma:name not serializable;1244;
+1;31;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><div>x</div></body></html>
