@@ -1,0 +1,113 @@
+#data
+<!---->
+#output
+<!DOCTYPE html><html></html>
+
+#data
+a<!---->
+#output
+<!DOCTYPE html><html><body>a</body></html>
+
+#data
+</ foo>
+#errors
+1;1;m;bogus end tag;;
+#output
+<!DOCTYPE html><html></html>
+
+#data
+<!hoge>
+#errors
+1;1;m;bogus comment;;
+#output
+<!DOCTYPE html><html></html>
+
+#data
+x<t:comment/>
+#output
+<!DOCTYPE html><html><body>x<!----></body></html>
+
+#data
+x<t:comment>hoge fuga </t:comment>
+#output
+<!DOCTYPE html><html><body>x<!--hoge fuga --></body></html>
+
+#data
+x<t:comment>hoge-- fuga </t:comment>
+#output
+<!DOCTYPE html><html><body>x<!--hoge- -  fuga --></body></html>
+
+#data
+x<t:comment>hoge fuga -</t:comment>
+#output
+<!DOCTYPE html><html><body>x<!--hoge fuga - --></body></html>
+
+#data
+x<t:comment>hoge<!---->fuga</t:comment>
+#output
+<!DOCTYPE html><html><body>x<!--hogefuga--></body></html>
+
+#data
+x<t:comment>hoge<br>fuga</t:comment>
+#errors
+1;17;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body>x<!--hogefuga--></body></html>
+
+#data
+x<t:comment><t:attr name="'h'" value="3"/>hogefuga</t:comment>
+#errors
+1;13;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body>x<!--hogefuga--></body></html>
+
+#data
+x<t:comment><t:comment>ahc</t:comment>hogefuga</t:comment>
+#errors
+1;13;m;temma:comment not allowed;;
+#output
+<!DOCTYPE html><html><body>x<!--hogefuga--></body></html>
+
+#data
+x<t:comment><t:element name="'x'">ahc</t:element>hogefuga</t:comment>
+#errors
+1;13;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body>x<!--hogefuga--></body></html>
+
+#data
+x<t:comment><t:unknown>ahc</t:unknown>hogefuga</t:comment>
+#errors
+1;13;m;temma:unknown element;unknown;
+#output
+<!DOCTYPE html><html><body>x<!--hogefuga--></body></html>
+
+#data
+x<script t:parse><t:comment>abc</t:comment>xya<p>aaa</p>a</script>
+#errors
+1;18;m;temma:comment not allowed;;
+1;47;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body>x<script>xyaa</script></body></html>
+
+#data
+x<script t:parse><t:comment>ab&lt;/script>c</t:comment>xya<p>aaa</p>a</script>
+#errors
+1;18;m;temma:comment not allowed;;
+1;59;m;temma:child not allowed;;
+#output
+<!DOCTYPE html><html><body>x<script>xyaa</script></body></html>
+
+#data
+<p><t:comment>abc</t:comment><t:attr name="'x'" value=21 />a</p>
+#errors
+1;30;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><p><!--abc-->a</p></body></html>
+
+#data
+<p><t:attr name="'y'" value=3 /><t:comment>abc</t:comment><t:attr name="'x'" value=21 />a</p>
+#errors
+1;59;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><p y="3"><!--abc-->a</p></body></html>

@@ -160,7 +160,31 @@ sub process_document ($$$) {
                                  level => 'm');
             }
             next;
-          } else {
+          } elsif ($ln eq 'comment') {
+            next if $self->_close_start_tag ($process, $fh);
+
+            if ($process->{node_info}->{rawtext}) {
+              $self->{onerror}->(type => 'temma:comment not allowed',
+                                 node => $node,
+                                 level => 'm');
+              next;
+            }
+
+            my $node_info = {rawtext => 1, rawtext_value => '',
+                             allow_children => 1, comment => 1};
+
+            unshift @{$self->{processes}},
+                {type => 'end tag', node_info => $node_info};
+
+            unshift @{$self->{processes}},
+                map { {type => 'node', node => $_, node_info => $node_info} }
+                grep { $_->node_type == ELEMENT_NODE or
+                       $_->node_type == TEXT_NODE }
+                @{$node->child_nodes->to_a};
+
+            print $fh "<!--";
+            next;
+          } else { ## Unknown element in Temma namespace
             next if $self->_close_start_tag ($process, $fh);
 
             $self->{onerror}->(type => 'temma:unknown element',
@@ -295,7 +319,13 @@ sub process_document ($$$) {
     } elsif ($process->{type} eq 'end tag') {
       next if $self->_close_start_tag ($process, $fh);
 
-      if ($process->{node_info}->{rawtext}) {
+      if ($process->{node_info}->{comment}) {
+        my $value = $process->{node_info}->{rawtext_value};
+        $value =~ s/--/- - /g;
+        $value =~ s/-\z/- /;
+        print $fh $value, "-->";
+        next;
+      } elsif ($process->{node_info}->{rawtext}) {
         my $value = $process->{node_info}->{rawtext_value};
 
         my $dom = $process->{node_info}->{node}->owner_document->implementation;
