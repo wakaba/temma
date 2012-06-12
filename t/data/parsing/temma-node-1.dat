@@ -63,8 +63,8 @@ axs<t:element/><link/>
 #document
 | <!DOCTYPE html>
 | <html>
+|   <temma attr>
 |   <head>
-|     <temma attr>
 |     <link>
 
 #data
@@ -84,10 +84,10 @@ axs<t:attr/><link/>
 #document
 | <!DOCTYPE html>
 | <html>
+|   <temma attr>
+|     "a"
+|   <temma attr>
 |   <head>
-|     <temma attr>
-|       "a"
-|     <temma attr>
 |     <link>
 
 #data
@@ -96,10 +96,10 @@ axs<t:attr/><link/>
 #document
 | <!DOCTYPE html>
 | <html>
+|   <temma attr>
+|     <p>
+|       "foo"
 |   <head>
-|     <temma attr>
-|       <p>
-|         "foo"
 |     <link>
 
 #data
@@ -108,13 +108,34 @@ axs<t:attr/><link/>
 #document
 | <!DOCTYPE html>
 | <html>
-|   <head>
-|     <temma attr>
-|       <p>
-|         "f"
+|   <temma attr>
+|     <p>
+|       "f"
 |   <body>
 |     <p>
 |       "b"
+
+#data
+<meta><t:attr/><base/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <meta>
+|     <temma attr>
+|     <base>
+
+#data
+<html><t:attr name='"manifest"' value='1243'/><head>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <temma attr>
+|     name=""manifest""
+|     value="1243"
+|   <head>
 
 #data
 <t:comment/><link/>

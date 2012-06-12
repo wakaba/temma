@@ -34,6 +34,7 @@ our $AutoOpen = {
     '<start>' => 'body',
     (map { $_ => 'head' } @metavoid),
     (map { $_ => 'head' } @metacontent),
+    't:attr' => '',
   },
   'table' => {
     'tr' => 'tbody',
