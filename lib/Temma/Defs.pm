@@ -17,7 +17,10 @@ our @EXPORT = qw(HTML_NS MML_NS SVG_NS TEMMA_NS XML_NS XMLNS_NS XLINK_NS);
 sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 
 my @metavoid = qw(link meta base basefont bgsound command);
-my @metacontent = qw(title style script noscript);
+my @metacontent = qw(
+  title style script noscript
+  t:element t:attr t:comment
+);
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
   col

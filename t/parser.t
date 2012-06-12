@@ -57,6 +57,7 @@ sub _parsed_tree : Tests {
     svg-1.dat
     mml-1.dat
     temma-attr-1.dat
+    temma-node-1.dat
   );
 } # _parsed_tree
 

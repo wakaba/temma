@@ -1,0 +1,187 @@
+#data
+<t:element/><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma element>
+|     <link>
+
+#data
+axs<t:element/><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "axs"
+|     <temma element>
+|     <link>
+
+#data
+<t:element>a</t:elemenT><t:element/><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma element>
+|       "a"
+|     <temma element>
+|     <link>
+
+#data
+<t:element><p>foo</t:element><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma element>
+|       <p>
+|         "foo"
+|     <link>
+
+#data
+<t:element><p>f</t:element><p>b
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma element>
+|       <p>
+|         "f"
+|   <body>
+|     <p>
+|       "b"
+
+#data
+<t:attr/><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma attr>
+|     <link>
+
+#data
+axs<t:attr/><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "axs"
+|     <temma attr>
+|     <link>
+
+#data
+<t:attr>a</t:attr><t:attr/><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma attr>
+|       "a"
+|     <temma attr>
+|     <link>
+
+#data
+<t:attr><p>foo</t:attr><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma attr>
+|       <p>
+|         "foo"
+|     <link>
+
+#data
+<t:attr><p>f</t:attr><p>b
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma attr>
+|       <p>
+|         "f"
+|   <body>
+|     <p>
+|       "b"
+
+#data
+<t:comment/><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma comment>
+|     <link>
+
+#data
+axs<t:comment/><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "axs"
+|     <temma comment>
+|     <link>
+
+#data
+<t:comment>a</t:comment><t:comment/><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma comment>
+|       "a"
+|     <temma comment>
+|     <link>
+
+#data
+<t:comment><p>foo</t:comment><link/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma comment>
+|       <p>
+|         "foo"
+|     <link>
+
+#data
+<t:comment><p>f</t:comment><p>b
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma comment>
+|       <p>
+|         "f"
+|   <body>
+|     <p>
+|       "b"
+
+#data
+<svg><t:element><g/></t:element></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <temma element>
+|         <svg g>
