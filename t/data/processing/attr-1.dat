@@ -63,13 +63,13 @@ aaaa
 <t:attr name="'fpp'" value="''"/>
 #errors
 #output
-<!DOCTYPE html><html><body fpp=""></body></html>
+<!DOCTYPE html><html fpp=""></html>
 
 #data
 <!-- abc --><t:attr name="'fpp'" value="''"/>
 #errors
 #output
-<!DOCTYPE html><html><body fpp=""></body></html>
+<!DOCTYPE html><html fpp=""></html>
 
 #data
 <p><t:attr name="'122'" value=124 />aa</p>

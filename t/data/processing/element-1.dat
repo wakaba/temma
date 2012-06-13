@@ -1,12 +1,12 @@
 #data
 <t:element name="'p'">foo</t:element>
 #output
-<!DOCTYPE html><html><body><p>foo</p></body></html>
+<!DOCTYPE html><html><head><p>foo</p></head></html>
 
 #data
 <t:element name="'DiV'"><p>hoge</t:element>aaaa
 #output
-<!DOCTYPE html><html><body><div><p>hoge</p></div>aaaa</body></html>
+<!DOCTYPE html><html><head><div><p>hoge</p></div></head><body>aaaa</body></html>
 
 #data
 foo<t:element name="'br'">abc</t:element>xxx

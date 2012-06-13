@@ -268,6 +268,6 @@ document.write ('<script>hoge</script>')
   document.write ('<script>ho<br>ge</script>');
 //--></t:element>
 #output
-<!DOCTYPE html><html><body><script><!--
+<!DOCTYPE html><html><head><script><!--
   document.write ('<script>ho<br>ge</script>');
-//--></t:element></script></body></html>
+//--></t:element></script></head></html>
