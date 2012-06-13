@@ -81,37 +81,40 @@ axs<t:attr/><link/>
 #data
 <t:attr>a</t:attr><t:attr/><link/>
 #errors
+1;19;m;unmatched end tag;;t:attr
 #document
 | <!DOCTYPE html>
 | <html>
 |   <temma attr>
+|   <body>
 |     "a"
-|   <temma attr>
-|   <head>
+|     <temma attr>
 |     <link>
 
 #data
 <t:attr><p>foo</t:attr><link/>
 #errors
+1;24;m;unmatched end tag;;t:attr
 #document
 | <!DOCTYPE html>
 | <html>
 |   <temma attr>
+|   <body>
 |     <p>
 |       "foo"
-|   <head>
-|     <link>
+|       <link>
 
 #data
 <t:attr><p>f</t:attr><p>b
 #errors
+1;22;m;unmatched end tag;;t:attr
 #document
 | <!DOCTYPE html>
 | <html>
 |   <temma attr>
+|   <body>
 |     <p>
 |       "f"
-|   <body>
 |     <p>
 |       "b"
 
@@ -125,6 +128,17 @@ axs<t:attr/><link/>
 |     <meta>
 |     <temma attr>
 |     <base>
+
+#data
+<meta><t:attr><link>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <meta>
+|     <temma attr>
+|     <link>
 
 #data
 <html><t:attr name='"manifest"' value='1243'/><head>
@@ -206,3 +220,60 @@ axs<t:comment/><link/>
 |     <svg svg>
 |       <temma element>
 |         <svg g>
+
+#data
+<t:value>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma value>
+
+#data
+a<t:value>bbb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temma value>
+|     "bbb"
+
+#data
+a<t:value>b</t:value>bb
+#errors
+1;22;m;unmatched end tag;;t:value
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temma value>
+|     "bbb"
+
+#data
+<t:attr><t:value>bbb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <temma attr>
+|   <head>
+|     <temma value>
+|   <body>
+|     "bbb"
+
+#data
+<t:value t:parse>hoge</t:value>xxy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma value>
+|       temma parse=""
+|       "hoge"
+|   <body>
+|     "xxy"
