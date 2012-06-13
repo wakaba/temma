@@ -1,0 +1,73 @@
+#data
+<t:text value="12521"/>
+#output
+<!DOCTYPE html><html><body>12521</body></html>
+
+#data
+aaa<t:text value="12521"/>bbb
+#output
+<!DOCTYPE html><html><body>aaa12521bbb</body></html>
+
+#data
+<t:text value="''"/>
+#output
+<!DOCTYPE html><html><body></body></html>
+
+#data
+<t:text value="qq<\x{4e00}\x{4e01}>"/>
+#output escaped
+<!DOCTYPE html><html><body>\u4E00\u4E01</body></html>
+
+#data
+<p><t:text value=5152 /></p>
+#output
+<!DOCTYPE html><html><body><p>5152</p></body></html>
+
+#data
+a<t:element name="'hoge'"><t:text value=32 /></t:element>
+#output
+<!DOCTYPE html><html><body>a<hoge>32</hoge></body></html>
+
+#data
+aa<t:comment><t:text value="'axyz'"/>a</t:comment>
+#output
+<!DOCTYPE html><html><body>aa<!--axyza--></body></html>
+
+#data
+<title><t:text value="'foo  bar'"/></title>
+#output
+<!DOCTYPE html><html><head><title>&lt;t:text value=&quot;'foo  bar'&quot;/&gt;</title></head></html>
+
+#data
+<title t:parse><t:text value="'foo  bar'"/></title>
+#output
+<!DOCTYPE html><html><head><title>foo  bar</title></head></html>
+
+#data
+<textarea t:parse><t:text value="'foo  bar'"/></textareA>
+#output
+<!DOCTYPE html><html><body><textarea>foo  bar</textarea></body></html>
+
+#data
+<script t:parse>hoge<t:text value="'ax    aaa'"/></script>
+#output
+<!DOCTYPE html><html><head><script>hogeax    aaa</script></head></html>
+
+#data
+<script t:parse>hoge<t:text value="'</' . 'script>'"/>b</script>
+#errors
+1;1;m;temma:not representable in raw text;;
+#output
+<!DOCTYPE html><html><head><script>hoge</script></head></html>
+
+#data
+<style t:parse>hoge<t:text value="'</' . 'style>'"/>b</style>
+#errors
+1;1;m;temma:not representable in raw text;;
+#output
+<!DOCTYPE html><html><head><style>hoge</style></head></html>
+
+#data
+<svg><script><t:text value="'</script>'"/></script></svg>
+#output
+<!DOCTYPE html><html><body><svg><script>&lt;/script&gt;</script></svg></body></html>

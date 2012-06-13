@@ -111,7 +111,17 @@ sub process_document ($$$) {
         my $ln = $node->manakai_local_name;
         my $attrs = [];
         if ($ns eq TEMMA_NS) {
-          if ($ln eq 'element') {
+          if ($ln eq 'text') {
+            next if $self->_close_start_tag ($process, $fh);
+
+            my $value = $self->eval_attr_value ($node, 'value');
+            if ($process->{node_info}->{rawtext}) {
+              $process->{node_info}->{rawtext_value} .= $value;
+            } else {
+              print $fh htescape $value;
+            }
+            next;
+          } elsif ($ln eq 'element') {
             next if $self->_close_start_tag ($process, $fh);
 
             $ln = $self->eval_attr_value ($node, 'name');
