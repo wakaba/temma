@@ -64,6 +64,7 @@ sub _processed : Tests {
     attr-1.dat
     comment-1.dat
     text-1.dat
+    eval-1.dat
   );
 } # _processed
 

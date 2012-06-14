@@ -1,0 +1,11 @@
+#data
+<t:text value=" hoge "/>
+#errors
+#output
+<!DOCTYPE html><html><body></body></html>
+
+#data
+<t:text value=" $hoge "/>
+#errors
+#output
+<!DOCTYPE html><html><body></body></html>

@@ -6,6 +6,45 @@ our $VERSION = '1.0';
 use Message::DOM::Node;
 use Temma::Defs;
 
+sub eval_attr_value ($$$) {
+  my ($self, $node, $name) = @_;
+  
+  my $attr_node = $node->get_attribute_node ($name)
+      or return undef;
+
+  my $location = $node->node_name . '[' . $name . ']';
+  my $parent = $node->parent_node;
+  while ($parent) {
+    $location = $parent->node_name . '>' . $location
+        if $parent->node_type == ELEMENT_NODE;
+    $parent = $parent->parent_node;
+  }
+  my $line = $attr_node->get_user_data ('manakai_source_line')
+      || $node->get_user_data ('manakai_source_line');
+  my $column = $attr_node->get_user_data ('manakai_source_column')
+      || $node->get_user_data ('manakai_source_column');
+  if (defined $line and defined $column) {
+    $location .= sprintf ' (at line %d column %d)', $line || 0, $column || 0;
+  }
+  $location =~ s/[\x00-\x1F\x22]+/ /g;
+  my $value = qq<#line 1 "$location"\n> . $attr_node->value;
+
+  my $evaled;
+  my $error;
+  {
+    local $@;
+    $evaled = eval $value;
+    $error = $@;
+  }
+  if ($error) {
+    # XXX Throw an exception
+    warn $value;
+    warn $error; # XXX
+  }
+
+  return $evaled;
+} # eval_attr_value
+
 sub new ($) {
   return bless {
     onerror => sub {
@@ -162,7 +201,7 @@ sub process_document ($$$) {
               }
 
               $self->{current_tag}->{attrs}->{$attr_name} = 1;
-              my $value = $self->eval_attr_value ($node, 'value'); # XXX element content?
+              my $value = $self->eval_attr_value ($node, 'value');
               print $fh ' ' . $attr_name . '="' . (htescape $value) . '"';
             } else {
               $self->{onerror}->(type => 'temma:start tag already closed',
@@ -373,28 +412,6 @@ sub _close_start_tag ($$$) {
   print $fh '>';
   return 1;
 } # _close_start_tag
-
-sub eval_attr_value ($$$) {
-  my ($self, $node, $name) = @_;
-  
-  my $value = $node->get_attribute ($name);
-  return undef if not defined $value;
-
-  my $evaled;
-  my $error;
-  {
-    local $@;
-    $evaled = eval $value;
-    $error = $@;
-  }
-  if ($error) {
-    # XXX Throw an exception
-    warn $value;
-    warn $error; # XXX
-  }
-
-  return $evaled;
-} # eval_attr_value
 
 1;
 
