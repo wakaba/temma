@@ -223,11 +223,13 @@ sub _construct_tree ($) {
 
       my $im = $self->{open_elements}->[-1]->[2];
       my $ns = HTML_NS;
+      my $prefix;
       my $local_name = $tag_name;
       my $attr_fixup = {};
 
       if ($local_name =~ s/^t:(?=.)//s) {
         $ns = TEMMA_NS;
+        $prefix = 't';
       } elsif ($local_name eq 'svg') {
         $ns = SVG_NS;
         $im = IM_SVG;
@@ -251,7 +253,7 @@ sub _construct_tree ($) {
       }
 
       my $el = $self->{document}->create_element_ns
-          ($ns, [undef, $local_name]);
+          ($ns, [$prefix, $local_name]);
       $el->set_user_data (manakai_source_line => $self->{t}->{line});
       $el->set_user_data (manakai_source_column => $self->{t}->{column});
 
