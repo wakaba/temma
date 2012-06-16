@@ -46,7 +46,8 @@ aa<t:comment><t:text value="'axyz'"/>a</t:comment>
 #data
 <textarea t:parse><t:text value="'foo  bar'"/></textareA>
 #output
-<!DOCTYPE html><html><body><textarea>foo  bar</textarea></body></html>
+<!DOCTYPE html><html><body><textarea>
+foo  bar</textarea></body></html>
 
 #data
 <script t:parse>hoge<t:text value="'ax    aaa'"/></script>

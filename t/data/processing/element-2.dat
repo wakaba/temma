@@ -78,17 +78,21 @@ b<noscript>hoge<noscript>abc</noscript>d</noscript>
 #data
 <textarea>abc<p>foo<!--cc-->xx</textarea>
 #output
-<!DOCTYPE html><html><body><textarea>abc&lt;p&gt;foo&lt;!--cc--&gt;xx</textarea></body></html>
+<!DOCTYPE html><html><body><textarea>
+abc&lt;p&gt;foo&lt;!--cc--&gt;xx</textarea></body></html>
 
 #data
 <textarea t:parse>abc<p>foo<script><!--cc-->x</script>x</textarea>
 #output
-<!DOCTYPE html><html><body><textarea>abc<p>foo<script><!--cc-->x</script>x</p></textarea></body></html>
+<!DOCTYPE html><html><body><textarea>
+abc<p>foo<script><!--cc-->x</script>x</p></textarea></body></html>
 
 #data
 <textarea t:parse>abc<p>fo<textarea/>o<script><!--cc-->x</script>x</textarea>
 #output
-<!DOCTYPE html><html><body><textarea>abc<p>fo<textarea></textarea>o<script><!--cc-->x</script>x</p></textarea></body></html>
+<!DOCTYPE html><html><body><textarea>
+abc<p>fo<textarea>
+</textarea>o<script><!--cc-->x</script>x</p></textarea></body></html>
 
 #data
 <xmp>hoge <script>aaa</script>bb</xmp>
@@ -271,3 +275,56 @@ document.write ('<script>hoge</script>')
 <!DOCTYPE html><html><head><script><!--
   document.write ('<script>ho<br>ge</script>');
 //--></t:element></script></head></html>
+
+#data
+<textarea>
+hoge</textArea>
+#output
+| <!DOCTYPE html><html><body><textarea>
+| 
+| hoge</textarea></body></html>
+
+#data
+<textarea t:parse><!---->
+hoge</textArea>
+#output
+| <!DOCTYPE html><html><body><textarea>
+| 
+| hoge</textarea></body></html>
+
+#data
+<svg><textarea t:parse>
+hoge</textArea></svg>
+#output
+| <!DOCTYPE html><html><body><svg><textarea>
+| hoge</textarea></svg></body></html>
+
+#data
+<listing>
+hoge</listing>
+#output
+| <!DOCTYPE html><html><body><listing>
+| 
+| hoge</listing></body></html>
+
+#data
+<svg><listing>
+hoge</listing></svg>
+#output
+| <!DOCTYPE html><html><body><svg><listing>
+| hoge</listing></svg></body></html>
+
+#data
+<pre>
+hoge</pre>
+#output
+| <!DOCTYPE html><html><body><pre>
+| 
+| hoge</pre></body></html>
+
+#data
+<svg><pre>
+hoge</pre></svg>
+#output
+| <!DOCTYPE html><html><body><svg><pre>
+| hoge</pre></svg></body></html>
