@@ -2,12 +2,17 @@ package Temma::Processor;
 use strict;
 use warnings;
 no warnings 'utf8';
+
+sub _eval ($) {
+  return eval ('local $_; local @_;' . "\n" . $_[0]);
+} # _eval
+
 our $VERSION = '1.0';
 use Message::DOM::Node;
 use Temma::Defs;
 
-sub eval_attr_value ($$$) {
-  my ($self, $node, $name) = @_;
+sub eval_attr_value ($$$;%) {
+  my ($self, $node, $name, %args) = @_;
   
   my $attr_node = $node->get_attribute_node ($name)
       or return undef;
@@ -33,13 +38,21 @@ sub eval_attr_value ($$$) {
   my $error;
   {
     local $@;
-    $evaled = eval $value;
+    $evaled = _eval $value;
     $error = $@;
   }
   if ($error) {
-    # XXX Throw an exception
-    warn $value;
-    warn $error; # XXX
+    require Temma::Exception;
+    my $exception = Temma::Exception->new_from_value ($error);
+    $exception->source_text ($value);
+    $exception->source_node ($attr_node);
+    die $exception;
+  }
+
+  if ($args{disallow_undef} and not defined $evaled) {
+    $self->{onerror}->(type => 'temma:undef',
+                       level => $args{disallow_undef},
+                       node => $attr_node);
   }
 
   return $evaled;
@@ -113,6 +126,25 @@ sub process_document ($$$) {
       {type => 'node', node => $doc, node_info => {allow_children => 1}},
       {type => 'end'};
 
+  eval {
+    $self->_process ($fh);
+  };
+  if ($@) {
+    if (UNIVERSAL::isa ($@, 'Temma::Exception')) {
+      #warn $@->source_text;
+      $self->{onerror}->(type => 'temma:perl exception',
+                         level => 'm',
+                         value => $@,
+                         node => $@->source_node);
+    } else {
+      die $@;
+    }
+  }
+} # process_document
+
+sub _process ($$) {
+  my ($self, $fh) = @_;
+
   while (@{$self->{processes}}) {
     my $process = shift @{$self->{processes}};
 
@@ -153,11 +185,14 @@ sub process_document ($$$) {
           if ($ln eq 'text') {
             next if $self->_close_start_tag ($process, $fh);
 
-            my $value = $self->eval_attr_value ($node, 'value');
-            if ($process->{node_info}->{rawtext}) {
-              $process->{node_info}->{rawtext_value} .= $value;
-            } else {
-              print $fh htescape $value;
+            my $value = $self->eval_attr_value
+                ($node, 'value', disallow_undef => 'w');
+            if (defined $value) {
+              if ($process->{node_info}->{rawtext}) {
+                $process->{node_info}->{rawtext_value} .= $value;
+              } else {
+                print $fh htescape $value;
+              }
             }
             next;
           } elsif ($ln eq 'element') {
@@ -401,8 +436,8 @@ sub process_document ($$$) {
     } else {
       die "Process type |$process->{type}| is not supported";
     }
-  }
-} # proess_document
+  } # @{$self->{processes}}
+} # _process
 
 sub _close_start_tag ($$$) {
   my ($self, $current_process, $fh) = @_;
