@@ -569,11 +569,13 @@ sub _close_start_tag ($$$) {
 sub _before_non_space ($$;%) {
   my ($self, $process => $fh, %args) = @_;
   if (defined $process->{node_info}->{trailing_space}) {
-    if ($process->{node_info}->{rawtext}) {
-      ${$process->{node_info}->{rawtext_value}}
-          .= $process->{node_info}->{trailing_space};
-    } else {
-      print $fh htescape $process->{node_info}->{trailing_space};
+    if ($process->{node_info}->{has_non_space}) {
+      if ($process->{node_info}->{rawtext}) {
+        ${$process->{node_info}->{rawtext_value}}
+            .= $process->{node_info}->{trailing_space};
+      } else {
+        print $fh htescape $process->{node_info}->{trailing_space};
+      }
     }
     delete $process->{node_info}->{trailing_space};
   }

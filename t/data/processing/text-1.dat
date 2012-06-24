@@ -86,3 +86,10 @@ foo  bar</textarea></body></html>
 1;6;m;attribute missing;;value
 #output
 <!DOCTYPE html><html><body><p>hoge</p></body></html>
+
+#data
+<P>foo<t:text value=" defined wantarray ? 1 : 0 ">,
+bar<t:text value=" wantarray ? 1 : 0 ">
+#output
+<!DOCTYPE html><html><body><p>foo1,
+bar0</p></body></html>

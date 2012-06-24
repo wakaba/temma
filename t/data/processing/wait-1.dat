@@ -147,3 +147,8 @@ a<t:wait cv="new Test::Temma::CV">b<t:text value=die>c
 1;44;m;temma:perl exception;Died at html>body>t:text[value] (at line 1 column 44) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body>ab
+
+#data
+a<t:wait cv=' our $hoge = (defined wantarray ? 1 : 0) . (wantarray ? 1 : 0); new Test::Temma::CV '><t:text value=our$hoge>
+#output
+<!DOCTYPE html><html><body>a10</body></html>

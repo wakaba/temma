@@ -370,3 +370,42 @@ a<t:if x=0>a<t:else>x<t:elsif x=1>y</t:if>a
 1;22;m;element not allowed:t:if;;
 #output
 <!DOCTYPE html><html><body>axa</body></html>
+
+#data
+a<t:if x="
+  our $defined = defined wantarray;
+  our $array = wantarray;
+  1;
+">
+  <span>defined = <t:text value=our$defined></span>
+  <span>array = <t:text value=our$array></span>
+</t:if>
+#output
+<!DOCTYPE html><html><body>a<span>defined = 1</span>
+  <span>array = </span></body></html>
+
+#data
+a<t:if x=0><t:elsif x="
+  our $defined = defined wantarray;
+  our $array = wantarray;
+  1;
+">
+  <span>defined = <t:text value=our$defined></span>
+  <span>array = <t:text value=our$array></span>
+</t:if>
+#output
+<!DOCTYPE html><html><body>a<span>defined = 1</span>
+  <span>array = </span></body></html>
+
+#data
+a<t:if x=0><t:elsif x="
+  our $defined = defined wantarray;
+  our $array = wantarray;
+  1;
+">
+  defined = <t:text value=our$defined>
+  array = <t:text value=our$array>
+</t:if>
+#output
+<!DOCTYPE html><html><body>adefined = 1
+  array = </body></html>

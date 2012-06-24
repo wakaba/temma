@@ -186,3 +186,8 @@ foo<t:element>hoge</t:element>
 1;4;m;temma:name not serializable;;
 #output
 <!DOCTYPE html><html><body>foohoge</body></html>
+
+#data
+foo<t:element name=' "hoge" . (defined wantarray ? 1 : 0) . (wantarray ? 1 : 0) '/>
+#output
+<!DOCTYPE html><html><body>foo<hoge10></hoge10></body></html>
