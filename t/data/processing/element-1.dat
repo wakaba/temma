@@ -172,3 +172,17 @@ foo<t:element name="'t:hoge'">aa</t:element>bar
 1;4;m;temma:name not serializable;t:hoge;
 #output
 <!DOCTYPE html><html><body>fooaabar</body></html>
+
+#data
+foo<t:element name=undef>hoge</t:element>
+#errors
+1;4;m;temma:name not serializable;;
+#output
+<!DOCTYPE html><html><body>foohoge</body></html>
+
+#data
+foo<t:element>hoge</t:element>
+#errors
+1;4;m;temma:name not serializable;;
+#output
+<!DOCTYPE html><html><body>foohoge</body></html>

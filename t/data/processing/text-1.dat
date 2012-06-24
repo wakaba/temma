@@ -72,3 +72,17 @@ foo  bar</textarea></body></html>
 <svg><script><t:text value="'</script>'"/></script></svg>
 #output
 <!DOCTYPE html><html><body><svg><script>&lt;/script&gt;</script></svg></body></html>
+
+#data
+<p><t:text/></p>
+#errors
+1;4;m;attribute missing;;value
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p>ho<t:text/>ge</p>
+#errors
+1;6;m;attribute missing;;value
+#output
+<!DOCTYPE html><html><body><p>hoge</p></body></html>

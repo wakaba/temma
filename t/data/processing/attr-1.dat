@@ -170,3 +170,55 @@ aaaa
 1;31;m;temma:start tag already closed;;
 #output
 <!DOCTYPE html><html><body><div>x</div></body></html>
+
+#data
+<p><t:attr name="'foo'"/></p>
+#errors
+1;4;m;attribute missing;;value
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p><t:attr name="'foo'" value=undef /></p>
+#errors
+1;25;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p>
+  <t:attr name="'foo'"/>
+  <t:attr name="'foo'" value="42"/>
+</p>
+#errors
+2;3;m;attribute missing;;value
+#output
+<!DOCTYPE html><html><body><p foo="42"></p></body></html>
+
+#data
+<p>
+  <t:attr name="'foo'" value=undef />
+  <t:attr name="'foo'" value="42"/>
+</p>
+#errors
+2;24;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body><p foo="42"></p></body></html>
+
+#data
+<p>
+  <t:attr name=undef value="'xyz'"/>
+</p>
+#errors
+2;3;m;temma:name not serializable;;
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p>
+  <t:attr value="'xyz'"/>
+</p>
+#errors
+2;3;m;temma:name not serializable;;
+#output
+<!DOCTYPE html><html><body><p></p></body></html>

@@ -228,3 +228,8 @@ abc
   </style>
 #output
 <!DOCTYPE html><html><head><style>x</style></head></html>
+
+#data
+<p>  <img/>  fuga</p>
+#output
+<!DOCTYPE html><html><body><p><img>  fuga</p></body></html>

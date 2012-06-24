@@ -165,7 +165,7 @@ sub _process ($$) {
             $self->_before_non_space ($process => $fh);
             
             my $value = $self->eval_attr_value
-                ($node, 'value', disallow_undef => 'w');
+                ($node, 'value', disallow_undef => 'w', required => 'm');
             if (defined $value) {
               if ($process->{node_info}->{rawtext}) {
                 $process->{node_info}->{rawtext_value} .= $value;
@@ -187,6 +187,7 @@ sub _process ($$) {
           } elsif ($ln eq 'attr') {
             if ($self->{current_tag}) {
               my $attr_name = $self->eval_attr_value ($node, 'name');
+              $attr_name = '' unless defined $attr_name;
               $attr_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
               my $element_ns = $self->{current_tag}->{ns};
               if ($element_ns eq SVG_NS) {
@@ -214,9 +215,12 @@ sub _process ($$) {
                 next;
               }
 
-              $self->{current_tag}->{attrs}->{$attr_name} = 1;
-              my $value = $self->eval_attr_value ($node, 'value');
-              print $fh ' ' . $attr_name . '="' . (htescape $value) . '"';
+              my $value = $self->eval_attr_value
+                  ($node, 'value', disallow_undef => 'w', required => 'm');
+              if (defined $value) {
+                $self->{current_tag}->{attrs}->{$attr_name} = 1;
+                print $fh ' ' . $attr_name . '="' . (htescape $value) . '"';
+              }
             } else {
               $self->{onerror}->(type => 'temma:start tag already closed',
                                  node => $node,
@@ -463,8 +467,15 @@ sub _before_non_space ($$) {
 sub eval_attr_value ($$$;%) {
   my ($self, $node, $name, %args) = @_;
   
-  my $attr_node = $node->get_attribute_node ($name)
-      or return undef;
+  my $attr_node = $node->get_attribute_node ($name) or do {
+    if ($args{required}) {
+      $self->{onerror}->(type => 'attribute missing',
+                         text => $name,
+                         level => $args{required},
+                         node => $node);
+    }
+    return undef;
+  };
 
   my $location = $node->node_name . '[' . $name . ']';
   my $parent = $node->parent_node;
