@@ -52,6 +52,11 @@ sub _processed : Tests {
     $processor->onerror ($onerror);
     $processor->process_document ($doc => $fh);
 
+    while (@Test::Temma::CV::Instance) {
+      my $cv = shift @Test::Temma::CV::Instance;
+      $cv->send;
+    }
+
     $output = decode 'utf8', $output;
     eq_or_diff $output, $test->{output}->[0];
 
@@ -66,8 +71,37 @@ sub _processed : Tests {
     text-1.dat
     space-1.dat
     eval-1.dat
+    wait-1.dat
   );
 } # _processed
+
+{
+  package Test::Temma::CV;
+
+  our @Instance;
+  
+  sub new ($) {
+    my $self = bless {}, $_[0];
+    push @Instance, $self;
+    return $self;
+  } # new
+
+  sub cb ($;$) {
+    if (@_ > 1) {
+      $_[0]->{cb} = $_[1];
+    }
+    return $_[0]->{cb};
+  } # cb
+
+  sub send ($;$) {
+    $_[0]->{sent_value} = $_[1];
+    $_[0]->{cb}->($_[0]);
+  } # send
+
+  sub recv ($) {
+    return $_[0]->{sent_value};
+  } # recv
+}
 
 __PACKAGE__->runtests;
 

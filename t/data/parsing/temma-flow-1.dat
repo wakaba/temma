@@ -1,0 +1,44 @@
+#data
+<t:wait><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma wait>
+|     <!--  -->
+
+#data
+<base><t:wait><link>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <base>
+|     <temma wait>
+|     <link>
+
+#data
+<p><t:wait>abc
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma wait>
+|       "abc"
+
+#data
+<p><t:attr><t:wait><t:attr>ab
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma attr>
+|       <temma wait>
+|       <temma attr>
+|       "ab"

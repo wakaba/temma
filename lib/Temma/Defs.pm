@@ -18,7 +18,7 @@ sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 
 my @metavoid = qw(
   link meta base basefont bgsound command
-  t:attr t:value
+  t:attr t:value t:wait
 );
 my @metacontent = qw(
   title style script noscript

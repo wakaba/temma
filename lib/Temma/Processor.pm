@@ -254,6 +254,17 @@ sub _process ($$) {
 
             print $fh "<!--";
             next;
+          } elsif ($ln eq 'wait') {
+            my $value = $self->eval_attr_value
+                  ($node, 'cv', disallow_undef => 'm', required => 'm');
+            if (defined $value) {
+              $value->cb (sub {
+                $self->eval_attr_value ($node, 'cb');
+                $self->_process ($fh);
+              });
+              return;
+            }
+            next;
           } else { ## Unknown element in Temma namespace
             next if $self->_close_start_tag ($process, $fh);
 

@@ -1,0 +1,79 @@
+#data
+<t:wait cv=" Test::Temma::CV->new ">
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:wait cv=" Test::Temma::CV->new ">hoge
+#output
+<!DOCTYPE html><html><head></head><body>hoge</body></html>
+
+#data
+<t:wait cv=" Test::Temma::CV->new ">hoge
+<t:wait cv=" Test::Temma::CV->new ">fuga
+#output
+<!DOCTYPE html><html><head></head><body>hoge
+fuga</body></html>
+
+#data
+<p>
+  <t:wait cv="Test::Temma::CV->new">
+  <t:attr name="'class'" value=123>
+</p>
+#output
+<!DOCTYPE html><html><body><p class="123"></p></body></html>
+
+#data
+<script t:parse>
+  <t:wait cv="Test::Temma::CV->new">
+  <t:attr name="'class'" value=123>
+  abc
+</script>
+#errors
+3;3;m;temma:start tag already closed;;
+#output
+| <!DOCTYPE html><html><head><script>
+|   
+|   
+|   abc
+| </script></head></html>
+
+#data
+<script t:parse t:space=trim>
+  <t:wait cv="Test::Temma::CV->new">
+  <t:attr name="'class'" value=123>
+  abc
+</script>
+#errors
+#output
+| <!DOCTYPE html><html><head><script class="123">abc</script></head></html>
+
+#data
+<script t:parse t:space=trim>
+  <t:wait cv="Test::Temma::CV->new">
+  <t:attr name="'class'" value=123>
+  abc&lt;/script>x
+</script>
+#errors
+1;1;m;temma:not representable in raw text;;
+#output
+| <!DOCTYPE html><html><head><script class="123">abc</script></head></html>
+
+#data
+<t:comment>
+  hoge
+  <t:wait cv="Test::Temma::CV->new">
+</t:comment>
+#errors
+#output
+| <!DOCTYPE html><html><head><!--
+|   hoge
+|   
+| --></head></html>
+
+#data
+hoge<t:wait cv="Test::Temma::CV->new" cb="
+  our $hoge = 'ab cd';
+"><t:text value=" our $hoge "/>x
+#output
+<!DOCTYPE html><html><body>hogeab cdx</body></html>
