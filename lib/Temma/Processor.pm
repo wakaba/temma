@@ -326,6 +326,10 @@ sub __process ($$) {
                 map { {type => 'node', node => $_,
                        node_info => $node_info} } @node;
             next;
+          } elsif ($ln eq 'call') {
+            $self->eval_attr_value
+                ($node, 'x', required => 'm', context => 'void');
+            next;
           } elsif ($ln eq 'wait') {
             my $value = $self->eval_attr_value
                   ($node, 'cv', disallow_undef => 'm', required => 'm');
@@ -615,6 +619,8 @@ sub eval_attr_value ($$$;%) {
       $evaled = !! (_eval $value);
     } elsif ($context eq 'list') {
       $evaled = [_eval $value];
+    } elsif ($context eq 'void') {
+      _eval $value;
     } else {
       $evaled = _eval $value;
     }

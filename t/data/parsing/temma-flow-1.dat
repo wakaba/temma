@@ -201,3 +201,24 @@ foo<t:if><p><q><t:elsif>aa</t:if>bb
 |       "b"
 |   <body>
 |     "c"
+
+#data
+<t:call><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma call>
+|     <!--  -->
+
+#data
+a<t:call><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temma call>
+|     <!--  -->

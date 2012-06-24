@@ -1,0 +1,34 @@
+#data
+<t:call>
+#errors
+1;1;m;attribute missing;;x
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+bb<t:call x=" undef ">aa
+#output
+<!DOCTYPE html><html><body>bbaa</body></html>
+
+#data
+bb<t:call x=" 51252 ">aa
+#output
+<!DOCTYPE html><html><body>bbaa</body></html>
+
+#data
+<p>
+  <t:call x=" our $hoge = defined wantarray ? 1 : 0 ">
+  <t:text value=our$hoge>
+#output
+<!DOCTYPE html><html><body><p>0</p></body></html>
+
+#data
+<p>
+  <t:call x=our$hoge++>
+  <t:text value=our$hoge>
+  <t:call x=our$hoge++>
+  <t:text value=our$hoge>
+#output
+| <!DOCTYPE html><html><body><p>1
+|   
+|   2</p></body></html>
