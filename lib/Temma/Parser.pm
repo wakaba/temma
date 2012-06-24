@@ -89,8 +89,16 @@ sub _construct_tree ($) {
 
     if ($self->{t}->{type} == CHARACTER_TOKEN) {
       if ($self->{t}->{data} =~ s/^([\x09\x0A\x0C\x0D\x20]+)//) {
-        $self->{open_elements}->[-1]->[0]->manakai_append_text ($1);
+        if ($self->{ignore_first_newline}) {
+          my $v = $1;
+          $v =~ s/^\x0A//;
+          $self->{open_elements}->[-1]->[0]->manakai_append_text ($v)
+              if length $v;
+        } else {
+          $self->{open_elements}->[-1]->[0]->manakai_append_text ($1);
+        }
       }
+      delete $self->{ignore_first_newline};
 
       if (not length $self->{t}->{data}) {
         $self->{t} = $self->_get_next_token;
@@ -133,6 +141,7 @@ sub _construct_tree ($) {
     } elsif ($self->{t}->{type} == START_TAG_TOKEN) {
       my $tag_name = $self->{t}->{tag_name};
       $tag_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
+      delete $self->{ignore_first_newline};
 
       if ($tag_name eq 'html' or
           $tag_name eq 'head' or
@@ -315,6 +324,11 @@ sub _construct_tree ($) {
           $self->{state} = $Temma::Defs::RawContent->{$tag_name};
           delete $self->{escape};
         }
+
+        if ($ns eq HTML_NS and 
+            $Temma::Defs::IgnoreFirstNewline->{$local_name}) {
+          $self->{ignore_first_newline} = 1;
+        }
       }
       
       $self->{t} = $self->_get_next_token;
@@ -323,6 +337,7 @@ sub _construct_tree ($) {
     } elsif ($self->{t}->{type} == END_TAG_TOKEN) {
       my $tag_name = $self->{t}->{tag_name};
       $tag_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
+      delete $self->{ignore_first_newline};
 
       if ($tag_name eq 'html' or $tag_name eq 'body') {
         #
@@ -366,6 +381,7 @@ sub _construct_tree ($) {
       my $comment = $self->{document}->create_comment ($self->{t}->{data});
       $self->{open_elements}->[-1]->[0]->append_child ($comment);
       
+      delete $self->{ignore_first_newline};
       $self->{t} = $self->_get_next_token;
       next B;
     } elsif ($self->{t}->{type} == END_OF_FILE_TOKEN) {
@@ -373,6 +389,7 @@ sub _construct_tree ($) {
       return;
     } elsif ($self->{t}->{type} == DOCTYPE_TOKEN) {
       $self->{t} = $self->_get_next_token;
+      delete $self->{ignore_first_newline};
       next B;
     } elsif ($self->{t}->{type} == ABORT_TOKEN) {
       return;

@@ -188,7 +188,6 @@ hoge</pre>  hage</p></body></html>
 </textarea>
 #output
 | <!DOCTYPE html><html><body><textarea>
-| 
 |   hoge
 | </textarea></body></html>
 
@@ -198,7 +197,6 @@ abc
 </listing>
 #output
 | <!DOCTYPE html><html><body><listing>
-| 
 | abc
 | </listing></body></html>
 

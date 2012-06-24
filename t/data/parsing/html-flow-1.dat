@@ -455,8 +455,7 @@ foo<p>abc<pre>xx</pre>yy
 | <html>
 |   <body>
 |     <pre>
-|       "
-abc"
+|       "abc"
 
 #data
 foo<p>abc<listing>xx</listing>yy
@@ -480,8 +479,7 @@ foo<p>abc<listing>xx</listing>yy
 | <html>
 |   <body>
 |     <listing>
-|       "
-abc"
+|       "abc"
 
 #data
 foo<p>abc<form>xx</form>yy

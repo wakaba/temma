@@ -438,9 +438,7 @@ sub _close_start_tag ($$$) {
   unshift @{$self->{processes}}, $current_process;
   print $fh '>';
 
-  if (($node_info->{ln} eq 'pre' or
-       $node_info->{ln} eq 'textarea' or
-       $node_info->{ln} eq 'listing') and
+  if ($Temma::Defs::IgnoreFirstNewline->{$node_info->{ln}} and
       $node_info->{ns} eq HTML_NS) {
     print $fh "\x0A";
   }

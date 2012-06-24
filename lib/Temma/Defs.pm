@@ -167,6 +167,12 @@ our $PreserveWhiteSpace = {
   },
 };
 
+our $IgnoreFirstNewline = {
+  pre => 1,
+  listing => 1,
+  textarea => 1,
+};
+
 1;
 
 =head1 LICENSE

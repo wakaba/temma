@@ -52,5 +52,143 @@
 | <html>
 |   <body>
 |     <textarea>
+|       "abc"
+
+#data
+<textarea>
+</textarea>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <textarea>
+
+#data
+<pre>
+</pre>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <pre>
+
+#data
+<listing>
+</listing>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <listing>
+
+#data
+<LisTing>
+</LisTinG>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <listing>
+
+#data
+<LisTing>
+x</LisTinG>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <listing>
+|       "x"
+
+#data
+<pre>
+abc</pre>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <pre>
+|       "abc"
+
+#data
+<pre><!---->
+abc</pre>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <pre>
+|       <!--  -->
+|       "
+| abc"
+
+#data
+<pre></foo>
+abc</pre>
+#errors
+2;0;m;unmatched end tag;;foo
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <pre>
+|       "
+| abc"
+
+#data
+<t:element name="'pre'">
+a</t:element>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma element>
+|       name="'pre'"
+|       "
+a"
+
+#data
+<textarea t:parse><!DOCTYPE html>
+abc</textArea>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <textarea>
+|       temma parse=""
 |       "
 abc"
+
+#data
+| <textarea>
+| 
+| hoge</textarea>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <textarea>
+|       "
+| hoge"
+
+#data
+<title>
+hoge</title>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <title>
+|       "
+| hoge"
