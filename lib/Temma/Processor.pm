@@ -156,7 +156,7 @@ sub __process ($$) {
         }
 
         if ($process->{node_info}->{rawtext}) {
-          $process->{node_info}->{rawtext_value} .= $data;
+          ${$process->{node_info}->{rawtext_value}} .= $data;
         } else {
           print $fh htescape $data;
         }
@@ -167,14 +167,13 @@ sub __process ($$) {
         if ($ns eq TEMMA_NS) {
           if ($ln eq 'text') {
             next if $self->_close_start_tag ($process, $fh);
-
             $self->_before_non_space ($process => $fh);
             
             my $value = $self->eval_attr_value
                 ($node, 'value', disallow_undef => 'w', required => 'm');
             if (defined $value) {
               if ($process->{node_info}->{rawtext}) {
-                $process->{node_info}->{rawtext_value} .= $value;
+                ${$process->{node_info}->{rawtext_value}} .= $value;
               } else {
                 print $fh htescape $value;
               }
@@ -245,7 +244,7 @@ sub __process ($$) {
 
             $self->_before_non_space ($process => $fh);
 
-            my $node_info = {rawtext => 1, rawtext_value => '',
+            my $node_info = {rawtext => 1, rawtext_value => \(my $v = ''),
                              allow_children => 1, comment => 1,
                              has_non_space => 1, preserve_space => 1};
 
@@ -259,6 +258,73 @@ sub __process ($$) {
                 @{$node->child_nodes->to_a};
 
             print $fh "<!--";
+            next;
+          } elsif ($ln eq 'if') {
+            $self->_before_non_space ($process => $fh, transparent => 1);
+
+            my $value = $self->eval_attr_value
+                ($node, 'x', required => 'm', context => 'bool');
+
+            my $state = $value ? 'if-matched' : 'not yet';
+            my @node;
+            my $cond_node = $value ? $node : undef;
+            for (@{$node->child_nodes->to_a}) {
+              my $nt = $_->node_type;
+              next unless $nt == ELEMENT_NODE or $nt == TEXT_NODE;
+              my $ns = $_->namespace_uri || '';
+              my $ln = $_->manakai_local_name || '';
+              if ($ns eq TEMMA_NS and $ln eq 'elsif') {
+                if ($state eq 'not yet') {
+                  my $value = $self->eval_attr_value
+                      ($_, 'x', required => 'm', context => 'bool');
+                  if ($value) {
+                    $state = 'if-matched';
+                    $cond_node = $_;
+                  }
+                } elsif ($state eq 'if-matched') {
+                  last;
+                } else {
+                  $self->{onerror}->(type => 'element not allowed:t:if',
+                                     level => 'm',
+                                     node => $_);
+                  last;
+                }
+              } elsif ($ns eq TEMMA_NS and $ln eq 'else') {
+                if ($state eq 'if-matched') {
+                  last;
+                } elsif ($state eq 'not yet') {
+                  $state = 'else-matched';
+                  $cond_node = $_;
+                } else {
+                  $self->{onerror}->(type => 'element not allowed:t:if',
+                                     level => 'm',
+                                     node => $_);
+                  last;
+                }
+              } else {
+                if ($state =~ /matched/) {
+                  push @node, $_;
+                }
+              }
+            }
+            next unless $cond_node;
+
+            my $node_info = {
+              %{$process->{node_info}},
+              trailing_space => '',
+            };
+            my $sp = $cond_node->get_attribute_ns (TEMMA_NS, 'space') || '';
+            $node_info->{preserve_space}
+                = $sp eq 'preserve' ? 1 :
+                  $sp eq 'trim' ? 0 :
+                  $process->{node_info}->{preserve_space};
+            $node_info->{has_non_space} = $node_info->{preserve_space},
+            unshift @{$self->{processes}},
+                {type => 'end if', node_info => $node_info,
+                 parent_node_info => $process->{node_info}};
+            unshift @{$self->{processes}},
+                map { {type => 'node', node => $_,
+                       node_info => $node_info} } @node;
             next;
           } elsif ($ln eq 'wait') {
             my $value = $self->eval_attr_value
@@ -287,13 +353,19 @@ sub __process ($$) {
               return;
             }
             next;
-          } else { ## Unknown element in Temma namespace
+          } else {
             next if $self->_close_start_tag ($process, $fh);
 
-            $self->{onerror}->(type => 'temma:unknown element',
-                               node => $node,
-                               value => $ln,
-                               level => 'm');
+            if ($ln eq 'else' or $ln eq 'elsif') {
+              $self->{onerror}->(type => 'element not allowed',
+                                 node => $node,
+                                 level => 'm');
+            } else { ## Unknown element in Temma namespace
+              $self->{onerror}->(type => 'temma:unknown element',
+                                 node => $node,
+                                 value => $ln,
+                                 level => 'm');
+            }
             next;
           }
         } else {
@@ -373,7 +445,7 @@ sub __process ($$) {
                 ($node_info->{lnn} eq 'script' or
                  $node_info->{lnn} eq 'style')) {
               $node_info->{rawtext} = 1;
-              $node_info->{rawtext_value} = '';
+              $node_info->{rawtext_value} = \(my $v = '');
             }
 
             if ((($Temma::Defs::PreserveWhiteSpace->{$node_info->{ns}}->{$node_info->{ln}} or
@@ -403,9 +475,10 @@ sub __process ($$) {
                              value => $ln,
                              level => 'm');
 
+          my $node_info = {allow_children => 1};
           unshift @{$self->{processes}},
               map { {type => 'node', node => $_,
-                     node_info => {allow_children => 1}} } 
+                     node_info => $node_info} } 
               grep { $_->node_type == ELEMENT_NODE or
                      $_->node_type == TEXT_NODE }
               @{$node->child_nodes->to_a};
@@ -417,9 +490,10 @@ sub __process ($$) {
         $nn =~ s/[^0-9A-Za-z_-]/_/g;
         print $fh '<!DOCTYPE ' . $nn . '>';
       } elsif ($nt == DOCUMENT_NODE) {
+        my $node_info = {allow_children => 1};
         unshift @{$self->{processes}},
             map { {type => 'node', node => $_,
-                   node_info => {allow_children => 1}} } 
+                   node_info => $node_info} } 
             grep { $_->node_type == ELEMENT_NODE or
                    $_->node_type == DOCUMENT_TYPE_NODE }
             @{$node->child_nodes->to_a};
@@ -433,13 +507,13 @@ sub __process ($$) {
       next if $self->_close_start_tag ($process, $fh);
 
       if ($process->{node_info}->{comment}) {
-        my $value = $process->{node_info}->{rawtext_value};
+        my $value = ${$process->{node_info}->{rawtext_value}};
         $value =~ s/--/- - /g;
         $value =~ s/-\z/- /;
         print $fh $value, "-->";
         next;
       } elsif ($process->{node_info}->{rawtext}) {
-        my $value = $process->{node_info}->{rawtext_value};
+        my $value = ${$process->{node_info}->{rawtext_value}};
 
         my $dom = $process->{node_info}->{node}->owner_document->implementation;
         my $doc = $dom->create_document;
@@ -460,6 +534,9 @@ sub __process ($$) {
       }
 
       print $fh '</' . $process->{node_info}->{ln} . '>';
+    } elsif ($process->{type} eq 'end if') {
+      $process->{parent_node_info}->{has_non_space} = 1
+          if $process->{node_info}->{has_non_space};
     } elsif ($process->{type} eq 'eval_attr_value') {
       $self->eval_attr_value ($process->{node}, $process->{attr_name});
     } elsif ($process->{type} eq 'end') {
@@ -485,18 +562,18 @@ sub _close_start_tag ($$$) {
   return 1;
 } # _close_start_tag
 
-sub _before_non_space ($$) {
-  my ($self, $process => $fh) = @_;
+sub _before_non_space ($$;%) {
+  my ($self, $process => $fh, %args) = @_;
   if (defined $process->{node_info}->{trailing_space}) {
     if ($process->{node_info}->{rawtext}) {
-      $process->{node_info}->{rawtext_value}
+      ${$process->{node_info}->{rawtext_value}}
           .= $process->{node_info}->{trailing_space};
     } else {
       print $fh htescape $process->{node_info}->{trailing_space};
     }
     delete $process->{node_info}->{trailing_space};
   }
-  $process->{node_info}->{has_non_space} = 1;
+  $process->{node_info}->{has_non_space} = 1 unless $args{transparent};
 } # _before_non_space
 
 sub eval_attr_value ($$$;%) {
@@ -531,9 +608,16 @@ sub eval_attr_value ($$$;%) {
 
   my $evaled;
   my $error;
+  my $context = $args{context} || '';
   {
     local $@;
-    $evaled = _eval $value;
+    if ($context eq 'bool') {
+      $evaled = !! (_eval $value);
+    } elsif ($context eq 'list') {
+      $evaled = [_eval $value];
+    } else {
+      $evaled = _eval $value;
+    }
     $error = $@;
   }
   if ($error) {

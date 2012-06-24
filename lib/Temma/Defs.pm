@@ -22,11 +22,11 @@ my @metavoid = qw(
 );
 my @metacontent = qw(
   title style script noscript
-  t:element t:comment
+  t:element t:comment t:if
 );
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
-  col t:text
+  col t:text t:elsif t:else
 );
 
 our $AutoOpen = {
@@ -89,10 +89,6 @@ our $AutoClose = {
     rp => 1,
     rt => 1,
   },
-  't:else' => {
-    '<text>' => 1,
-    '<start>' => 1,
-  },
 };
 
 our $Void = {
@@ -131,6 +127,7 @@ our $CloseIfInScope = {
   'th' => {'th' => 1, 'td' => 1, 'table' => -1},
   'td' => {'th' => 1, 'td' => 1, 'table' => -1},
   't:else' => {'t:if' => 0},
+  't:elsif' => {'t:if' => 0},
 };
 
 our $EndTagOptional = {

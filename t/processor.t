@@ -72,6 +72,7 @@ sub _processed : Tests {
     space-1.dat
     eval-1.dat
     wait-1.dat
+    if-1.dat
   );
 } # _processed
 

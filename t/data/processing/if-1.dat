@@ -1,0 +1,372 @@
+#data
+<t:if x=1>hoge</t:if>
+#output
+<!DOCTYPE html><html><head>hoge</head></html>
+
+#data
+<t:if x=0>fuga</t:if>
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+x
+<t:if x=" 100 - 99 ">
+  abc
+<t:else>
+  def
+</t:if>
+#output
+<!DOCTYPE html><html><body>x
+abc</body></html>
+
+#data
+x
+<t:if x=" 100 - 100 ">
+  abc
+<t:else>
+  def
+</t:if>
+#output
+<!DOCTYPE html><html><body>x
+def</body></html>
+
+#data
+x  <t:if x=0>
+  abc
+<t:elsif x=0>
+  def
+<t:elsif x=3>
+  xyz
+<t:elsif x=6>
+  aaa
+<t:else>
+  yyy
+</t:if>
+aaa
+#output
+<!DOCTYPE html><html><body>x  xyz
+aaa</body></html>
+
+#data
+<p>
+  <t:if x=0>
+    hoge
+  <t:else>
+    <t:attr name="'class'" value=4>
+  </t:if>
+  xyz
+</p>
+#output
+<!DOCTYPE html><html><body><p class="4">xyz</p></body></html>
+
+#data
+<p>
+  <t:if x=1>
+    hoge
+  <t:else>
+    <t:attr name="'class'" value=4>
+  </t:if><br>
+    y
+  xyz
+</p>
+#errors
+#output
+| <!DOCTYPE html><html><body><p>hoge<br>
+|     y
+|   xyz</p></body></html>
+
+#data
+<p>
+  <t:if x=1>
+    hoge
+  <t:else>
+    <t:attr name="'class'" value=4>
+  </t:if>x
+    y
+  xyz
+</p>
+#errors
+#output
+| <!DOCTYPE html><html><body><p>hogex
+|     y
+|   xyz</p></body></html>
+
+#data
+<p>
+  <t:if x=1>
+    hoge
+  <t:else>
+    <t:attr name="'class'" value=4>
+  </t:if>
+    <t:attr name="'class'" value=6>
+  xyz
+</p>
+#errors
+7;5;m;temma:start tag already closed;;
+#output
+| <!DOCTYPE html><html><body><p>hoge
+|     
+|   xyz</p></body></html>
+
+#data
+<p>
+  <t:if x=0>
+    hoge
+  <t:elsif x=1>
+    fuga
+  <t:else>
+    abc
+  </t:if>
+  aaa
+</p>
+#output
+<!DOCTYPE html><html><body><p>fuga
+  aaa</p></body></html>
+
+#data
+<p>
+  xy
+  <t:if x=0>
+    hoge
+  <t:elsif x=1>
+    fuga
+  <t:else>
+    abc
+  </t:if>
+  aaa
+</p>
+#output
+<!DOCTYPE html><html><body><p>xy
+  fuga
+  aaa</p></body></html>
+
+#data
+<pre>
+  <t:if x=0>
+    hoge
+  <t:else>
+    hage
+  </t:if>
+  abc
+</pre>
+#output
+| <!DOCTYPE html><html><body><pre>
+|   
+|     hage
+|   
+|   abc
+| </pre></body></html>
+
+#data
+<pre>
+  <t:if x=0 t:space=trim>
+    hoge
+  <t:else>
+    hage
+  </t:if>
+  abc
+</pre>
+#output
+| <!DOCTYPE html><html><body><pre>
+|   
+|     hage
+|   
+|   abc
+| </pre></body></html>
+
+#data
+<pre>
+  <t:if x=0>
+    hoge
+  <t:else t:space=trim>
+    hage
+  </t:if>
+  abc
+</pre>
+#output
+| <!DOCTYPE html><html><body><pre>
+|   hage
+|   abc
+| </pre></body></html>
+
+#data
+<p>
+  <t:if x=1 t:space=preserve>
+    xyz
+  </t:if>
+  aa
+</p>
+#output
+| <!DOCTYPE html><html><body><p>
+|     xyz
+|   
+|   aa</p></body></html>
+
+#data
+<p>
+  <t:if x=0 t:space=preserve>
+    xyz
+  <t:elsif x=1 t:space=trim>
+    aaa
+  </t:if>
+  aa
+</p>
+#output
+| <!DOCTYPE html><html><body><p>aaa
+|   aa</p></body></html>
+
+#data
+<style t:parse>
+  <t:if x=1>
+    foo
+  </t:if>
+</style>
+#output
+| <!DOCTYPE html><html><head><style>
+|   
+|     foo
+|   
+| </style></head></html>
+
+#data
+<t:comment>
+  <t:if x=0>
+  <t:else>
+    hoge
+  </t:if>
+</t:comment>
+#output
+| <!DOCTYPE html><html><head><!--
+|   
+|     hoge
+|   
+| --></head></html>
+
+#data
+<t:comment>
+  <t:if x=0>
+  <t:else>
+    ho--ge
+  </t:if>
+</t:comment>
+#output
+| <!DOCTYPE html><html><head><!--
+|   
+|     ho- - ge
+|   
+| --></head></html>
+
+#data
+xx<t:else>aa
+#errors
+1;3;m;element not allowed;;
+#output
+<!DOCTYPE html><html><body>xxaa</body></html>
+
+#data
+xx<t:elsif>aa
+#errors
+1;3;m;element not allowed;;
+#output
+<!DOCTYPE html><html><body>xxaa</body></html>
+
+#data
+b<t:if x=1>xx<p><t:else>aa</t:if>y
+#errors
+#output
+<!DOCTYPE html><html><body>bxx<p></p>y</body></html>
+
+#data
+b<t:if x=0>xx<p><t:elsif x=2>aa</t:if>a
+#errors
+#output
+<!DOCTYPE html><html><body>baaa</body></html>
+
+#data
+b<t:if x=1>xx<p><t:elsif x=2>aa</t:if>a
+#errors
+#output
+<!DOCTYPE html><html><body>bxx<p></p>a</body></html>
+
+#data
+foo<t:if x=1>y<t:if x=2>hoge</t:if>z</t:if>
+#errors
+#output
+<!DOCTYPE html><html><body>fooyhogez</body></html>
+
+#data
+a<t:if/>b
+#errors
+1;2;m;attribute missing;;x
+#output
+<!DOCTYPE html><html><body>ab</body></html>
+
+#data
+a<t:if>c</t:if>b
+#errors
+1;2;m;attribute missing;;x
+#output
+<!DOCTYPE html><html><body>ab</body></html>
+
+#data
+a<t:if x=undef>c</t:if>b
+#errors
+#output
+<!DOCTYPE html><html><body>ab</body></html>
+
+#data
+a<t:if x=0><t:elsif>hoge</t:if>b
+#errors
+1;12;m;attribute missing;;x
+#output
+<!DOCTYPE html><html><body>ab</body></html>
+
+#data
+a<t:if x=0><t:elsif>hoge<t:elsif x=3>a</t:if>b
+#errors
+1;12;m;attribute missing;;x
+#output
+<!DOCTYPE html><html><body>aab</body></html>
+
+#data
+a<t:if x=0>x<t:else x=0>y</t:if>b
+#output
+<!DOCTYPE html><html><body>ayb</body></html>
+
+#data
+a<t:if x=1>x<t:else>c<t:else>b</t:if>x
+#output
+<!DOCTYPE html><html><body>axx</body></html>
+
+#data
+a<t:if x=0>x<t:else>c<t:else>b</t:if>x
+#errors
+1;22;m;element not allowed:t:if;;
+#output
+<!DOCTYPE html><html><body>acx</body></html>
+
+#data
+a<t:if x=0>a<t:else>x<t:elsif x=1>y</t:if>a
+#errors
+1;22;m;element not allowed:t:if;;
+#output
+<!DOCTYPE html><html><body>axa</body></html>
+
+#data
+a<t:if x=1>a<t:else>x<t:elsif x=1>y</t:if>a
+#errors
+#output
+<!DOCTYPE html><html><body>aaa</body></html>
+
+#data
+a<t:if x=0>a<t:elsif x=1>x<t:else>y</t:if>a
+#errors
+#output
+<!DOCTYPE html><html><body>axa</body></html>
+
+#data
+a<t:if x=0>a<t:else>x<t:elsif x=1>y</t:if>a
+#errors
+1;22;m;element not allowed:t:if;;
+#output
+<!DOCTYPE html><html><body>axa</body></html>

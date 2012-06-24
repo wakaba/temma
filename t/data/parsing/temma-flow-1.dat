@@ -42,3 +42,162 @@
 |       <temma wait>
 |       <temma attr>
 |       "ab"
+
+#data
+<t:if/><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma if>
+|     <!--  -->
+
+#data
+a<t:if/><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temma if>
+|     <!--  -->
+
+#data
+a<t:if>xyx</t:if>xy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temma if>
+|       "xyx"
+|     "xy"
+
+#data
+<t:if><t:else>a</t:if>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma if>
+|       <temma else>
+|       "a"
+
+#data
+<t:if>a<t:elsif>b<t:else>c</t:if>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma if>
+|       "a"
+|       <temma elsif>
+|       "b"
+|       <temma else>
+|       "c"
+
+#data
+<t:else>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma else>
+|     "a"
+
+#data
+<t:elsif>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma elsif>
+|     "a"
+
+#data
+b<t:if x=1>xx<p>a<t:else>aa</t:if>y
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "b"
+|     <temma if>
+|       x="1"
+|       "xx"
+|       <p>
+|         "a"
+|       <temma else>
+|       "aa"
+|     "y"
+
+#data
+b<t:if x=1>xx<p>a<t:elsif>aa</t:if>y
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "b"
+|     <temma if>
+|       x="1"
+|       "xx"
+|       <p>
+|         "a"
+|       <temma elsif>
+|       "aa"
+|     "y"
+
+#data
+foo<t:if><p><q><t:else>aa</t:if>bb
+#errors
+1;24;m;not closed;;q
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <temma if>
+|       <p>
+|         <q>
+|       <temma else>
+|       "aa"
+|     "bb"
+
+#data
+foo<t:if><p><q><t:elsif>aa</t:if>bb
+#errors
+1;25;m;not closed;;q
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <temma if>
+|       <p>
+|         <q>
+|       <temma elsif>
+|       "aa"
+|     "bb"
+
+#data
+<t:if><t:if><t:else>a</t:if>b</t:if>c
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma if>
+|       <temma if>
+|         <temma else>
+|         "a"
+|       "b"
+|   <body>
+|     "c"
