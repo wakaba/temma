@@ -51,7 +51,7 @@ b<noscript>hoge<noscript>abc</noscript>d</noscript>
 #errors
 1;18;m;no refc;;
 #output escaped
-<!DOCTYPE html><html><head><noscript>aa\u00a9 </noscript></head></html>
+<!DOCTYPE html><html><head><noscript>aa\u00a9</noscript></head></html>
 
 #data
 <title>aaa& <div>fo<!--o</title>xyx
@@ -182,6 +182,15 @@ abc<p>fo<textarea>
 #data
 <style t:parse>   <t:attr name="'title'" value="'abcde'"/><!--
 -->     <!---->xyz</style>
+#errors
+1;19;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><head><style>        xyz</style></head></html>
+
+#data
+<style t:parse t:space=trim>   <t:attr name="'title'" value="'abcde'"/><!--
+-->     <!---->xyz</style>
+#errors
 #output
 <!DOCTYPE html><html><head><style title="abcde">xyz</style></head></html>
 
@@ -255,8 +264,7 @@ document.write ('<script>hoge</script>')
 //--></script>
 </math>
 #output
-<!DOCTYPE html><html><body><math>foo<script></script>
-</math></body></html>
+<!DOCTYPE html><html><body><math>foo<script></script></math></body></html>
 
 #data
 <foo><t:element name="'script'">
@@ -265,7 +273,7 @@ document.write ('<script>hoge</script>')
 #errors
 2;1;m;temma:child not allowed;;
 #output escaped
-<!DOCTYPE html><html><body><foo><script>\u000A</script>foo</foo></body></html>
+<!DOCTYPE html><html><body><foo><script>\u000A\u000A</script>foo</foo></body></html>
 
 #data
 <t:element name="'SCRIpt'"><![CDATA[<!--
@@ -296,8 +304,7 @@ hoge</textArea>
 <svg><textarea t:parse>
 hoge</textArea></svg>
 #output
-| <!DOCTYPE html><html><body><svg><textarea>
-| hoge</textarea></svg></body></html>
+| <!DOCTYPE html><html><body><svg><textarea>hoge</textarea></svg></body></html>
 
 #data
 <listing>
@@ -311,8 +318,7 @@ hoge</listing>
 <svg><listing>
 hoge</listing></svg>
 #output
-| <!DOCTYPE html><html><body><svg><listing>
-| hoge</listing></svg></body></html>
+| <!DOCTYPE html><html><body><svg><listing>hoge</listing></svg></body></html>
 
 #data
 <pre>
@@ -323,8 +329,17 @@ hoge</pre>
 | hoge</pre></body></html>
 
 #data
+| <pre>
+| 
+| hoge</pre>
+#output
+| <!DOCTYPE html><html><body><pre>
+| 
+| 
+| hoge</pre></body></html>
+
+#data
 <svg><pre>
 hoge</pre></svg>
 #output
-| <!DOCTYPE html><html><body><svg><pre>
-| hoge</pre></svg></body></html>
+| <!DOCTYPE html><html><body><svg><pre>hoge</pre></svg></body></html>

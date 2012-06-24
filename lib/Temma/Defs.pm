@@ -8,12 +8,12 @@ use Exporter::Lite;
 
 our @EXPORT = qw(HTML_NS MML_NS SVG_NS TEMMA_NS XML_NS XMLNS_NS XLINK_NS);
 
-*HTML_NS = \&Whatpm::HTML::ParserData::HTML_NS;
-*SVG_NS = \&Whatpm::HTML::ParserData::SVG_NS;
-*MML_NS = \&Whatpm::HTML::ParserData::MML_NS;
-*XML_NS = \&Whatpm::HTML::ParserData::XML_NS;
-*XMLNS_NS = \&Whatpm::HTML::ParserData::XMLNS_NS;
-*XLINK_NS = \&Whatpm::HTML::ParserData::XLINK_NS;
+sub HTML_NS (); *HTML_NS = \&Whatpm::HTML::ParserData::HTML_NS;
+sub SVG_NS (); *SVG_NS = \&Whatpm::HTML::ParserData::SVG_NS;
+sub MML_NS (); *MML_NS = \&Whatpm::HTML::ParserData::MML_NS;
+sub XML_NS (); *XML_NS = \&Whatpm::HTML::ParserData::XML_NS;
+sub XMLNS_NS (); *XMLNS_NS = \&Whatpm::HTML::ParserData::XMLNS_NS;
+sub XLINK_NS (); *XLINK_NS = \&Whatpm::HTML::ParserData::XLINK_NS;
 sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 
 my @metavoid = qw(
@@ -149,6 +149,22 @@ our $EndTagOptional = {
   option => 1,
   optgroup => 1,
   colgroup => 1,
+};
+
+our $PreserveWhiteSpace = {
+  (HTML_NS) => {
+    pre => 1,
+    xmp => 1,
+    listing => 1,
+    textarea => 1,
+    style => 1,
+    script => 1,
+    plaintext => 1,
+  },
+  (SVG_NS) => {
+    style => 1,
+    script => 1,
+  },
 };
 
 1;

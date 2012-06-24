@@ -107,13 +107,22 @@ sub _process ($$) {
       if ($nt == TEXT_NODE) {
         my $data = $node->data;
         if ($data =~ /[^\x09\x0A\x0C\x0D\x20]/) {
+          ## Non white-space node
           next if $self->_close_start_tag ($process, $fh);
-        } elsif ($self->{current_tag}) {
-          ## Ignore white space characters between t:attr elements.
-          next;
+          unless ($process->{node_info}->{has_non_space}) {
+            $data =~ s/^[\x09\x0A\x0C\x0D\x20]+//;
+            $process->{node_info}->{has_non_space} = 1;
+          }
+        } else {
+          ## White space only Text node
+          if ($process->{node_info}->{preserve_space}) {
+            next if $self->_close_start_tag ($process, $fh);
+          }
+          if ($self->{current_tag}) {
+            ## Ignore white space characters between t:attr elements.
+            next;
+          }
         }
-
-        # XXX interspace white space consideration
 
         unless ($process->{node_info}->{allow_children}) {
           unless ($process->{node_info}->{children_not_allowed_error}) {
@@ -125,10 +134,25 @@ sub _process ($$) {
           next;
         }
 
+        if (defined $process->{node_info}->{trailing_space}) {
+          $data = $process->{node_info}->{trailing_space} . $data;
+          delete $process->{node_info}->{trailing_space};
+        }
+
+        unless ($process->{node_info}->{preserve_space}) {
+          if ($data =~ s/([\x09\x0A\x0C\x0D\x20]+)\z//) {
+            if (not defined $process->{node_info}->{trailing_space}) {
+              $process->{node_info}->{trailing_space} = $1;
+            } else {
+              $process->{node_info}->{trailing_space} .= $1;
+            }
+          }
+        }
+
         if ($process->{node_info}->{rawtext}) {
-          $process->{node_info}->{rawtext_value} .= $node->data;
+          $process->{node_info}->{rawtext_value} .= $data;
         } else {
-          print $fh htescape $node->data;
+          print $fh htescape $data;
         }
       } elsif ($nt == ELEMENT_NODE) {
         my $ns = $node->namespace_uri || '';
@@ -138,6 +162,8 @@ sub _process ($$) {
           if ($ln eq 'text') {
             next if $self->_close_start_tag ($process, $fh);
 
+            $self->_before_non_space ($process => $fh);
+            
             my $value = $self->eval_attr_value
                 ($node, 'value', disallow_undef => 'w');
             if (defined $value) {
@@ -207,8 +233,11 @@ sub _process ($$) {
               next;
             }
 
+            $self->_before_non_space ($process => $fh);
+
             my $node_info = {rawtext => 1, rawtext_value => '',
-                             allow_children => 1, comment => 1};
+                             allow_children => 1, comment => 1,
+                             has_non_space => 1, preserve_space => 1};
 
             unshift @{$self->{processes}},
                 {type => 'end tag', node_info => $node_info};
@@ -245,6 +274,8 @@ sub _process ($$) {
           }
           next;
         }
+
+        $self->_before_non_space ($process => $fh);
 
         if ($ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
           print $fh '<' . $ln;
@@ -306,6 +337,14 @@ sub _process ($$) {
                  $node_info->{lnn} eq 'style')) {
               $node_info->{rawtext} = 1;
               $node_info->{rawtext_value} = '';
+            }
+
+            if ((($Temma::Defs::PreserveWhiteSpace->{$node_info->{ns}}->{$node_info->{ln}} or
+                  $process->{node_info}->{preserve_space}) and
+                 not (($node->get_attribute_ns (TEMMA_NS, 'space') || '') eq 'trim')) or
+                ($node->get_attribute_ns (TEMMA_NS, 'space') || '') eq 'preserve') {
+              $node_info->{preserve_space} = 1; # for descendants
+              $node_info->{has_non_space} = 1; # for children
             }
 
             unshift @{$self->{processes}},
@@ -408,6 +447,20 @@ sub _close_start_tag ($$$) {
 
   return 1;
 } # _close_start_tag
+
+sub _before_non_space ($$) {
+  my ($self, $process => $fh) = @_;
+  if (defined $process->{node_info}->{trailing_space}) {
+    if ($process->{node_info}->{rawtext}) {
+      $process->{node_info}->{rawtext_value}
+          .= $process->{node_info}->{trailing_space};
+    } else {
+      print $fh htescape $process->{node_info}->{trailing_space};
+    }
+    delete $process->{node_info}->{trailing_space};
+  }
+  $process->{node_info}->{has_non_space} = 1;
+} # _before_non_space
 
 sub eval_attr_value ($$$;%) {
   my ($self, $node, $name, %args) = @_;

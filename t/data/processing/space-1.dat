@@ -1,0 +1,232 @@
+#data
+<p>   <t:attr name="'x'" value="'y'"/>   hoge
+#output
+<!DOCTYPE html><html><body><p x="y">hoge</p></body></html>
+
+#data
+<p>   <t:attr name="'x'" value="'y'"/>   <t:attr/>  hoge
+#errors
+1;42;m;temma:name not serializable;;
+#output
+<!DOCTYPE html><html><body><p x="y">hoge</p></body></html>
+
+#data
+<p>   <t:attr name="'x'" value="'y'"/>   <q>hoge
+#output
+<!DOCTYPE html><html><body><p x="y"><q>hoge</q></p></body></html>
+
+#data
+<p>   hoge  fuga  </p>
+#output
+<!DOCTYPE html><html><body><p>hoge  fuga</p></body></html>
+
+#data
+<p>  hoge  <q>   fuga  </q>  hage  </p>
+#output
+<!DOCTYPE html><html><body><p>hoge  <q>fuga</q>  hage</p></body></html>
+
+#data
+<p>hoge</p>  <p>fuga</p>
+#output
+<!DOCTYPE html><html><body><p>hoge</p>  <p>fuga</p></body></html>
+
+#data
+hoge  <p>fuga</p>  hage
+#output
+<!DOCTYPE html><html><body>hoge  <p>fuga</p>  hage</body></html>
+
+#data
+hoge<p>  fuga  </p>hage
+#output
+<!DOCTYPE html><html><body>hoge<p>fuga</p>hage</body></html>
+
+#data
+<pre>    hage    </pre>
+#output
+<!DOCTYPE html><html><body><pre>
+    hage    </pre></body></html>
+
+#data
+<pre>    hage  <q>  fuga  </q>  hoe  </pre>
+#output
+<!DOCTYPE html><html><body><pre>
+    hage  <q>  fuga  </q>  hoe  </pre></body></html>
+
+#data
+<pre>    hage  <q>  fuga  <x>  </x>  </q>  hoe  </pre>
+#output
+<!DOCTYPE html><html><body><pre>
+    hage  <q>  fuga  <x>  </x>  </q>  hoe  </pre></body></html>
+
+#data
+<pre>  <t:attr name="'x'" value=2 />  </pre>
+#errors
+1;8;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><pre>
+    </pre></body></html>
+
+#data
+<pre><!--  --><t:attr name="'x'" value=2 />  </pre>
+#errors
+#output
+<!DOCTYPE html><html><body><pre x="2">
+  </pre></body></html>
+
+#data
+<p t:space=preserve>  hage  </p>
+#errors
+#output
+<!DOCTYPE html><html><body><p>  hage  </p></body></html>
+
+#data
+<pre t:space=trim>  hage  </pre>
+#output
+<!DOCTYPE html><html><body><pre>
+hage</pre></body></html>
+
+#data
+<p>  <t:text value=1 />  <t:text value=2 />  </p>
+#output
+<!DOCTYPE html><html><body><p>1  2</p></body></html>
+
+#data
+<p>    </p>
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p>  <t:attr/>  <t:unknown>  hoge  </t:unknown>  hage</p>
+#errors
+1;6;m;temma:name not serializable;;
+1;17;m;temma:unknown element;unknown;
+#output
+<!DOCTYPE html><html><body><p>hage</p></body></html>
+
+#data
+<p>  <t:attr/>  <t:element name="'pre'">  hoge  </t:element>  hage</p>
+#errors
+1;6;m;temma:name not serializable;;
+#output
+<!DOCTYPE html><html><body><p><pre>
+  hoge  </pre>  hage</p></body></html>
+
+#data
+<p>  <t:element name="'pre'" t:space=preserve>  hoge  </t:element>  hage</p>
+#errors
+#output
+<!DOCTYPE html><html><body><p><pre>
+  hoge  </pre>  hage</p></body></html>
+
+#data
+<p>  <t:element name="'pre'" t:space=trim>  hoge  </t:element>  hage</p>
+#errors
+#output
+<!DOCTYPE html><html><body><p><pre>
+hoge</pre>  hage</p></body></html>
+
+#data
+<p>   <img/>  foo</p>
+#output
+<!DOCTYPE html><html><body><p><img>  foo</p></body></html>
+
+#data
+<p>  <t:text value="' '"/>  x</p>
+#output
+<!DOCTYPE html><html><body><p>   x</p></body></html>
+
+#data
+<p>  <t:text value="''"/>  x</p>
+#output
+<!DOCTYPE html><html><body><p>  x</p></body></html>
+
+#data
+<p>  <t:text value="undef"/>  x</p>
+#errors
+1;14;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body><p>  x</p></body></html>
+
+#data
+<p>  <t:text value="' '"/>  </p>
+#output
+<!DOCTYPE html><html><body><p> </p></body></html>
+
+#data
+<p>  <!---->  </p>
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p>  <!---->  abc   </p>
+#output
+<!DOCTYPE html><html><body><p>abc</p></body></html>
+
+#data
+<p t:space=preserve>  <!---->  abc   </p>
+#output
+<!DOCTYPE html><html><body><p>    abc   </p></body></html>
+
+#data
+<p>  <t:attr name="'x'" value=4 /><!---->x<!---->  <!---->y  </p>
+#output
+<!DOCTYPE html><html><body><p x="4">x  y</p></body></html>
+
+#data
+<p>  <t:comment>  abc  <!----> </t:comment>  x  </p>
+#output
+<!DOCTYPE html><html><body><p><!--  abc   -->  x</p></body></html>
+
+#data
+<p>  a  <t:comment>  bb  </t:comment>  c  </p>
+#output
+<!DOCTYPE html><html><body><p>a  <!--  bb  -->  c</p></body></html>
+
+#data
+<textarea>
+  hoge
+</textarea>
+#output
+| <!DOCTYPE html><html><body><textarea>
+| 
+|   hoge
+| </textarea></body></html>
+
+#data
+<listing>
+abc
+</listing>
+#output
+| <!DOCTYPE html><html><body><listing>
+| 
+| abc
+| </listing></body></html>
+
+#data
+<xmp t:space=trim>
+  xy   </xmp>
+#output
+<!DOCTYPE html><html><body><xmp>xy</xmp></body></html>
+
+#data
+<xmp>
+  xy   </xmp>
+#output
+<!DOCTYPE html><html><body><xmp>
+  xy   </xmp></body></html>
+
+#data
+<style t:parse>
+  x
+  </style>
+#output
+<!DOCTYPE html><html><head><style>
+  x
+  </style></head></html>
+
+#data
+<style t:space=trim>
+  x
+  </style>
+#output
+<!DOCTYPE html><html><head><style>x</style></head></html>
