@@ -79,8 +79,14 @@ sub process_document ($$$) {
       {type => 'node', node => $doc, node_info => {allow_children => 1}},
       {type => 'end'};
 
+  $self->_process ($fh);
+} # process_document
+
+sub _process ($$) {
+  my ($self, $fh) = @_;
+
   eval {
-    $self->_process ($fh);
+    $self->__process ($fh);
   };
   if ($@) {
     if (UNIVERSAL::isa ($@, 'Temma::Exception')) {
@@ -93,9 +99,9 @@ sub process_document ($$$) {
       die $@;
     }
   }
-} # process_document
+} # _process
 
-sub _process ($$) {
+sub __process ($$) {
   my ($self, $fh) = @_;
 
   while (@{$self->{processes}}) {
@@ -257,11 +263,27 @@ sub _process ($$) {
           } elsif ($ln eq 'wait') {
             my $value = $self->eval_attr_value
                   ($node, 'cv', disallow_undef => 'm', required => 'm');
-            if (defined $value) {
-              $value->cb (sub {
-                $self->eval_attr_value ($node, 'cb');
-                $self->_process ($fh);
-              });
+            if (not defined $value) {
+              #
+            } elsif (not UNIVERSAL::can ($value, 'cb')) {
+              $self->{onerror}->(type => 'temma:no cb method',
+                                 level => 'm',
+                                 node => $node->get_attribute_node ('cv'));
+            } else {
+              eval {
+                $value->cb (sub {
+                  unshift @{$self->{processes}},
+                      {type => 'eval_attr_value',
+                       node => $node, attr_name => 'cb'};
+                  $self->_process ($fh);
+                });
+                1;
+              } or do {
+                $self->{onerror}->(type => 'temma:perl exception:cb',
+                                   level => 'm',
+                                   value => $@,
+                                   node => $node->get_attribute_node ('cv'));
+              };
               return;
             }
             next;
@@ -438,6 +460,8 @@ sub _process ($$) {
       }
 
       print $fh '</' . $process->{node_info}->{ln} . '>';
+    } elsif ($process->{type} eq 'eval_attr_value') {
+      $self->eval_attr_value ($process->{node}, $process->{attr_name});
     } elsif ($process->{type} eq 'end') {
       next if $self->_close_start_tag ($process, $fh);
     } else {
