@@ -222,58 +222,69 @@ axs<t:comment/><link/>
 |         <svg g>
 
 #data
-<t:value>
+<t:text>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
-|   <head>
-|     <temma value>
+|   <body>
+|     <temma text>
 
 #data
-a<t:value>bbb
+a<t:text>bbb
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
 |     "a"
-|     <temma value>
+|     <temma text>
 |     "bbb"
 
 #data
-a<t:value>b</t:value>bb
+a<t:text>b</t:text>bb
 #errors
-1;22;m;unmatched end tag;;t:value
+1;20;m;unmatched end tag;;t:text
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
 |     "a"
-|     <temma value>
+|     <temma text>
 |     "bbb"
 
 #data
-<t:attr><t:value>bbb
+<t:attr><t:text>bbb
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <temma attr>
-|   <head>
-|     <temma value>
 |   <body>
+|     <temma text>
 |     "bbb"
 
 #data
-<t:value t:parse>hoge</t:value>xxy
+<t:text t:parse>hoge</t:text>xxy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma text>
+|       temma parse=""
+|       "hoge"
+|     "xxy"
+
+#data
+<title t:parse><t:text></title><t:text>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <head>
-|     <temma value>
+|     <title>
 |       temma parse=""
-|       "hoge"
+|       <temma text>
 |   <body>
-|     "xxy"
+|     <temma text>

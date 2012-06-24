@@ -18,7 +18,7 @@ sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 
 my @metavoid = qw(
   link meta base basefont bgsound command
-  t:attr t:value t:wait
+  t:attr t:wait
 );
 my @metacontent = qw(
   title style script noscript
@@ -26,7 +26,7 @@ my @metacontent = qw(
 );
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
-  col
+  col t:text
 );
 
 our $AutoOpen = {
