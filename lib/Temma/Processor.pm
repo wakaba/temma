@@ -189,9 +189,10 @@ sub __process ($$) {
             if ($ns eq SVG_NS) {
               $ln = $Whatpm::HTML::ParserData::SVGElementNameFixup->{$ln} || $ln;
             }
-          } elsif ($ln eq 'attr') {
+          } elsif ($ln eq 'attr' or $ln eq 'class') {
             if ($self->{current_tag}) {
-              my $attr_name = $self->eval_attr_value ($node, 'name');
+              my $attr_name = $ln eq 'class' ? 'class' :
+                  $self->eval_attr_value ($node, 'name');
               $attr_name = '' unless defined $attr_name;
               $attr_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
               my $element_ns = $self->{current_tag}->{ns};
@@ -221,10 +222,16 @@ sub __process ($$) {
               }
 
               my $value = $self->eval_attr_value
-                  ($node, 'value', disallow_undef => 'w', required => 'm');
+                  ($node, $ln eq 'class' ? 'name' : 'value',
+                   disallow_undef => 'w', required => 'm');
               if (defined $value) {
-                $self->{current_tag}->{attrs}->{$attr_name} = 1;
-                print $fh ' ' . $attr_name . '="' . (htescape $value) . '"';
+                if ($attr_name eq 'class') {
+                  push @{$self->{current_tag}->{classes} ||= []}, 
+                      grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $value;
+                } else {
+                  $self->{current_tag}->{attrs}->{$attr_name} = 1;
+                  print $fh ' ' . $attr_name . '="' . (htescape $value) . '"';
+                }
               }
             } else {
               $self->{onerror}->(type => 'temma:start tag already closed',
@@ -430,8 +437,12 @@ sub __process ($$) {
               next;
             }
 
-            $node_info->{attrs}->{$attr_name} = 1;
-            print $fh ' ' . $attr_name . '="' . (htescape $attr->value) . '"';
+            if ($attr_name eq 'class') {
+              $node_info->{classes} = [grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $attr->value];
+            } else {
+              $node_info->{attrs}->{$attr_name} = 1;
+              print $fh ' ' . $attr_name . '="' . (htescape $attr->value) . '"';
+            }
           }
 
           if ($node_info->{ns} eq HTML_NS and
@@ -555,8 +566,13 @@ sub _close_start_tag ($$$) {
   my ($self, $current_process, $fh) = @_;
   return 0 unless my $node_info = delete $self->{current_tag};
   
-  unshift @{$self->{processes}}, $current_process;
+  if (@{$node_info->{classes} or []}) {
+    print $fh q< class=">;
+    print $fh htescape join ' ', @{$node_info->{classes}};
+    print $fh q<">;
+  }
   print $fh '>';
+  unshift @{$self->{processes}}, $current_process;
 
   if ($Temma::Defs::IgnoreFirstNewline->{$node_info->{ln}} and
       $node_info->{ns} eq HTML_NS) {

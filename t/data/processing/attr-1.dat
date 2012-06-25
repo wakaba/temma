@@ -228,3 +228,104 @@ aaaa
     value=' "fuga" . (defined wantarray ? 1 : 0) . (wantarray ? 1 : 0) '/>
 #output
 <!DOCTYPE html><html><body><p hoge10="fuga10"></p></body></html>
+
+#data
+<p class>
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p class=hogfe>
+#output
+<!DOCTYPE html><html><body><p class="hogfe"></p></body></html>
+
+#data
+<p class="  Fuga  hoge  ">
+#output
+<!DOCTYPE html><html><body><p class="Fuga hoge"></p></body></html>
+
+#data
+<p class="  ">
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p><t:attr name="'class'" value="''">
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p><t:attr name="'class'" value="'hoGe'">
+#output
+<!DOCTYPE html><html><body><p class="hoGe"></p></body></html>
+
+#data
+<p><t:attr name="'class'" value="'  fuga Ab C  C '">
+#output
+<!DOCTYPE html><html><body><p class="fuga Ab C C"></p></body></html>
+
+#data
+<p class=abc><t:attr name="'class'" value="'xy'">
+#output
+<!DOCTYPE html><html><body><p class="abc xy"></p></body></html>
+
+#data
+<p><t:attr name="'class'" value="''">
+<t:attr name="'class'" value="120">
+<t:attr name="'class'" value="121">
+#output
+<!DOCTYPE html><html><body><p class="120 121"></p></body></html>
+
+#data
+<svg><g><t:attr name="'CLASS'" value=12>
+<t:attr name="'CLASS'" value=51></g></svg>
+#output
+<!DOCTYPE html><html><body><svg><g class="12 51"></g></svg></body></html>
+
+#data
+<p><t:class name="'selected'">hoge</p>
+#output
+<!DOCTYPE html><html><body><p class="selected">hoge</p></body></html>
+
+#data
+<p class=good><t:class name="'selected'">hoge</p>
+#output
+<!DOCTYPE html><html><body><p class="good selected">hoge</p></body></html>
+
+#data
+<p><t:class name="'selected'"><t:class name="12">hoge</p>
+#output
+<!DOCTYPE html><html><body><p class="selected 12">hoge</p></body></html>
+
+#data
+<p><t:class name="''">hoge</p>
+#output
+<!DOCTYPE html><html><body><p>hoge</p></body></html>
+
+#data
+<p><t:class name="'selected  hoge'">hoge</p>
+#output
+<!DOCTYPE html><html><body><p class="selected hoge">hoge</p></body></html>
+
+#data
+<p><t:class name="'selected'"><t:attr name="'x'" value=12>hoge</p>
+#output 
+<!DOCTYPE html><html><body><p x="12" class="selected">hoge</p></body></html>
+
+#data
+<p>f<t:class>g
+#errors
+1;5;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><p>fg</p></body></html>
+
+#data
+<p>
+  <t:if x=1>
+    <t:class name=121>
+  <t:else>
+    <t:class name=50>
+  </t:if>
+</p>
+#output
+<!DOCTYPE html><html><body><p class="121"></p></body></html>

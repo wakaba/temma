@@ -288,3 +288,79 @@ a<t:text>b</t:text>bb
 |       <temma text>
 |   <body>
 |     <temma text>
+
+#data
+<t:class><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <temma class>
+|   <!--  -->
+
+#data
+<link><t:class><base>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <link>
+|     <temma class>
+|     <base>
+
+#data
+<p><t:class>hoge
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma class>
+|       "hoge"
+
+#data
+<title><t:class>foo</title>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <title>
+|       "<t:class>foo"
+
+#data
+<svg><t:attr><t:attr><g></g></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <temma attr>
+|       <temma attr>
+|       <svg g>
+
+#data
+<math><t:attr><t:attr><g></g></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <temma attr>
+|       <temma attr>
+|       <math g>
+
+#data
+<svg><foreignobject><t:attr></foreignobject></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg foreignObject>
+|         <temma attr>

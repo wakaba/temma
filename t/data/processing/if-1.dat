@@ -409,3 +409,18 @@ a<t:if x=0><t:elsif x="
 #output
 <!DOCTYPE html><html><body>adefined = 1
   array = </body></html>
+
+#data
+<script t:parse>
+  <t:if x=1>
+    <p>foo</p>
+  </t:if>
+</script>
+#errors
+3;5;m;temma:child not allowed;;
+#output
+| <!DOCTYPE html><html><head><script>
+|   
+|     
+|   
+| </script></head></html>

@@ -18,7 +18,7 @@ sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 
 my @metavoid = qw(
   link meta base basefont bgsound command
-  t:attr t:wait t:call
+  t:attr t:wait t:call t:class
 );
 my @metacontent = qw(
   title style script noscript
@@ -38,6 +38,7 @@ our $AutoOpen = {
     (map { $_ => 'head' } @metavoid),
     (map { $_ => 'head' } @metacontent),
     't:attr' => '',
+    't:class' => '',
   },
   'table' => {
     'tr' => 'tbody',

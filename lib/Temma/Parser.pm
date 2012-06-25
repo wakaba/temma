@@ -316,7 +316,8 @@ sub _construct_tree ($) {
 
         if ($attrs->{'t:parse'}) {
           #
-        } elsif ($orig_im == IM_SVG or $orig_im == IM_MML) {
+        } elsif (($orig_im == IM_SVG or $orig_im == IM_MML) and
+                 not $tag_name =~ /^t:/) {
           #
         } elsif ($Temma::Defs::Void->{$tag_name}) {
           pop @{$self->{open_elements}};
