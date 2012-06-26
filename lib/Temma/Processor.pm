@@ -316,22 +316,8 @@ sub __process ($$) {
             }
             next unless $cond_node;
 
-            my $node_info = {
-              %{$process->{node_info}},
-              trailing_space => '',
-            };
             my $sp = $cond_node->get_attribute_ns (TEMMA_NS, 'space') || '';
-            $node_info->{preserve_space}
-                = $sp eq 'preserve' ? 1 :
-                  $sp eq 'trim' ? 0 :
-                  $process->{node_info}->{preserve_space};
-            $node_info->{has_non_space} = $node_info->{preserve_space},
-            unshift @{$self->{processes}},
-                {type => 'end if', node_info => $node_info,
-                 parent_node_info => $process->{node_info}};
-            unshift @{$self->{processes}},
-                map { {type => 'node', node => $_,
-                       node_info => $node_info} } @node;
+            $self->_schedule_nodes (\@node, $process->{node_info}, $sp);
             next;
           } elsif ($ln eq 'call') {
             $self->eval_attr_value
@@ -549,7 +535,7 @@ sub __process ($$) {
       }
 
       print $fh '</' . $process->{node_info}->{ln} . '>';
-    } elsif ($process->{type} eq 'end if') {
+    } elsif ($process->{type} eq 'end block') {
       $process->{parent_node_info}->{has_non_space} = 1
           if $process->{node_info}->{has_non_space};
     } elsif ($process->{type} eq 'eval_attr_value') {
@@ -561,6 +547,28 @@ sub __process ($$) {
     }
   } # @{$self->{processes}}
 } # _process
+
+## Schedule processing of nodes, used for processing of <t:if>,
+## <t:for>, and <t:try>.
+sub _schedule_nodes ($$$$) {
+  my ($self, $nodes, $parent_node_info, $sp) = @_;
+
+  my $node_info = {
+    %{$parent_node_info},
+    trailing_space => '',
+  };
+  $node_info->{preserve_space}
+      = $sp eq 'preserve' ? 1 :
+        $sp eq 'trim' ? 0 :
+        $parent_node_info->{preserve_space};
+  $node_info->{has_non_space} = $node_info->{preserve_space};
+  
+  unshift @{$self->{processes}},
+      {type => 'end block', node_info => $node_info,
+       parent_node_info => $parent_node_info};
+  unshift @{$self->{processes}},
+      map { {type => 'node', node => $_, node_info => $node_info} } @$nodes;
+} # _schedule_nodes
 
 sub _close_start_tag ($$$) {
   my ($self, $current_process, $fh) = @_;
