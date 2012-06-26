@@ -74,6 +74,7 @@ sub _processed : Tests {
     wait-1.dat
     if-1.dat
     call-1.dat
+    for-1.dat
   );
 } # _processed
 

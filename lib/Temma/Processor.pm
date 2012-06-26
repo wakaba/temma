@@ -266,6 +266,7 @@ sub __process ($$) {
 
             print $fh "<!--";
             next;
+
           } elsif ($ln eq 'if') {
             $self->_before_non_space ($process => $fh, transparent => 1);
 
@@ -318,6 +319,25 @@ sub __process ($$) {
 
             my $sp = $cond_node->get_attribute_ns (TEMMA_NS, 'space') || '';
             $self->_schedule_nodes (\@node, $process->{node_info}, $sp);
+            next;
+          } elsif ($ln eq 'for') {
+            $self->_before_non_space ($process => $fh, transparent => 1);
+
+            my $items = $self->eval_attr_value
+                ($node, 'x', required => 'm', disallow_undef => 'm');
+
+            my $nodes = [
+              grep { $_->node_type == ELEMENT_NODE or
+                     $_->node_type == TEXT_NODE }
+              @{$node->child_nodes->to_a}
+            ];
+
+            # XXX |as| attribute
+            
+            my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+            for (@$items) { # XXX
+              $self->_schedule_nodes ($nodes, $process->{node_info}, $sp);
+            }
             next;
           } elsif ($ln eq 'call') {
             $self->eval_attr_value

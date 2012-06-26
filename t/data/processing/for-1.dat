@@ -1,0 +1,132 @@
+#data
+<t:for x="[1, 2]">
+  hoge
+</t:for>
+#output
+<!DOCTYPE html><html><head>hogehoge</head></html>
+
+#data
+<t:for x="[1, 2]">
+  <p>hoge
+</t:for>
+#output
+<!DOCTYPE html><html><head><p>hoge</p><p>hoge</p></head></html>
+
+#data
+a<t:for x=[]>a</t:for>
+#output
+<!DOCTYPE html><html><body>a</body></html>
+
+#data
+a<t:for x=[1,2,3]>a</t:for>
+#output
+<!DOCTYPE html><html><body>aaaa</body></html>
+
+#data
+<p>
+  <t:for x=[1,2] t:space=preserve>
+    <br>
+  </t:for>
+</p>
+#output
+| <!DOCTYPE html><html><body><p>
+|     <br>
+|   
+|     <br>
+|   </p></body></html>
+
+#data
+<p>
+  <t:for x=[1,2]>
+    <!---->
+    <br>
+  </t:for>
+</p>
+#output
+| <!DOCTYPE html><html><body><p><br><br></p></body></html>
+
+#data
+<pre>
+  <t:for x=[1,2]>
+    <br>
+  </t:for>
+</pre>
+#output
+| <!DOCTYPE html><html><body><pre>
+|   
+|     <br>
+|   
+|     <br>
+|   
+| </pre></body></html>
+
+#data
+<pre>
+  <t:for x=[1,2] t:space=trim>
+    <br>
+  </t:for>
+</pre>
+#output
+| <!DOCTYPE html><html><body><pre>
+|   <br><br>
+| </pre></body></html>
+
+#data
+<p>
+  <t:attr name="'x'" value=2>
+  <t:for x=[1,2]>
+    <t:attr name="'class'" value="'a'">
+  </t:for>
+  <t:attr name="'y'" value=3>
+  abc
+</p>
+#output
+<!DOCTYPE html><html><body><p x="2" y="3" class="a a">abc</p></body></html>
+
+#data
+<p>
+  <t:call x="our $hoge = {}; our $fuga = rand">
+  <t:for x=[1,2,3,4]>
+    <t:if x="(++((our $hoge)->{our $fuga}) % 2) == 1">
+      <t:class name="(our $hoge)->{our $fuga}">
+    <t:else>
+      abc
+    </t:if>
+  </t:for>
+</p>
+#errors
+5;7;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><p class="1">abcabc</p></body></html>
+
+#data
+<p>
+  <t:call x="our $hoge = {}; our $fuga = rand">
+  <t:for x=[1,2,3,4]>
+    <t:if x="(++((our $hoge)->{our $fuga}) % 2) == 1">
+      <t:class name="(our $hoge)->{our $fuga}">
+    <t:else>
+      <!---->
+      abc
+    </t:if>
+  </t:for>
+</p>
+#errors
+5;7;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><p class="1">abc
+      abc</p></body></html>
+
+#data
+<t:for>aaa</t:for>
+#errors
+1;1;m;attribute missing;;x
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:for x=undef>aaa</t:for>
+#errors
+1;8;m;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head></html>
