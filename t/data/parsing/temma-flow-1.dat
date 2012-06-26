@@ -222,3 +222,26 @@ a<t:call><!---->
 |     "a"
 |     <temma call>
 |     <!--  -->
+
+#data
+<t:for>hoge</t:for><link>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       "hoge"
+|     <link>
+
+#data
+a<t:for>x</t:for>b
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temma for>
+|       "x"
+|     "b"

@@ -22,7 +22,7 @@ my @metavoid = qw(
 );
 my @metacontent = qw(
   title style script noscript
-  t:element t:comment t:if
+  t:element t:comment t:if t:for
 );
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
