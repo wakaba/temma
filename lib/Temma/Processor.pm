@@ -325,6 +325,18 @@ sub __process ($$) {
 
             my $items = $self->eval_attr_value
                 ($node, 'x', required => 'm', disallow_undef => 'm');
+            $items = [] unless defined $items;
+            my $item_count = do {
+              local $@;
+              eval { 0+@$items };
+            };
+            if (not defined $item_count) {
+              $self->{onerror}->(type => 'temma:not arrayref',
+                                 node => $node->get_attribute_node ('x'),
+                                 level => 'm');
+              $items = [];
+              $item_count = 0;
+            }
 
             my $nodes = [
               grep { $_->node_type == ELEMENT_NODE or

@@ -130,3 +130,46 @@ a<t:for x=[1,2,3]>a</t:for>
 1;8;m;temma:undef;;
 #output
 <!DOCTYPE html><html><head></head></html>
+
+#data
+<t:for x=123>bbb</t:for>
+#errors
+1;8;m;temma:not arrayref;;
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:for x="{hoge => 124}">bbb</t:for>
+#errors
+1;8;m;temma:not arrayref;;
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:for x="bless [], 'hoge::fuga'">bbb</t:for>
+#errors
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:for x="bless [12, 31], 'hoge::fuga'">bbb</t:for>
+#errors
+#output
+<!DOCTYPE html><html><head>bbbbbb</head></html>
+
+#data
+<t:for x="
+  my $package = 'foo::bar::baz::test::' . int rand 100000;
+  eval qq{
+    package $package;
+    use overload '\@{}' => 'arrayref', fallback => 1;
+    sub arrayref {
+      \$_[0]->{value};
+    }
+  };
+  return bless {value => [1, 2, 3]}, $package;
+">
+  xyz
+</t:for>
+#output
+<!DOCTYPE html><html><head>xyzxyzxyz</head></html>
