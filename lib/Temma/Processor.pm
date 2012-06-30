@@ -347,8 +347,14 @@ sub __process ($$) {
             # XXX |as| attribute
             
             my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
-            for (@$items) { # XXX
-              $self->_schedule_nodes ($nodes, $process->{node_info}, $sp);
+            if ($item_count > 0) {
+              unshift @{$self->{processes}},
+                  {type => 'for block',
+                   nodes => $nodes,
+                   node_info => $process->{node_info},
+                   space => $sp,
+                   items => $items,
+                   index => 0};
             }
             next;
           } elsif ($ln eq 'call') {
@@ -567,6 +573,15 @@ sub __process ($$) {
       }
 
       print $fh '</' . $process->{node_info}->{ln} . '>';
+    } elsif ($process->{type} eq 'for block') {
+      my $index = $process->{index};
+      if (++$process->{index} <= $#{$process->{items}}) {
+        unshift @{$self->{processes}}, $process;
+      }
+      
+      # XXX $index
+      $self->_schedule_nodes
+          ($process->{nodes}, $process->{node_info}, $process->{space});
     } elsif ($process->{type} eq 'end block') {
       $process->{parent_node_info}->{has_non_space} = 1
           if $process->{node_info}->{has_non_space};
