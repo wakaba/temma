@@ -4,7 +4,7 @@ use warnings;
 no warnings 'utf8';
 
 sub _eval ($) {
-  return eval ('local $_; local @_;' . "\n" . $_[0]);
+  return eval ('local @_;' . "\n" . $_[0]);
 } # _eval
 
 our $VERSION = '1.0';
@@ -170,7 +170,8 @@ sub __process ($$) {
             $self->_before_non_space ($process => $fh);
             
             my $value = $self->eval_attr_value
-                ($node, 'value', disallow_undef => 'w', required => 'm');
+                ($node, 'value', disallow_undef => 'w', required => 'm',
+                 node_info => $process->{node_info});
             if (defined $value) {
               if ($process->{node_info}->{rawtext}) {
                 ${$process->{node_info}->{rawtext_value}} .= $value;
@@ -182,7 +183,8 @@ sub __process ($$) {
           } elsif ($ln eq 'element') {
             next if $self->_close_start_tag ($process, $fh);
 
-            $ln = $self->eval_attr_value ($node, 'name');
+            $ln = $self->eval_attr_value ($node, 'name',
+                                          node_info => $process->{node_info});
             $ln = '' unless defined $ln;
             $ln =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
             $ns = $node->$TemmaContextNode->manakai_get_child_namespace_uri ($ln);
@@ -192,7 +194,8 @@ sub __process ($$) {
           } elsif ($ln eq 'attr' or $ln eq 'class') {
             if ($self->{current_tag}) {
               my $attr_name = $ln eq 'class' ? 'class' :
-                  $self->eval_attr_value ($node, 'name');
+                  $self->eval_attr_value ($node, 'name',
+                                          node_info => $process->{node_info});
               $attr_name = '' unless defined $attr_name;
               $attr_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
               my $element_ns = $self->{current_tag}->{ns};
@@ -223,7 +226,8 @@ sub __process ($$) {
 
               my $value = $self->eval_attr_value
                   ($node, $ln eq 'class' ? 'name' : 'value',
-                   disallow_undef => 'w', required => 'm');
+                   disallow_undef => 'w', required => 'm',
+                   node_info => $process->{node_info});
               if (defined $value) {
                 if ($attr_name eq 'class') {
                   push @{$self->{current_tag}->{classes} ||= []}, 
@@ -253,7 +257,8 @@ sub __process ($$) {
 
             my $node_info = {rawtext => 1, rawtext_value => \(my $v = ''),
                              allow_children => 1, comment => 1,
-                             has_non_space => 1, preserve_space => 1};
+                             has_non_space => 1, preserve_space => 1,
+                             bind => $process->{node_info}->{bind}};
 
             unshift @{$self->{processes}},
                 {type => 'end tag', node_info => $node_info};
@@ -271,7 +276,8 @@ sub __process ($$) {
             $self->_before_non_space ($process => $fh, transparent => 1);
 
             my $value = $self->eval_attr_value
-                ($node, 'x', required => 'm', context => 'bool');
+                ($node, 'x', required => 'm', context => 'bool',
+                 node_info => $process->{node_info});
 
             my $state = $value ? 'if-matched' : 'not yet';
             my @node;
@@ -284,7 +290,8 @@ sub __process ($$) {
               if ($ns eq TEMMA_NS and $ln eq 'elsif') {
                 if ($state eq 'not yet') {
                   my $value = $self->eval_attr_value
-                      ($_, 'x', required => 'm', context => 'bool');
+                      ($_, 'x', required => 'm', context => 'bool',
+                       node_info => $process->{node_info});
                   if ($value) {
                     $state = 'if-matched';
                     $cond_node = $_;
@@ -324,7 +331,8 @@ sub __process ($$) {
             $self->_before_non_space ($process => $fh, transparent => 1);
 
             my $items = $self->eval_attr_value
-                ($node, 'x', required => 'm', disallow_undef => 'm');
+                ($node, 'x', required => 'm', disallow_undef => 'm',
+                 node_info => $process->{node_info});
             $items = [] unless defined $items;
             my $item_count = do {
               local $@;
@@ -346,24 +354,38 @@ sub __process ($$) {
 
             # XXX |as| attribute
             
-            my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
             if ($item_count > 0) {
+              my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+              my $as = $node->get_attribute_ns (undef, 'as');
+              if (defined $as) {
+                $as =~ s/^\$//;
+                unless ($as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/) {
+                  $self->{onerror}->(type => 'temma:variable name',
+                                     node => $node->get_attribute_node ('as'),
+                                     level => 'm');
+                  undef $as;
+                }
+              }
+              
               unshift @{$self->{processes}},
                   {type => 'for block',
                    nodes => $nodes,
                    node_info => $process->{node_info},
                    space => $sp,
                    items => $items,
-                   index => 0};
+                   index => 0,
+                   bound_to => $as};
             }
             next;
           } elsif ($ln eq 'call') {
             $self->eval_attr_value
-                ($node, 'x', required => 'm', context => 'void');
+                ($node, 'x', required => 'm', context => 'void',
+                 node_info => $process->{node_info});
             next;
           } elsif ($ln eq 'wait') {
             my $value = $self->eval_attr_value
-                  ($node, 'cv', disallow_undef => 'm', required => 'm');
+                  ($node, 'cv', disallow_undef => 'm', required => 'm',
+                   node_info => $process->{node_info});
             if (not defined $value) {
               #
             } elsif (not UNIVERSAL::can ($value, 'cb')) {
@@ -375,7 +397,8 @@ sub __process ($$) {
                 $value->cb (sub {
                   unshift @{$self->{processes}},
                       {type => 'eval_attr_value',
-                       node => $node, attr_name => 'cb'};
+                       node => $node, attr_name => 'cb',
+                       node_info => $process->{node_info}};
                   $self->_process ($fh);
                 });
                 1;
@@ -424,7 +447,8 @@ sub __process ($$) {
         if ($ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
           print $fh '<' . $ln;
           my $node_info = $self->{current_tag} =
-              {node => $node, ns => $ns, ln => $ln, lnn => $ln, attrs => {}};
+              {node => $node, ns => $ns, ln => $ln, lnn => $ln, attrs => {},
+               bind => $process->{node_info}->{bind}};
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
           
           for my $attr (@$attrs) {
@@ -514,7 +538,8 @@ sub __process ($$) {
                              value => $ln,
                              level => 'm');
 
-          my $node_info = {allow_children => 1};
+          my $node_info = {allow_children => 1,
+                           bind => $process->{node_info}->{bind}};
           unshift @{$self->{processes}},
               map { {type => 'node', node => $_,
                      node_info => $node_info} } 
@@ -579,14 +604,16 @@ sub __process ($$) {
         unshift @{$self->{processes}}, $process;
       }
       
-      # XXX $index
       $self->_schedule_nodes
-          ($process->{nodes}, $process->{node_info}, $process->{space});
+          ($process->{nodes}, $process->{node_info}, $process->{space},
+           bind => $process->{bound_to}
+               ? [$process->{items}, $index => $process->{bound_to}] : undef);
     } elsif ($process->{type} eq 'end block') {
       $process->{parent_node_info}->{has_non_space} = 1
           if $process->{node_info}->{has_non_space};
     } elsif ($process->{type} eq 'eval_attr_value') {
-      $self->eval_attr_value ($process->{node}, $process->{attr_name});
+      $self->eval_attr_value ($process->{node}, $process->{attr_name},
+                              node_info => $process->{node_info});
     } elsif ($process->{type} eq 'end') {
       next if $self->_close_start_tag ($process, $fh);
     } else {
@@ -597,12 +624,13 @@ sub __process ($$) {
 
 ## Schedule processing of nodes, used for processing of <t:if>,
 ## <t:for>, and <t:try>.
-sub _schedule_nodes ($$$$) {
-  my ($self, $nodes, $parent_node_info, $sp) = @_;
+sub _schedule_nodes ($$$$;%) {
+  my ($self, $nodes, $parent_node_info, $sp, %args) = @_;
 
   my $node_info = {
     %{$parent_node_info},
     trailing_space => '',
+    bind => $args{bind} || $parent_node_info->{bind},
   };
   $node_info->{preserve_space}
       = $sp eq 'preserve' ? 1 :
@@ -681,7 +709,13 @@ sub eval_attr_value ($$$;%) {
     $location .= sprintf ' (at line %d column %d)', $line || 0, $column || 0;
   }
   $location =~ s/[\x00-\x1F\x22]+/ /g;
-  my $value = qq<#line 1 "$location"\n> . $attr_node->value;
+  my $value = qq<local \$_;\n#line 1 "$location"\n> . $attr_node->value . q<;>;
+
+  local $_ = [];
+  if ($args{node_info}->{bind}) {
+    push @$_, $args{node_info}->{bind};
+    $value = qq{#line 1 "vars for $location"\nfor my \$$_->[0]->[2] (\$_->[0]->[0]->[$_->[0]->[1]]) {\nreturn do {\n$value\n};\n\n}\n};
+  }
 
   my $evaled;
   my $error;

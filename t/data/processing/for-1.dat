@@ -173,3 +173,88 @@ a<t:for x=[1,2,3]>a</t:for>
 </t:for>
 #output
 <!DOCTYPE html><html><head>xyzxyzxyz</head></html>
+
+#data
+<t:for as=$x x="[1, 2, 40]">
+  <t:text value=$x>
+</t:for>
+#output
+<!DOCTYPE html><html><head>1240</head></html>
+
+#data
+<t:for as=$x x="[1, 2, 40]">
+  <p><t:text value=$x>
+</t:for>
+#output
+<!DOCTYPE html><html><head><p>1</p><p>2</p><p>40</p></head></html>
+
+#data
+<t:for as=$abc x="[1, 2, 40]">
+  <t:if x="$abc < 10">
+    <t:text value=$abc>
+  </t:if>
+</t:for>
+#output
+<!DOCTYPE html><html><head>12</head></html>
+
+#data
+<t:for as=abc x="[1, 2, 40]">
+  <t:if x="$abc < 10">
+    <t:text value=$abc>
+  </t:if>
+</t:for>
+#output
+<!DOCTYPE html><html><head>12</head></html>
+
+#data
+<t:for as=$_abc x="[1, 2, 40]">
+  <t:if x="$_abc < 10">
+    <t:text value=$_abc>
+  </t:if>
+</t:for>
+#output
+<!DOCTYPE html><html><head>12</head></html>
+
+#data
+<t:for x="[1, 30]">
+  <t:text value=$_>
+</t:for>
+#errors
+2;11;w;temma:undef;;
+2;11;w;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:for as=120 x="[1, 30]">
+  <t:text value="no strict 'refs'; ${120}">
+</t:for>
+#errors
+1;8;m;temma:variable name;;
+2;11;w;temma:undef;;
+2;11;w;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:for as x="[1, 30]">
+  <t:text value="no strict 'refs'; ${120}">
+</t:for>
+#errors
+1;8;m;temma:variable name;;
+2;11;w;temma:undef;;
+2;11;w;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:for as=$abc x="[1, 2, 40]">
+  <t:if x="$abc < 10">
+    <t:text value=$abc>
+  </t:if>
+</t:for>
+<t:text value=$abc>
+#errors escaped
+6;9;m;temma:perl exception;Global symbol "$abc" requires explicit package name at html>body>t:text[value] (at line 6 column 9) line 1.\u000A;
+#output
+<!DOCTYPE html><html><head>12</head><body>
