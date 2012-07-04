@@ -258,7 +258,7 @@ sub __process ($$) {
             my $node_info = {rawtext => 1, rawtext_value => \(my $v = ''),
                              allow_children => 1, comment => 1,
                              has_non_space => 1, preserve_space => 1,
-                             bind => $process->{node_info}->{bind}};
+                             binds => $process->{node_info}->{binds}};
 
             unshift @{$self->{processes}},
                 {type => 'end tag', node_info => $node_info};
@@ -448,7 +448,7 @@ sub __process ($$) {
           print $fh '<' . $ln;
           my $node_info = $self->{current_tag} =
               {node => $node, ns => $ns, ln => $ln, lnn => $ln, attrs => {},
-               bind => $process->{node_info}->{bind}};
+               binds => $process->{node_info}->{binds}};
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
           
           for my $attr (@$attrs) {
@@ -539,7 +539,7 @@ sub __process ($$) {
                              level => 'm');
 
           my $node_info = {allow_children => 1,
-                           bind => $process->{node_info}->{bind}};
+                           binds => $process->{node_info}->{binds}};
           unshift @{$self->{processes}},
               map { {type => 'node', node => $_,
                      node_info => $node_info} } 
@@ -604,10 +604,13 @@ sub __process ($$) {
         unshift @{$self->{processes}}, $process;
       }
       
+      my $binds = $process->{node_info}->{binds} || {};
+      if ($process->{bound_to}) {
+        $binds = {%$binds, $process->{bound_to} => [$process->{items}, $index]};
+      }
       $self->_schedule_nodes
           ($process->{nodes}, $process->{node_info}, $process->{space},
-           bind => $process->{bound_to}
-               ? [$process->{items}, $index => $process->{bound_to}] : undef);
+           binds => $binds);
     } elsif ($process->{type} eq 'end block') {
       $process->{parent_node_info}->{has_non_space} = 1
           if $process->{node_info}->{has_non_space};
@@ -630,7 +633,7 @@ sub _schedule_nodes ($$$$;%) {
   my $node_info = {
     %{$parent_node_info},
     trailing_space => '',
-    bind => $args{bind} || $parent_node_info->{bind},
+    binds => $args{binds} || $parent_node_info->{binds},
   };
   $node_info->{preserve_space}
       = $sp eq 'preserve' ? 1 :
@@ -711,10 +714,13 @@ sub eval_attr_value ($$$;%) {
   $location =~ s/[\x00-\x1F\x22]+/ /g;
   my $value = qq<local \$_;\n#line 1 "$location"\n> . $attr_node->value . q<;>;
 
-  local $_ = [];
-  if ($args{node_info}->{bind}) {
-    push @$_, $args{node_info}->{bind};
-    $value = qq{#line 1 "vars for $location"\nfor my \$$_->[0]->[2] (\$_->[0]->[0]->[$_->[0]->[1]]) {\nreturn do {\n$value\n};\n\n}\n};
+  local $_ = $args{node_info}->{binds} || {};
+  if (keys %$_) {
+    $value = "return do {\n$value\n};";
+    for my $var (keys %$_) {
+      $value = qq{for my \$$var (\$_->{$var}->[0]->[$_->{$var}->[1]]) {\n$value\n}\n};
+    }
+    $value = qq{#line 1 "vars for $location"\n} . $value;
   }
 
   my $evaled;
