@@ -215,7 +215,6 @@ sub _construct_tree ($) {
               last if $diff < 0;
               my @closed = splice @{$self->{open_elements}},
                   -($i + $diff), $i + $diff => ();
-              shift @closed;
               my @not_closed = grep { not $Temma::Defs::EndTagOptional->{$_->[1]} } @closed;
               if (@not_closed) {
                 $self->{parse_error}->(level => $self->{level}->{must},

@@ -26,7 +26,7 @@ my @metacontent = qw(
 );
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
-  col t:text t:elsif t:else
+  col t:text t:elsif t:else t:sep
 );
 
 our $AutoOpen = {
@@ -129,6 +129,7 @@ our $CloseIfInScope = {
   'td' => {'th' => 1, 'td' => 1, 'table' => -1},
   't:else' => {'t:if' => 0},
   't:elsif' => {'t:if' => 0},
+  't:sep' => {'t:for' => 0},
 };
 
 our $EndTagOptional = {

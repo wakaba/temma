@@ -245,3 +245,79 @@ a<t:for>x</t:for>b
 |     <temma for>
 |       "x"
 |     "b"
+
+#data
+<t:sep><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma sep>
+|     <!--  -->
+
+#data
+<t:for><!----><t:sep><!----></t:for>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       <!--  -->
+|       <temma sep>
+|       <!--  -->
+
+#data
+<t:for><t:sep><t:sep><t:sep></t:for>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       <temma sep>
+|       <temma sep>
+|       <temma sep>
+
+#data
+<t:for><p>a<t:sep>b</t:for>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       <p>
+|         "a"
+|       <temma sep>
+|       "b"
+
+#data
+<t:for><div>a<t:sep>b</t:for>
+#errors
+1;21;m;not closed;;div
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       <div>
+|         "a"
+|       <temma sep>
+|       "b"
+
+#data
+<t:for><t:for><t:sep>a</t:for>b</t:for>c
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       <temma for>
+|         <temma sep>
+|         "a"
+|       "b"
+|   <body>
+|     "c"
