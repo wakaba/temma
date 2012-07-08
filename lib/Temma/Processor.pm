@@ -346,16 +346,31 @@ sub __process ($$) {
               $item_count = 0;
             }
 
-            my $nodes = [
-              grep { $_->node_type == ELEMENT_NODE or
-                     $_->node_type == TEXT_NODE }
-              @{$node->child_nodes->to_a}
-            ];
-
-            # XXX |as| attribute
-            
             if ($item_count > 0) {
-              my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+              my $nodes = [];
+              my $sep_nodes = [];
+              my $sep_node;
+              for my $node (@{$node->child_nodes->to_a}) {
+                next unless $node->node_type == ELEMENT_NODE or
+                            $node->node_type == TEXT_NODE;
+                my $ns = $node->namespace_uri || '';
+                my $ln = $node->manakai_local_name;
+                if ($ns eq TEMMA_NS and $ln eq 'sep') {
+                  if ($sep_node) {
+                    $self->{onerror}->(type => 'temma:duplicate sep',
+                                       node => $node,
+                                       level => 'm');
+                    last;
+                  } else {
+                    $sep_node = $node;
+                  }
+                } elsif ($sep_node) {
+                  push @$sep_nodes, $node;
+                } else {
+                  push @$nodes, $node;
+                } 
+              }
+              
               my $as = $node->get_attribute_ns (undef, 'as');
               if (defined $as) {
                 $as =~ s/^\$//;
@@ -370,8 +385,10 @@ sub __process ($$) {
               unshift @{$self->{processes}},
                   {type => 'for block',
                    nodes => $nodes,
+                   sep_nodes => $sep_nodes,
                    node_info => $process->{node_info},
-                   space => $sp,
+                   space => $node->get_attribute_ns (TEMMA_NS, 'space') || '',
+                   sep_space => $sep_node ? $sep_node->get_attribute_ns (TEMMA_NS, 'space') || '' : undef,
                    items => $items,
                    index => 0,
                    bound_to => $as};
@@ -602,6 +619,11 @@ sub __process ($$) {
       my $index = $process->{index};
       if (++$process->{index} <= $#{$process->{items}}) {
         unshift @{$self->{processes}}, $process;
+        $self->_schedule_nodes
+            ($process->{sep_nodes}, $process->{node_info},
+             {preserve => 'preserve', trim => 'trim'}->{$process->{sep_space}} || $process->{space},
+             binds => $process->{node_info}->{binds})
+                if @{$process->{sep_nodes}};
       }
       
       my $binds = $process->{node_info}->{binds} || {};

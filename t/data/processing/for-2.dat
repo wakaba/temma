@@ -1,0 +1,81 @@
+#data
+<p>
+<t:for x=[1,2,3]>
+  abc
+<t:sep>
+  ,
+</t:for>
+#output
+<!DOCTYPE html><html><body><p>abc,abc,abc</p></body></html>
+
+#data
+<p>
+<t:for x=[1,2,3]>
+  abc
+<t:sep t:space=preserve>, </t:for>
+#output
+<!DOCTYPE html><html><body><p>abc, abc, abc</p></body></html>
+
+#data
+<p>
+<t:for x=[1,2,3] t:space=preserve> abc <t:sep> , </t:for>
+#output
+<!DOCTYPE html><html><body><p> abc  ,  abc  ,  abc </p></body></html>
+
+#data
+<p>
+<t:for x=[1,2,3] t:space=preserve> abc <t:sep t:space=trim> , </t:for>
+#output
+<!DOCTYPE html><html><body><p> abc , abc , abc </p></body></html>
+
+#data
+<t:for as=x x=[1..5]>
+  <p><t:text value=$x>
+<t:sep>
+  <!--a-->
+  <t:comment>b</t:comment>
+</t:for>
+#output
+<!DOCTYPE html><html><head><p>1</p><!--b--><p>2</p><!--b--><p>3</p><!--b--><p>4</p><!--b--><p>5</p></head></html>
+
+#data
+<t:for as=x x=[1..3]>
+<t:sep>
+  ,
+</t:for>
+#output
+<!DOCTYPE html><html><head>,,</head></html>
+
+#data
+<t:for as=x x=[1..3]>
+  a
+<t:sep>
+  <t:text value=$x>
+</t:for>
+#errors escaped
+4;11;m;temma:perl exception;Global symbol "$x" requires explicit package name at html>head>t:for>t:text[value] (at line 4 column 11) line 1.\u000A;
+#output
+<!DOCTYPE html><html><head>a
+
+#data
+<t:for as=y x=[120]>
+<t:for as=x x=[1..3]>
+  a
+<t:sep>
+  <t:text value=$y>
+</t:for>
+<t:sep>
+  abc
+</t:for>
+#errors escaped
+#output
+<!DOCTYPE html><html><head>a120a120a</head></html>
+
+#data
+<p>
+  <t:for as=$class x="[map{'hoge'.$_}1..10]">
+    <t:class name=$class>
+  </t:for>
+  <t:class name="'selected'">
+#output
+<!DOCTYPE html><html><body><p class="hoge1 hoge2 hoge3 hoge4 hoge5 hoge6 hoge7 hoge8 hoge9 hoge10 selected"></p></body></html>
