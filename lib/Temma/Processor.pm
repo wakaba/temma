@@ -158,7 +158,7 @@ sub __process ($$) {
         if ($process->{node_info}->{rawtext}) {
           ${$process->{node_info}->{rawtext_value}} .= $data;
         } else {
-          print $fh htescape $data;
+          $fh->print (htescape $data);
         }
       } elsif ($nt == ELEMENT_NODE) {
         my $ns = $node->namespace_uri || '';
@@ -176,7 +176,7 @@ sub __process ($$) {
               if ($process->{node_info}->{rawtext}) {
                 ${$process->{node_info}->{rawtext_value}} .= $value;
               } else {
-                print $fh htescape $value;
+                $fh->print (htescape $value);
               }
             }
             next;
@@ -234,7 +234,7 @@ sub __process ($$) {
                       grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $value;
                 } else {
                   $self->{current_tag}->{attrs}->{$attr_name} = 1;
-                  print $fh ' ' . $attr_name . '="' . (htescape $value) . '"';
+                  $fh->print (' ' . $attr_name . '="' . (htescape $value) . '"');
                 }
               }
             } else {
@@ -269,7 +269,7 @@ sub __process ($$) {
                        $_->node_type == TEXT_NODE }
                 @{$node->child_nodes->to_a};
 
-            print $fh "<!--";
+            $fh->print ("<!--");
             next;
 
           } elsif ($ln eq 'if') {
@@ -462,7 +462,7 @@ sub __process ($$) {
         $self->_before_non_space ($process => $fh);
 
         if ($ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
-          print $fh '<' . $ln;
+          $fh->print ('<' . $ln);
           my $node_info = $self->{current_tag} =
               {node => $node, ns => $ns, ln => $ln, lnn => $ln, attrs => {},
                binds => $process->{node_info}->{binds}};
@@ -506,7 +506,7 @@ sub __process ($$) {
               $node_info->{classes} = [grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $attr->value];
             } else {
               $node_info->{attrs}->{$attr_name} = 1;
-              print $fh ' ' . $attr_name . '="' . (htescape $attr->value) . '"';
+              $fh->print (' ' . $attr_name . '="' . (htescape $attr->value) . '"');
             }
           }
 
@@ -569,7 +569,7 @@ sub __process ($$) {
 
         my $nn = $node->node_name;
         $nn =~ s/[^0-9A-Za-z_-]/_/g;
-        print $fh '<!DOCTYPE ' . $nn . '>';
+        $fh->print ('<!DOCTYPE ' . $nn . '>');
       } elsif ($nt == DOCUMENT_NODE) {
         my $node_info = {allow_children => 1};
         unshift @{$self->{processes}},
@@ -591,7 +591,7 @@ sub __process ($$) {
         my $value = ${$process->{node_info}->{rawtext_value}};
         $value =~ s/--/- - /g;
         $value =~ s/-\z/- /;
-        print $fh $value, "-->";
+        $fh->print ($value, "-->");
         next;
       } elsif ($process->{node_info}->{rawtext}) {
         my $value = ${$process->{node_info}->{rawtext_value}};
@@ -611,10 +611,10 @@ sub __process ($$) {
                              level => 'm');
         }
         
-        print $fh $value2;
+        $fh->print ($value2);
       }
 
-      print $fh '</' . $process->{node_info}->{ln} . '>';
+      $fh->print ('</' . $process->{node_info}->{ln} . '>');
     } elsif ($process->{type} eq 'for block') {
       my $index = $process->{index};
       if (++$process->{index} <= $#{$process->{items}}) {
@@ -675,16 +675,16 @@ sub _close_start_tag ($$$) {
   return 0 unless my $node_info = delete $self->{current_tag};
   
   if (@{$node_info->{classes} or []}) {
-    print $fh q< class=">;
-    print $fh htescape join ' ', @{$node_info->{classes}};
-    print $fh q<">;
+    $fh->print (q< class=">);
+    $fh->print (htescape join ' ', @{$node_info->{classes}});
+    $fh->print (q<">);
   }
-  print $fh '>';
+  $fh->print ('>');
   unshift @{$self->{processes}}, $current_process;
 
   if ($Temma::Defs::IgnoreFirstNewline->{$node_info->{ln}} and
       $node_info->{ns} eq HTML_NS) {
-    print $fh "\x0A";
+    $fh->print ("\x0A");
   }
 
   return 1;
@@ -698,7 +698,7 @@ sub _before_non_space ($$;%) {
         ${$process->{node_info}->{rawtext_value}}
             .= $process->{node_info}->{trailing_space};
       } else {
-        print $fh htescape $process->{node_info}->{trailing_space};
+        $fh->print (htescape $process->{node_info}->{trailing_space});
       }
     }
     delete $process->{node_info}->{trailing_space};
