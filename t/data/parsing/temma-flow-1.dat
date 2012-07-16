@@ -321,3 +321,566 @@ a<t:for>x</t:for>b
 |       "b"
 |   <body>
 |     "c"
+
+#data
+<ul><li>a</li><t:if><li>b</li></t:if><li>c</li></ul>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <ul>
+|       <li>
+|         "a"
+|       <temma if>
+|         <li>
+|           "b"
+|       <li>
+|         "c"
+
+#data
+<ul><li>a</li><t:for><li>b</li></t:for><li>c</li></ul>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <ul>
+|       <li>
+|         "a"
+|       <temma for>
+|         <li>
+|           "b"
+|       <li>
+|         "c"
+
+#data
+<ul><li>a</li><t:try><li>b</li></t:try><li>c</li></ul>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <ul>
+|       <li>
+|         "a"
+|       <temma try>
+|         <li>
+|           "b"
+|       <li>
+|         "c"
+
+#data
+<ul><li>a<t:if><li>b</t:if><li>c</ul>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <ul>
+|       <li>
+|         "a"
+|         <temma if>
+|           <li>
+|             "b"
+|       <li>
+|         "c"
+
+#data
+<dl><dt>a</dt><t:if><dt>b</dt></t:if><dt>c</dt></dl>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <dl>
+|       <dt>
+|         "a"
+|       <temma if>
+|         <dt>
+|           "b"
+|       <dt>
+|         "c"
+
+#data
+<dl><dt>a</dt><t:for><dt>b</dt></t:for><dt>c</dt></dl>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <dl>
+|       <dt>
+|         "a"
+|       <temma for>
+|         <dt>
+|           "b"
+|       <dt>
+|         "c"
+
+#data
+<dl><dt>a</dt><t:try><dt>b</dt></t:try><dt>c</dt></dl>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <dl>
+|       <dt>
+|         "a"
+|       <temma try>
+|         <dt>
+|           "b"
+|       <dt>
+|         "c"
+
+#data
+<dl><dd>a</dd><t:if><dd>b</dd></t:if><dd>c</dd></dl>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <dl>
+|       <dd>
+|         "a"
+|       <temma if>
+|         <dd>
+|           "b"
+|       <dd>
+|         "c"
+
+#data
+<dl><dd>a</dd><t:for><dd>b</dd></t:for><dd>c</dd></dl>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <dl>
+|       <dd>
+|         "a"
+|       <temma for>
+|         <dd>
+|           "b"
+|       <dd>
+|         "c"
+
+#data
+<dl><dd>a</dd><t:try><dd>b</dd></t:try><dd>c</dd></dl>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <dl>
+|       <dd>
+|         "a"
+|       <temma try>
+|         <dd>
+|           "b"
+|       <dd>
+|         "c"
+
+#data
+<table><tr><!----><t:if><tr><!----></t:if><tr><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <!--  -->
+|           <temma if>
+|             <tr>
+|               <!--  -->
+|         <tr>
+|           <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><!----></tr><t:if><tr><!----></t:if><tr><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <!--  -->
+|         <temma if>
+|           <tr>
+|             <!--  -->
+|         <tr>
+|           <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><th><!----><t:if><th><!----></t:if><th><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <th>
+|             <!--  -->
+|             <temma if>
+|               <th>
+|                 <!--  -->
+|           <th>
+|             <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><td><!----><t:if><td><!----></t:if><td><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <td>
+|             <!--  -->
+|             <temma if>
+|               <td>
+|                 <!--  -->
+|           <td>
+|             <!--  -->
+|     <!--  -->
+
+#data
+<table><thead><!----><t:if><thead><!----></t:if><thead><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <thead>
+|         <!--  -->
+|         <temma if>
+|           <thead>
+|             <!--  -->
+|       <thead>
+|         <!--  -->
+|     <!--  -->
+
+#data
+<table><tbody><!----><t:if><tbody><!----></t:if><tbody><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <!--  -->
+|         <temma if>
+|           <tbody>
+|             <!--  -->
+|       <tbody>
+|         <!--  -->
+|     <!--  -->
+
+#data
+<table><tfoot><!----><t:if><tfoot><!----></t:if><tfoot><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tfoot>
+|         <!--  -->
+|         <temma if>
+|           <tfoot>
+|             <!--  -->
+|       <tfoot>
+|         <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><!----><t:for><tr><!----></t:for><tr><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <!--  -->
+|           <temma for>
+|             <tr>
+|               <!--  -->
+|         <tr>
+|           <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><!----></tr><t:for><tr><!----></t:for><tr><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <!--  -->
+|         <temma for>
+|           <tr>
+|             <!--  -->
+|         <tr>
+|           <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><th><!----><t:for><th><!----></t:for><th><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <th>
+|             <!--  -->
+|             <temma for>
+|               <th>
+|                 <!--  -->
+|           <th>
+|             <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><td><!----><t:for><td><!----></t:for><td><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <td>
+|             <!--  -->
+|             <temma for>
+|               <td>
+|                 <!--  -->
+|           <td>
+|             <!--  -->
+|     <!--  -->
+
+#data
+<table><thead><!----><t:for><thead><!----></t:for><thead><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <thead>
+|         <!--  -->
+|         <temma for>
+|           <thead>
+|             <!--  -->
+|       <thead>
+|         <!--  -->
+|     <!--  -->
+
+#data
+<table><tbody><!----><t:for><tbody><!----></t:for><tbody><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <!--  -->
+|         <temma for>
+|           <tbody>
+|             <!--  -->
+|       <tbody>
+|         <!--  -->
+|     <!--  -->
+
+#data
+<table><tfoot><!----><t:for><tfoot><!----></t:for><tfoot><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tfoot>
+|         <!--  -->
+|         <temma for>
+|           <tfoot>
+|             <!--  -->
+|       <tfoot>
+|         <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><!----><t:try><tr><!----></t:try><tr><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <!--  -->
+|           <temma try>
+|             <tr>
+|               <!--  -->
+|         <tr>
+|           <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><!----></tr><t:try><tr><!----></t:try><tr><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <!--  -->
+|         <temma try>
+|           <tr>
+|             <!--  -->
+|         <tr>
+|           <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><th><!----><t:try><th><!----></t:try><th><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <th>
+|             <!--  -->
+|             <temma try>
+|               <th>
+|                 <!--  -->
+|           <th>
+|             <!--  -->
+|     <!--  -->
+
+#data
+<table><tr><td><!----><t:try><td><!----></t:try><td><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <td>
+|             <!--  -->
+|             <temma try>
+|               <td>
+|                 <!--  -->
+|           <td>
+|             <!--  -->
+|     <!--  -->
+
+#data
+<table><thead><!----><t:try><thead><!----></t:try><thead><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <thead>
+|         <!--  -->
+|         <temma try>
+|           <thead>
+|             <!--  -->
+|       <thead>
+|         <!--  -->
+|     <!--  -->
+
+#data
+<table><tbody><!----><t:try><tbody><!----></t:try><tbody><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <!--  -->
+|         <temma try>
+|           <tbody>
+|             <!--  -->
+|       <tbody>
+|         <!--  -->
+|     <!--  -->
+
+#data
+<table><tfoot><!----><t:try><tfoot><!----></t:try><tfoot><!----></table><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tfoot>
+|         <!--  -->
+|         <temma try>
+|           <tfoot>
+|             <!--  -->
+|       <tfoot>
+|         <!--  -->
+|     <!--  -->
+
+#data
+<select><option>a</option><t:for><option>b</t:for></select>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <select>
+|       <option>
+|         "a"
+|       <temma for>
+|         <option>
+|           "b"
+
+#data
+<select><optgroup>a</optgroup><t:for><optgroup>b</t:for></select>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <select>
+|       <optgroup>
+|         "a"
+|       <temma for>
+|         <optgroup>
+|           "b"
