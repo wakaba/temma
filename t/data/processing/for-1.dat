@@ -3,10 +3,18 @@
   hoge
 </t:for>
 #output
+<!DOCTYPE html><html>hogehoge</html>
+
+#data
+<head>
+<t:for x="[1, 2]">
+  hoge
+</t:for>
+#output
 <!DOCTYPE html><html><head>hogehoge</head></html>
 
 #data
-<t:for x="[1, 2]">
+<head><t:for x="[1, 2]">
   <p>hoge
 </t:for>
 #output
@@ -118,9 +126,9 @@ a<t:for x=[1,2,3]>a</t:for>
       abc</p></body></html>
 
 #data
-<t:for>aaa</t:for>
+<head><t:for>aaa</t:for>
 #errors
-1;1;m;attribute missing;;x
+1;7;m;attribute missing;;x
 #output
 <!DOCTYPE html><html><head></head></html>
 
@@ -129,36 +137,36 @@ a<t:for x=[1,2,3]>a</t:for>
 #errors
 1;8;m;temma:undef;;
 #output
-<!DOCTYPE html><html><head></head></html>
+<!DOCTYPE html><html></html>
 
 #data
-<t:for x=123>bbb</t:for>
+<head><t:for x=123>bbb</t:for>
 #errors
-1;8;m;temma:not arrayref;;
+1;14;m;temma:not arrayref;;
 #output
 <!DOCTYPE html><html><head></head></html>
 
 #data
-<t:for x="{hoge => 124}">bbb</t:for>
+<head><t:for x="{hoge => 124}">bbb</t:for>
 #errors
-1;8;m;temma:not arrayref;;
+1;14;m;temma:not arrayref;;
 #output
 <!DOCTYPE html><html><head></head></html>
 
 #data
-<t:for x="bless [], 'hoge::fuga'">bbb</t:for>
+<head><t:for x="bless [], 'hoge::fuga'">bbb</t:for>
 #errors
 #output
 <!DOCTYPE html><html><head></head></html>
 
 #data
-<t:for x="bless [12, 31], 'hoge::fuga'">bbb</t:for>
+<head><t:for x="bless [12, 31], 'hoge::fuga'">bbb</t:for>
 #errors
 #output
 <!DOCTYPE html><html><head>bbbbbb</head></html>
 
 #data
-<t:for x="
+<head><t:for x="
   my $package = 'foo::bar::baz::test::' . int rand 100000;
   eval qq{
     package $package;
@@ -175,21 +183,21 @@ a<t:for x=[1,2,3]>a</t:for>
 <!DOCTYPE html><html><head>xyzxyzxyz</head></html>
 
 #data
-<t:for as=$x x="[1, 2, 40]">
+<head><t:for as=$x x="[1, 2, 40]">
   <t:text value=$x>
 </t:for>
 #output
 <!DOCTYPE html><html><head>1240</head></html>
 
 #data
-<t:for as=$x x="[1, 2, 40]">
+<head><t:for as=$x x="[1, 2, 40]">
   <p><t:text value=$x>
 </t:for>
 #output
 <!DOCTYPE html><html><head><p>1</p><p>2</p><p>40</p></head></html>
 
 #data
-<t:for as=$abc x="[1, 2, 40]">
+<head><t:for as=$abc x="[1, 2, 40]">
   <t:if x="$abc < 10">
     <t:text value=$abc>
   </t:if>
@@ -198,7 +206,7 @@ a<t:for x=[1,2,3]>a</t:for>
 <!DOCTYPE html><html><head>12</head></html>
 
 #data
-<t:for as=abc x="[1, 2, 40]">
+<head><t:for as=abc x="[1, 2, 40]">
   <t:if x="$abc < 10">
     <t:text value=$abc>
   </t:if>
@@ -207,7 +215,7 @@ a<t:for x=[1,2,3]>a</t:for>
 <!DOCTYPE html><html><head>12</head></html>
 
 #data
-<t:for as=$_abc x="[1, 2, 40]">
+<head><t:for as=$_abc x="[1, 2, 40]">
   <t:if x="$_abc < 10">
     <t:text value=$_abc>
   </t:if>
@@ -216,7 +224,7 @@ a<t:for x=[1,2,3]>a</t:for>
 <!DOCTYPE html><html><head>12</head></html>
 
 #data
-<t:for x="[1, 30]">
+<head><t:for x="[1, 30]">
   <t:text value=$_>
 </t:for>
 #errors
@@ -226,29 +234,29 @@ a<t:for x=[1,2,3]>a</t:for>
 <!DOCTYPE html><html><head></head></html>
 
 #data
-<t:for as=120 x="[1, 30]">
+<head><t:for as=120 x="[1, 30]">
   <t:text value="no strict 'refs'; ${120}">
 </t:for>
 #errors
-1;8;m;temma:variable name;;
+1;14;m;temma:variable name;;
 2;11;w;temma:undef;;
 2;11;w;temma:undef;;
 #output
 <!DOCTYPE html><html><head></head></html>
 
 #data
-<t:for as x="[1, 30]">
+<head><t:for as x="[1, 30]">
   <t:text value="no strict 'refs'; ${120}">
 </t:for>
 #errors
-1;8;m;temma:variable name;;
+1;14;m;temma:variable name;;
 2;11;w;temma:undef;;
 2;11;w;temma:undef;;
 #output
 <!DOCTYPE html><html><head></head></html>
 
 #data
-<t:for as=$abc x="[1, 2, 40]">
+<head><t:for as=$abc x="[1, 2, 40]">
   <t:if x="$abc < 10">
     <t:text value=$abc>
   </t:if>
@@ -260,7 +268,7 @@ a<t:for x=[1,2,3]>a</t:for>
 <!DOCTYPE html><html><head>12</head><body>
 
 #data
-<t:for as=$x x=[1,2,3]>
+<head><t:for as=$x x=[1,2,3]>
   <t:for as=$y x=[6,7,8]>
     <t:text value="$x . '-' . $y . '; '">
   </t:for>
@@ -269,7 +277,7 @@ a<t:for x=[1,2,3]>a</t:for>
 <!DOCTYPE html><html><head>1-6; 1-7; 1-8; 2-6; 2-7; 2-8; 3-6; 3-7; 3-8; </head></html>
 
 #data
-<t:for as=$x x=[1,2,3]>
+<head><t:for as=$x x=[1,2,3]>
   <t:for as=$x x=[6,7,8]>
     <t:text value="$x . '; '">
   </t:for>

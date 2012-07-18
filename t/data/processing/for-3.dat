@@ -1,35 +1,35 @@
 #data
-<t:for x=[1..4] as=v><t:text value=$v><t:next></t:for>
+<head><t:for x=[1..4] as=v><t:text value=$v><t:next></t:for>
 #errors
 #output
 <!DOCTYPE html><html><head>1234</head></html>
 
 #data
-<t:for x=[1..4] as=v><t:text value=$v><t:last></t:for>
+<head><t:for x=[1..4] as=v><t:text value=$v><t:last></t:for>
 #errors
 #output
 <!DOCTYPE html><html><head>1</head></html>
 
 #data
-<t:for x=[1..4] as=v><t:for x=[5..9] as=w><t:text value=$v><t:text value=$w><t:next></t:for></t:for>
+<head><t:for x=[1..4] as=v><t:for x=[5..9] as=w><t:text value=$v><t:text value=$w><t:next></t:for></t:for>
 #errors
 #output
 <!DOCTYPE html><html><head>1516171819252627282935363738394546474849</head></html>
 
 #data
-<t:for x=[1..4] as=v><t:for x=[5..9] as=w><t:text value=$v><t:text value=$w><t:last></t:for></t:for>
+<head><t:for x=[1..4] as=v><t:for x=[5..9] as=w><t:text value=$v><t:text value=$w><t:last></t:for></t:for>
 #errors
 #output
 <!DOCTYPE html><html><head>15253545</head></html>
 
 #data
-<t:for x=[1..4] as=v><t:text value=$v><t:next>a</t:for>
+<head><t:for x=[1..4] as=v><t:text value=$v><t:next>a</t:for>
 #errors
 #output
 <!DOCTYPE html><html><head>1234</head></html>
 
 #data
-<t:for x=[1..4] as=v><t:text value=$v><t:last>a</t:for>
+<head><t:for x=[1..4] as=v><t:text value=$v><t:last>a</t:for>
 #errors
 #output
 <!DOCTYPE html><html><head>1</head></html>

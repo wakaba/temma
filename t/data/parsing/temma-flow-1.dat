@@ -49,7 +49,17 @@
 #document
 | <!DOCTYPE html>
 | <html>
+|   <temma if>
+|   <!--  -->
+
+#data
+<base><t:if/><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
 |   <head>
+|     <base>
 |     <temma if>
 |     <!--  -->
 
@@ -82,13 +92,23 @@ a<t:if>xyx</t:if>xy
 #document
 | <!DOCTYPE html>
 | <html>
+|   <temma if>
+|     <temma else>
+|     "a"
+
+#data
+<head><t:if><t:else>a</t:if>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
 |   <head>
 |     <temma if>
 |       <temma else>
 |       "a"
 
 #data
-<t:if>a<t:elsif>b<t:else>c</t:if>
+<head><t:if>a<t:elsif>b<t:else>c</t:if>
 #errors
 #document
 | <!DOCTYPE html>
@@ -188,7 +208,7 @@ foo<t:if><p><q><t:elsif>aa</t:if>bb
 |     "bb"
 
 #data
-<t:if><t:if><t:else>a</t:if>b</t:if>c
+<head><t:if><t:if><t:else>a</t:if>b</t:if>c
 #errors
 #document
 | <!DOCTYPE html>
@@ -229,7 +249,19 @@ a<t:call><!---->
 #document
 | <!DOCTYPE html>
 | <html>
+|   <temma for>
+|     "hoge"
 |   <head>
+|     <link>
+
+#data
+<meta><t:for>hoge</t:for><link>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <meta>
 |     <temma for>
 |       "hoge"
 |     <link>
@@ -257,7 +289,7 @@ a<t:for>x</t:for>b
 |     <!--  -->
 
 #data
-<t:for><!----><t:sep><!----></t:for>
+<head><t:for><!----><t:sep><!----></t:for>
 #errors
 #document
 | <!DOCTYPE html>
@@ -269,7 +301,7 @@ a<t:for>x</t:for>b
 |       <!--  -->
 
 #data
-<t:for><t:sep><t:sep><t:sep></t:for>
+<head><t:for><t:sep><t:sep><t:sep></t:for>
 #errors
 #document
 | <!DOCTYPE html>
@@ -281,7 +313,7 @@ a<t:for>x</t:for>b
 |       <temma sep>
 
 #data
-<t:for><p>a<t:sep>b</t:for>
+<head><t:for><p>a<t:sep>b</t:for>
 #errors
 #document
 | <!DOCTYPE html>
@@ -294,9 +326,9 @@ a<t:for>x</t:for>b
 |       "b"
 
 #data
-<t:for><div>a<t:sep>b</t:for>
+<head><t:for><div>a<t:sep>b</t:for>
 #errors
-1;21;m;not closed;;div
+1;27;m;not closed;;div
 #document
 | <!DOCTYPE html>
 | <html>
@@ -308,7 +340,7 @@ a<t:for>x</t:for>b
 |       "b"
 
 #data
-<t:for><t:for><t:sep>a</t:for>b</t:for>c
+<head><t:for><t:for><t:sep>a</t:for>b</t:for>c
 #errors
 #document
 | <!DOCTYPE html>
@@ -886,7 +918,7 @@ a<t:for>x</t:for>b
 |           "b"
 
 #data
-<t:for>hoge<t:next>aaa</t:for>
+<head><t:for>hoge<t:next>aaa</t:for>
 #errors
 #document
 | <!DOCTYPE html>
@@ -898,7 +930,7 @@ a<t:for>x</t:for>b
 |       "aaa"
 
 #data
-<t:for>hoge<t:last>aaa</t:for>
+<head><t:for>hoge<t:last>aaa</t:for>
 #errors
 #document
 | <!DOCTYPE html>
@@ -910,7 +942,7 @@ a<t:for>x</t:for>b
 |       "aaa"
 
 #data
-<t:for>ho<p>ge<t:next>aaa</t:for>
+<head><t:for>ho<p>ge<t:next>aaa</t:for>
 #errors
 #document
 | <!DOCTYPE html>
@@ -924,7 +956,7 @@ a<t:for>x</t:for>b
 |         "aaa"
 
 #data
-<t:for>ho<p>ge<t:last>aaa</t:for>
+<head><t:for>ho<p>ge<t:last>aaa</t:for>
 #errors
 #document
 | <!DOCTYPE html>

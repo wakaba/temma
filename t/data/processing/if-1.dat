@@ -1,10 +1,20 @@
 #data
 <t:if x=1>hoge</t:if>
 #output
+<!DOCTYPE html><html>hoge</html>
+
+#data
+<head><t:if x=1>hoge</t:if>
+#output
 <!DOCTYPE html><html><head>hoge</head></html>
 
 #data
 <t:if x=0>fuga</t:if>
+#output
+<!DOCTYPE html><html></html>
+
+#data
+<head><t:if x=0>fuga</t:if>
 #output
 <!DOCTYPE html><html><head></head></html>
 

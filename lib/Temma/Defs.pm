@@ -39,6 +39,8 @@ our $AutoOpen = {
     (map { $_ => 'head' } @metacontent),
     't:attr' => '',
     't:class' => '',
+    't:if' => '',
+    't:for' => '',
     't:try' => '',
   },
   'table' => {
