@@ -382,6 +382,8 @@ sub __process ($$) {
                 }
               }
               
+              my $block_name = $node->get_attribute ('name');
+              $block_name = '' unless defined $block_name;
               unshift @{$self->{processes}},
                   {type => 'for block',
                    nodes => $nodes,
@@ -392,7 +394,7 @@ sub __process ($$) {
                    items => $items,
                    index => 0,
                    bound_to => $as,
-                   block_name => ''}; # XXX
+                   block_name => $block_name};
             }
             next;
           } elsif ($ln eq 'call') {
@@ -430,7 +432,8 @@ sub __process ($$) {
             }
             next;
           } elsif ($ln eq 'last' or $ln eq 'next') {
-            my $block_name = ''; # XXX
+            my $block_name = $node->get_attribute ('for');
+            $block_name = '' unless defined $block_name;
 
             my $found;
             my $searched = $ln eq 'last' ? 'for block' : 'end block';
@@ -439,7 +442,8 @@ sub __process ($$) {
               my $process = shift @{$self->{processes}};
               if ($process->{type} eq $searched and
                   defined $process->{block_name} and
-                  $process->{block_name} eq $block_name) {
+                  ($process->{block_name} eq $block_name or
+                   $block_name eq '')) {
                 $found = 1;
                 last;
               } elsif ({
