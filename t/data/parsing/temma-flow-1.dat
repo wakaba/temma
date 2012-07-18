@@ -953,3 +953,120 @@ a<p><t:attr><t:for><t:attr><t:if><t:last></t:if></t:for>x
 |           <temma last>
 |       "x"
 
+#data
+<t:try>hoge<t:catch>fuga<t:catch>aaa</t:try><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <temma try>
+|     "hoge"
+|     <temma catch>
+|     "fuga"
+|     <temma catch>
+|     "aaa"
+|   <!--  -->
+
+#data
+<link><t:try>hoge<t:catch>fuga<t:catch>aaa</t:try><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <link>
+|     <temma try>
+|       "hoge"
+|       <temma catch>
+|       "fuga"
+|       <temma catch>
+|       "aaa"
+|     <!--  -->
+
+#data
+<br><t:try>hoge<t:catch>fuga<t:catch>aaa</t:try><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <br>
+|     <temma try>
+|       "hoge"
+|       <temma catch>
+|       "fuga"
+|       <temma catch>
+|       "aaa"
+|     <!--  -->
+
+#data
+<p><t:try>hoge</t:try>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma try>
+|         "hoge"
+
+#data
+<t:catch>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma catch>
+|     "a"
+
+#data
+<p><t:try>aa<a>fuga<t:catch>bb</t:try>aa
+#errors
+1;29;m;not closed;;a
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma try>
+|         "aa"
+|         <a>
+|           "fuga"
+|         <temma catch>
+|         "bb"
+|       "aa"
+
+#data
+<p><t:try>aaa<p>bbb</t:try>aaa
+#errors
+1;17;m;not closed;;t:try
+1;28;m;unmatched end tag;;t:try
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma try>
+|         "aaa"
+|     <p>
+|       "bbbaaa"
+
+#data
+<p><t:try>hh<t:try>aa<t:catch>b</t:try>cc<t:catch>dd</t:try>x
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma try>
+|         "hh"
+|         <temma try>
+|           "aa"
+|           <temma catch>
+|           "b"
+|         "cc"
+|         <temma catch>
+|         "dd"
+|       "x"
