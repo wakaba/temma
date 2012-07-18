@@ -884,3 +884,55 @@ a<t:for>x</t:for>b
 |       <temma for>
 |         <optgroup>
 |           "b"
+
+#data
+<t:for>hoge<t:next>aaa</t:for>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       "hoge"
+|       <temma next>
+|       "aaa"
+
+#data
+<t:for>hoge<t:last>aaa</t:for>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       "hoge"
+|       <temma last>
+|       "aaa"
+
+#data
+<t:for>ho<p>ge<t:next>aaa</t:for>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       "ho"
+|       <p>
+|         "ge"
+|         <temma next>
+|         "aaa"
+
+#data
+<t:for>ho<p>ge<t:last>aaa</t:for>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma for>
+|       "ho"
+|       <p>
+|         "ge"
+|         <temma last>
+|         "aaa"

@@ -26,7 +26,7 @@ my @metacontent = qw(
 );
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
-  col t:text t:elsif t:else t:sep
+  col t:text t:elsif t:else t:sep t:next t:last
 );
 
 our $AutoOpen = {
