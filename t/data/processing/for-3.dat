@@ -1,0 +1,158 @@
+#data
+<t:for x=[1..4] as=v><t:text value=$v><t:next></t:for>
+#errors
+#output
+<!DOCTYPE html><html><head>1234</head></html>
+
+#data
+<t:for x=[1..4] as=v><t:text value=$v><t:last></t:for>
+#errors
+#output
+<!DOCTYPE html><html><head>1</head></html>
+
+#data
+<t:for x=[1..4] as=v><t:for x=[5..9] as=w><t:text value=$v><t:text value=$w><t:next></t:for></t:for>
+#errors
+#output
+<!DOCTYPE html><html><head>1516171819252627282935363738394546474849</head></html>
+
+#data
+<t:for x=[1..4] as=v><t:for x=[5..9] as=w><t:text value=$v><t:text value=$w><t:last></t:for></t:for>
+#errors
+#output
+<!DOCTYPE html><html><head>15253545</head></html>
+
+#data
+<t:for x=[1..4] as=v><t:text value=$v><t:next>a</t:for>
+#errors
+#output
+<!DOCTYPE html><html><head>1234</head></html>
+
+#data
+<t:for x=[1..4] as=v><t:text value=$v><t:last>a</t:for>
+#errors
+#output
+<!DOCTYPE html><html><head>1</head></html>
+
+#data
+x<t:for x=[1..4] as=v><t:text value=$v><t:next>a</t:for>abc
+#errors
+#output
+<!DOCTYPE html><html><body>x1234abc</body></html>
+
+#data
+x<t:for x=[1..4] as=v><t:text value=$v><t:last>a</t:for>abc
+#errors
+#output
+<!DOCTYPE html><html><body>x1abc</body></html>
+
+#data
+a<t:next>b
+#errors
+1;2;m;temma:block not found;;
+#output
+<!DOCTYPE html><html><body>a
+
+#data
+a<t:last>b
+#errors
+1;2;m;temma:block not found;;
+#output
+<!DOCTYPE html><html><body>a
+
+#data
+<p>a<t:next>b
+#errors
+1;5;m;temma:block not found;;
+#output
+<!DOCTYPE html><html><body><p>a
+
+#data
+<p>a<t:last>b
+#errors
+1;5;m;temma:block not found;;
+#output
+<!DOCTYPE html><html><body><p>a
+
+#data
+abc<t:for x=[1,2,3]>a<p>xx<t:next>bb</P>cc</t:for>b
+#output
+<!DOCTYPE html><html><body>abca<p>xx</p>a<p>xx</p>a<p>xx</p>b</body></html>
+
+#data
+abc<t:for x=[1,2,3]>a<p>xx<t:last>bb</P>cc</t:for>b
+#output
+<!DOCTYPE html><html><body>abca<p>xx</p>b</body></html>
+
+#data
+ab<t:for x=[1,2]>c<t:if x=1>d<t:next>e</t:if>b</t:for>c
+#output
+<!DOCTYPE html><html><body>abcdcdc</body></html>
+
+#data
+ab<t:for x=[1,2]>c<p><t:if x=1>d<t:next>e</t:if>b</t:for>c
+#output
+<!DOCTYPE html><html><body>abc<p>d</p>c<p>d</p>c</body></html>
+
+#data
+ab<t:for x=[1,2]><p><t:if x=1>d<t:next>e</t:if>b</t:for>c
+#output
+<!DOCTYPE html><html><body>ab<p>d</p><p>d</p>c</body></html>
+
+#data
+ab<t:for x=[1,2]><p><t:if x=1>d<t:last>e</t:if>b</t:for>c
+#output
+<!DOCTYPE html><html><body>ab<p>d</p>c</body></html>
+
+#data
+a<p>
+  <t:attr name="'x'" value="1">
+  <t:for x=[1..10] as=x>
+    <t:attr name="'v' . $x" value="$x">
+    <t:if x="$x > 4"><t:last></t:if>
+    <t:if x=0>aa</t:if>
+  </t:for>
+  <t:attr name="'z'" value=9>
+  xx
+#output
+<!DOCTYPE html><html><body>a<p x="1" v1="1" v2="2" v3="3" v4="4" v5="5" z="9">xx</p></body></html>
+
+#data
+a<p>
+  <t:attr name="'x'" value="1">
+  <t:for x=[1..10] as=x>
+    <t:if x="$x > 4"><t:next></t:if>
+    <t:attr name="'v' . $x" value="$x">
+    <t:if x=0>aa</t:if>
+  </t:for>
+  <t:attr name="'z'" value=9>
+  xx
+#output
+<!DOCTYPE html><html><body>a<p x="1" v1="1" v2="2" v3="3" v4="4" z="9">xx</p></body></html>
+
+#data
+<pre><t:for x=[1,2,3]>
+  hoge
+  <t:last>
+</t:for></pre>
+#output
+| <!DOCTYPE html><html><body><pre>
+| 
+|   hoge
+|   </pre></body></html>
+
+#data
+<p><t:for x=[1,2,3]>
+  hoge
+  <t:last>
+</t:for></p>
+#output
+| <!DOCTYPE html><html><body><p>hoge</p></body></html>
+
+#data
+<p><t:for x=[1,2,3]>
+  hoge
+  <t:next>
+</t:for></p>
+#output
+| <!DOCTYPE html><html><body><p>hogehogehoge</p></body></html>

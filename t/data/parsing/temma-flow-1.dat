@@ -936,3 +936,20 @@ a<t:for>x</t:for>b
 |         "ge"
 |         <temma last>
 |         "aaa"
+
+#data
+a<p><t:attr><t:for><t:attr><t:if><t:last></t:if></t:for>x
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <p>
+|       <temma attr>
+|       <temma for>
+|         <temma attr>
+|         <temma if>
+|           <temma last>
+|       "x"
+

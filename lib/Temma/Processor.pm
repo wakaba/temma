@@ -391,7 +391,8 @@ sub __process ($$) {
                    sep_space => $sep_node ? $sep_node->get_attribute_ns (TEMMA_NS, 'space') || '' : undef,
                    items => $items,
                    index => 0,
-                   bound_to => $as};
+                   bound_to => $as,
+                   block_name => ''}; # XXX
             }
             next;
           } elsif ($ln eq 'call') {
@@ -428,7 +429,36 @@ sub __process ($$) {
               return;
             }
             next;
-          } else {
+          } elsif ($ln eq 'last' or $ln eq 'next') {
+            my $block_name = ''; # XXX
+
+            my $found;
+            my $searched = $ln eq 'last' ? 'for block' : 'end block';
+            my @close;
+            while (@{$self->{processes}}) {
+              my $process = shift @{$self->{processes}};
+              if ($process->{type} eq $searched and
+                  defined $process->{block_name} and
+                  $process->{block_name} eq $block_name) {
+                $found = 1;
+                last;
+              } elsif ({
+                end => 1, 'end tag' => 1, 'end block' => 1,
+              }->{$process->{type}}) {
+                push @close, $process;
+              }
+            }
+
+            if ($found) {
+              unshift @{$self->{processes}}, @close;
+            } else {
+              $self->{onerror}->(type => 'temma:block not found',
+                                 value => $block_name,
+                                 node => $node,
+                                 level => 'm');
+            }
+            next;
+          } else { # $ln
             next if $self->_close_start_tag ($process, $fh);
 
             if ($ln eq 'else' or $ln eq 'elsif') {
@@ -442,7 +472,7 @@ sub __process ($$) {
                                  level => 'm');
             }
             next;
-          }
+          } # $ln
         } else {
           next if $self->_close_start_tag ($process, $fh);
           $attrs = $node->attributes;
@@ -626,13 +656,14 @@ sub __process ($$) {
                 if @{$process->{sep_nodes}};
       }
       
+      my $block_name = $process->{block_name};
       my $binds = $process->{node_info}->{binds} || {};
       if ($process->{bound_to}) {
         $binds = {%$binds, $process->{bound_to} => [$process->{items}, $index]};
       }
       $self->_schedule_nodes
           ($process->{nodes}, $process->{node_info}, $process->{space},
-           binds => $binds);
+           binds => $binds, block_name => $block_name);
     } elsif ($process->{type} eq 'end block') {
       $process->{parent_node_info}->{has_non_space} = 1
           if $process->{node_info}->{has_non_space};
@@ -665,7 +696,8 @@ sub _schedule_nodes ($$$$;%) {
   
   unshift @{$self->{processes}},
       {type => 'end block', node_info => $node_info,
-       parent_node_info => $parent_node_info};
+       parent_node_info => $parent_node_info,
+       block_name => $args{block_name}};
   unshift @{$self->{processes}},
       map { {type => 'node', node => $_, node_info => $node_info} } @$nodes;
 } # _schedule_nodes
