@@ -4,9 +4,8 @@
 #document
 | <!DOCTYPE html>
 | <html>
-|   <head>
-|     <temma wait>
-|     <!--  -->
+|   <temma wait>
+|   <!--  -->
 
 #data
 <base><t:wait><link>
@@ -228,7 +227,17 @@ foo<t:if><p><q><t:elsif>aa</t:if>bb
 #document
 | <!DOCTYPE html>
 | <html>
+|   <temma call>
+|   <!--  -->
+
+#data
+<link><t:call><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
 |   <head>
+|     <link>
 |     <temma call>
 |     <!--  -->
 
@@ -241,6 +250,37 @@ a<t:call><!---->
 |   <body>
 |     "a"
 |     <temma call>
+|     <!--  -->
+
+#data
+<t:my><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <temma my>
+|   <!--  -->
+
+#data
+<link><t:my><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <link>
+|     <temma my>
+|     <!--  -->
+
+#data
+a<t:my><!---->
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temma my>
 |     <!--  -->
 
 #data

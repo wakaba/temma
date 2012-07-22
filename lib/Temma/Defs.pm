@@ -16,13 +16,18 @@ sub XMLNS_NS (); *XMLNS_NS = \&Whatpm::HTML::ParserData::XMLNS_NS;
 sub XLINK_NS (); *XLINK_NS = \&Whatpm::HTML::ParserData::XLINK_NS;
 sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 
+my @transparentvoid = qw(
+  t:attr t:class t:wait t:call t:my
+);
 my @metavoid = qw(
   link meta base basefont bgsound command
-  t:attr t:wait t:call t:class
+);
+my @transparentcontent = qw(
+  t:if t:for t:try
 );
 my @metacontent = qw(
   title style script noscript
-  t:element t:comment t:if t:for t:try
+  t:element t:comment
 );
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
@@ -36,12 +41,9 @@ our $AutoOpen = {
     'body' => '',
     '<start>' => 'body',
     (map { $_ => 'head' } @metavoid),
+    (map { $_ => '' } @transparentvoid),
     (map { $_ => 'head' } @metacontent),
-    't:attr' => '',
-    't:class' => '',
-    't:if' => '',
-    't:for' => '',
-    't:try' => '',
+    (map { $_ => '' } @transparentcontent),
   },
   'table' => {
     'tr' => 'tbody',
@@ -54,7 +56,9 @@ our $AutoClose = {
     '<start>' => 1,
     'head' => '',
     (map { $_ => '' } @metavoid),
+    (map { $_ => '' } @transparentvoid),
     (map { $_ => '' } @metacontent),
+    (map { $_ => '' } @transparentcontent),
   },
   tr => {
     thead => 1,
@@ -96,6 +100,7 @@ our $AutoClose = {
 };
 
 our $Void = {
+  (map { $_ => 1 } @transparentvoid),
   (map { $_ => 1 } @metavoid),
   (map { $_ => 1 } @bodyvoid),
 };
