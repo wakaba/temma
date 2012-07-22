@@ -858,6 +858,8 @@ sub eval_attr_value ($$$;%) {
     }
     $value = qq{#line 1 "vars for $location"\n} . $value;
   }
+  $self->{eval_package} ||= qq{Temma::Eval::@{[time]}::@{[int rand 100000]}};
+  $value = qq{package $self->{eval_package};\n$value};
 
   my $evaled;
   my $error;

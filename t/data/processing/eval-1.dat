@@ -90,3 +90,34 @@
 1;25;m;temma:perl exception;Bareword "abc" not allowed while "strict subs" in use at html>head>script>t:text[value] (at line 1 column 25) line 1.\u000A;
 #output
 <!DOCTYPE html><html><head><script></script></head></html>
+
+#data
+<p>
+  <t:text value=" __PACKAGE__ =~ /^Temma::Eval::\d+::\d+$/ ">
+#output
+<!DOCTYPE html><html><body><p>1</p></body></html>
+
+#data
+<p>
+  <t:call x=" our $hoge = 123 ">
+  <t:text value=" our $hoge ">
+#output
+<!DOCTYPE html><html><body><p>123</p></body></html>
+
+#data
+<p>
+  <t:call x=" my $hoge = 123 ">
+  <t:text value=" our $hoge ">
+#errors
+3;11;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p>
+  <t:call x=" our $hoge = 123 ">
+  <t:text value=" $hoge ">
+#errors escaped
+3;11;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>p>t:text[value] (at line 3 column 11) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
