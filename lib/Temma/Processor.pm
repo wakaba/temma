@@ -113,10 +113,16 @@ sub _process ($$) {
           }
         }
 
+        my $close = shift @close;
         unshift @{$self->{processes}}, @close;
         if ($catch) {
+          my $binds = $catch->{node_info}->{binds} || {};
+          if (defined $catch->{bound_to}) {
+            $binds = {%$binds, $catch->{bound_to} => [[$exception], 0]};
+          }
           $self->_schedule_nodes
-              ($catch->{nodes}, $catch->{node_info}, $catch->{sp});
+              ($catch->{nodes}, $catch->{node_info}, $catch->{sp},
+               binds => $binds);
         } else {
           #warn $exception->source_text;
           $self->{onerror}->(type => 'temma:perl exception',
@@ -124,6 +130,7 @@ sub _process ($$) {
                              value => $exception,
                              node => $exception->source_node);
         }
+        unshift @{$self->{processes}}, $close;
         redo A;
       } else {
         die $exception;
@@ -439,10 +446,22 @@ sub __process ($$) {
               my $ns = $node->namespace_uri || '';
               my $ln = $node->manakai_local_name;
               if ($ns eq TEMMA_NS and $ln eq 'catch') {
+                my $as = $node->get_attribute ('as');
+                if (defined $as) {
+                  $as =~ s/^\$//;
+                  unless ($as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/) {
+                    $self->{onerror}->(type => 'temma:variable name',
+                                       node => $node->get_attribute_node ('as'),
+                                       level => 'm');
+                    undef $as;
+                  }
+                }
+
                 push @$catches,
                     {nodes => [],
                      package => $node->get_attribute ('package'),
                      sp => $node->get_attribute_ns (TEMMA_NS, 'space') || '',
+                     bound_to => $as,
                      node_info => $process->{node_info}};
               } elsif (@$catches) {
                 push @{$catches->[-1]->{nodes}}, $node;

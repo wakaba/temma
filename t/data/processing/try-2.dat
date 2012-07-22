@@ -121,3 +121,15 @@ zzz</p></body></html>
 <!DOCTYPE html><html><body><p>foo
     xyz
     bar</p><p>ddd</p></body></html>
+
+#data
+<p>
+  <t:try>
+    <t:call x="die 1">
+  <t:catch>
+    <t:call x="die 2">
+  </t:try>abc
+#errors escaped
+5;13;m;temma:perl exception;2 at html>body>p>t:try>t:call[x] (at line 5 column 13) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><p></p></body></html>

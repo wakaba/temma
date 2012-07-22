@@ -28,8 +28,12 @@ sub isa_package ($$) {
   return UNIVERSAL::isa ($_[0]->{value}, $_[1]);
 } # isa_package
 
-sub stringify ($) {
+sub value ($) {
   return $_[0]->{value};
+} # value
+
+sub stringify ($) {
+  return '' . $_[0]->{value};
 } # stringify
 
 1;
