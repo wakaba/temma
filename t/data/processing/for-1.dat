@@ -284,3 +284,14 @@ a<t:for x=[1,2,3]>a</t:for>
 </t:for>
 #output
 <!DOCTYPE html><html><head>6; 7; 8; 6; 7; 8; 6; 7; 8; </head></html>
+
+#data
+<t:for as=_ x=[1,2]>
+  <t:text value=$_>
+</t:for>
+#errors
+1;8;m;temma:variable name;;
+2;11;w;temma:undef;;
+2;11;w;temma:undef;;
+#output
+<!DOCTYPE html><html></html>

@@ -412,7 +412,7 @@ sub __process ($$) {
               my $as = $node->get_attribute_ns (undef, 'as');
               if (defined $as) {
                 $as =~ s/^\$//;
-                unless ($as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/) {
+                if (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or $as eq '_') {
                   $self->{onerror}->(type => 'temma:variable name',
                                      node => $node->get_attribute_node ('as'),
                                      level => 'm');
@@ -449,7 +449,8 @@ sub __process ($$) {
                 my $as = $node->get_attribute ('as');
                 if (defined $as) {
                   $as =~ s/^\$//;
-                  unless ($as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/) {
+                  if (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or
+                      $as eq '_') {
                     $self->{onerror}->(type => 'temma:variable name',
                                        node => $node->get_attribute_node ('as'),
                                        level => 'm');
@@ -473,6 +474,25 @@ sub __process ($$) {
             my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
             $self->_schedule_nodes
                 ($nodes, $process->{node_info}, $sp, catches => $catches);
+            next;
+          } elsif ($ln eq 'my') {
+            my $as = $node->get_attribute ('as');
+            $as =~ s/^\$// if defined $as;
+            if (not defined $as or
+                not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or
+                $as eq '_') {
+              $self->{onerror}->(type => 'temma:variable name',
+                                 node => $node->get_attribute_node ('as') || $node,
+                                 level => 'm');
+              next;
+            }
+
+            my $value = $self->eval_attr_value
+                ($node, 'x', context => 'scalar',
+                 node_info => $process->{node_info});
+            $process->{node_info}->{binds}
+                = {%{$process->{node_info}->{binds} || {}},
+                   $as => [[$value], 0]};
             next;
           } elsif ($ln eq 'call') {
             $self->eval_attr_value

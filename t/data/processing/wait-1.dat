@@ -1,18 +1,18 @@
 #data
 <t:wait cv=" Test::Temma::CV->new ">
 #output
-<!DOCTYPE html><html><head></head></html>
+<!DOCTYPE html><html></html>
 
 #data
 <t:wait cv=" Test::Temma::CV->new ">hoge
 #output
-<!DOCTYPE html><html><head></head><body>hoge</body></html>
+<!DOCTYPE html><html><body>hoge</body></html>
 
 #data
 <t:wait cv=" Test::Temma::CV->new ">hoge
 <t:wait cv=" Test::Temma::CV->new ">fuga
 #output
-<!DOCTYPE html><html><head></head><body>hoge
+<!DOCTYPE html><html><body>hoge
 fuga</body></html>
 
 #data

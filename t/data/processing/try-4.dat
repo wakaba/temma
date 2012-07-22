@@ -88,3 +88,26 @@ bar</p></body></html>
 </u>
       <u>61 at html&gt;body&gt;p&gt;t:try&gt;t:try&gt;i&gt;t:call[x] (at line 9 column 17) line 1.
 </u></p></body></html>
+
+#data
+<t:try>
+  <t:call x=die>
+<t:catch as=31412>
+  hoge
+</t:try>
+#errors
+3;10;m;temma:variable name;;
+#output
+<!DOCTYPE html><html>hoge</html>
+
+#data
+<t:try>
+  <t:call x=die>
+<t:catch as=_>
+  hoge<t:text value=$_>
+</t:try>
+#errors
+3;10;m;temma:variable name;;
+4;15;w;temma:undef;;
+#output
+<!DOCTYPE html><html>hoge</html>

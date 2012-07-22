@@ -1,0 +1,111 @@
+#data
+<p>
+  <t:my as=$foo x=120*21>
+  <t:text value=$foo>
+#output
+<!DOCTYPE html><html><body><p>2520</p></body></html>
+
+#data
+<p>
+  <t:my as=$foo>
+  <t:call x=" $foo = 120 ">
+  <t:text value=$foo>
+#output
+<!DOCTYPE html><html><body><p>120</p></body></html>
+
+#data
+<p>
+  <t:my as=$foo x=130>
+  <t:my as=foo x=310>
+  <t:text value=$foo>
+#output
+<!DOCTYPE html><html><body><p>310</p></body></html>
+
+#data
+<div>
+  <t:my as=$foo x=21>
+  <p>
+    <t:text value=$foo>
+</div>
+#output
+<!DOCTYPE html><html><body><div><p>21</p></div></body></html>
+
+#data
+<div>
+  <t:my as=$foo x=21>
+</div>
+<t:text value=$foo>
+#errors escaped
+4;9;m;temma:perl exception;Global symbol "$foo" requires explicit package name at html>body>t:text[value] (at line 4 column 9) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><div></div>
+</body></html>
+
+#data
+<div>
+  <t:if x="1">
+    <t:my as=$hoge x="'abcC'">
+  </t:if>
+  <t:text value=$hoge>
+</div>
+#errors escaped
+5;11;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>div>t:text[value] (at line 5 column 11) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><div></div></body></html>
+
+#data
+<div>
+  <t:my as=$hoge x=312>
+  <t:if x="1">
+    <t:my as=$hoge x="'abcC'">
+  </t:if>
+  <t:text value=$hoge>
+</div>
+#errors escaped
+#output
+<!DOCTYPE html><html><body><div>312</div></body></html>
+
+#data
+<div>
+  <t:my as=$hoge x=312>
+  <div>
+    <t:my as=$hoge x="'abcC'">
+  </div>
+  <t:text value=$hoge>
+</div>
+#errors escaped
+#output
+<!DOCTYPE html><html><body><div><div></div>
+  312</div></body></html>
+
+#data
+<p>
+  <t:for as=$abc x=[1,2,4]>
+    <t:my as=$abc x="$abc * 2">
+    <span><t:text value=$abc></span>
+  </t:for>
+#output
+<!DOCTYPE html><html><body><p><span>2</span><span>4</span><span>8</span></p></body></html>
+
+#data
+<t:my x=2131>
+#errors
+1;1;m;temma:variable name;;
+#output
+<!DOCTYPE html><html></html>
+
+#data
+<t:my as=12414 x=2131>
+#errors
+1;7;m;temma:variable name;;
+#output
+<!DOCTYPE html><html></html>
+
+#data
+<t:my as=_ x=2131>
+<t:text value=$_>
+#errors
+1;7;m;temma:variable name;;
+2;9;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body></body></html>

@@ -81,6 +81,7 @@ sub _processed : Tests {
     try-2.dat
     try-3.dat
     try-4.dat
+    my-1.dat
   );
 } # _processed
 

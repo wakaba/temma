@@ -3,7 +3,7 @@
 #errors
 1;1;m;attribute missing;;x
 #output
-<!DOCTYPE html><html><head></head></html>
+<!DOCTYPE html><html></html>
 
 #data
 bb<t:call x=" undef ">aa
