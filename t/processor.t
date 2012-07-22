@@ -77,6 +77,9 @@ sub _processed : Tests {
     for-1.dat
     for-2.dat
     for-3.dat
+    try-1.dat
+    try-2.dat
+    try-3.dat
   );
 } # _processed
 

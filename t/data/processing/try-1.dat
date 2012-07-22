@@ -1,0 +1,111 @@
+#data
+<t:try><link></t:try><!---->
+#output
+<!DOCTYPE html><html><link></html>
+
+#data
+<link><t:try>  <meta>
+</t:try><base>
+#output
+<!DOCTYPE html><html><head><link><meta><base></head></html>
+
+#data
+aa<t:try>
+  <p>aaa
+</t:try>
+<p>foo
+#output
+<!DOCTYPE html><html><body>aa<p>aaa</p>
+<p>foo</p></body></html>
+
+#data
+<div>
+  <t:try t:space=preserve>
+    <p>abc
+  </t:try>
+</div>
+#output
+<!DOCTYPE html><html><body><div>
+    <p>abc
+  </p></div></body></html>
+
+#data
+<div>
+  <t:try>
+    abc
+    <t:call x=die>
+    def
+  </t:try>
+  xyz
+</div>
+#errors escaped
+4;13;m;temma:perl exception;Died at html>body>div>t:try>t:call[x] (at line 4 column 13) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><div>abc</div></body></html>
+
+#data
+<div>
+  <t:class name=1>
+  <t:try>
+    <t:class name=2>
+    <t:call x=die>
+    <t:class name=3>
+  </t:try>
+  <t:class name=4>
+  hoge
+</div>
+#errors escaped
+5;13;m;temma:perl exception;Died at html>body>div>t:try>t:call[x] (at line 5 column 13) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><div class="1 2"></div></body></html>
+
+#data
+<div>
+  <t:class name=1>
+  <t:try>
+    <t:class name=2>
+  </t:try>
+  <t:class name=4>
+  hoge
+</div>
+#errors escaped
+#output
+<!DOCTYPE html><html><body><div class="1 2 4">hoge</div></body></html>
+
+#data
+<div>
+  <t:class name=1>
+  <t:try>
+    <t:class name=2>
+    abc
+  </t:try>
+  <t:class name=4>
+  hoge
+</div>
+#errors escaped
+7;3;m;temma:start tag already closed;;
+#output
+| <!DOCTYPE html><html><body><div class="1 2">abc
+|   
+|   hoge</div></body></html>
+
+#data
+<div>
+  <t:try>
+    <t:try>
+      abc
+    </t:try>
+    def
+  </t:try>
+  xyz
+</div>
+#output
+<!DOCTYPE html><html><body><div>abc
+    def
+  xyz</div></body></html>
+
+#data
+<pre>  <t:try>  hoge  </t:try> </pre>
+#output
+<!DOCTYPE html><html><body><pre>
+    hoge   </pre></body></html>

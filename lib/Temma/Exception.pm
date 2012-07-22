@@ -22,6 +22,12 @@ sub source_node ($;$) {
   return $_[0]->{source_node};
 } # source_node
 
+sub isa_package ($$) {
+  return 1 if $_[1] eq '' and
+      (not defined $_[0]->{value} or not ref $_[0]->{value});
+  return UNIVERSAL::isa ($_[0]->{value}, $_[1]);
+} # isa_package
+
 sub stringify ($) {
   return $_[0]->{value};
 } # stringify

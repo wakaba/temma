@@ -84,21 +84,52 @@ sub process_document ($$$) {
 
 sub _process ($$) {
   my ($self, $fh) = @_;
+  A: {
+    eval {
+      $self->__process ($fh);
+    };
+    if ($@) {
+      my $exception = $@;
+      if (UNIVERSAL::isa ($exception, 'Temma::Exception')) {
+        my $catch;
+        my @close;
+        while (@{$self->{processes}}) {
+          my $process = shift @{$self->{processes}};
+          if ($process->{type} eq 'end block' and
+              $process->{catches}) {
+            for my $c (@{$process->{catches}}) {
+              if (not defined $c->{package} or
+                  $exception->isa_package ($c->{package})) {
+                $catch = $c;
+                last;
+              }
+            }
+            push @close, $process;
+            last if $catch;
+          } elsif ({
+            end => 1, 'end tag' => 1, 'end block' => 1,
+          }->{$process->{type}}) {
+            push @close, $process;
+          }
+        }
 
-  eval {
-    $self->__process ($fh);
-  };
-  if ($@) {
-    if (UNIVERSAL::isa ($@, 'Temma::Exception')) {
-      #warn $@->source_text;
-      $self->{onerror}->(type => 'temma:perl exception',
-                         level => 'm',
-                         value => $@,
-                         node => $@->source_node);
-    } else {
-      die $@;
+        unshift @{$self->{processes}}, @close;
+        if ($catch) {
+          $self->_schedule_nodes
+              ($catch->{nodes}, $catch->{node_info}, $catch->{sp});
+        } else {
+          #warn $exception->source_text;
+          $self->{onerror}->(type => 'temma:perl exception',
+                             level => 'm',
+                             value => $exception,
+                             node => $exception->source_node);
+        }
+        redo A;
+      } else {
+        die $exception;
+      }
     }
-  }
+  } # A
 } # _process
 
 sub __process ($$) {
@@ -397,6 +428,33 @@ sub __process ($$) {
                    block_name => $block_name};
             }
             next;
+          } elsif ($ln eq 'try') {
+            $self->_before_non_space ($process => $fh, transparent => 1);
+            
+            my $nodes = [];
+            my $catches = [];
+            for my $node (@{$node->child_nodes->to_a}) {
+              next unless $node->node_type == ELEMENT_NODE or
+                          $node->node_type == TEXT_NODE;
+              my $ns = $node->namespace_uri || '';
+              my $ln = $node->manakai_local_name;
+              if ($ns eq TEMMA_NS and $ln eq 'catch') {
+                push @$catches,
+                    {nodes => [],
+                     package => $node->get_attribute ('package'),
+                     sp => $node->get_attribute_ns (TEMMA_NS, 'space') || '',
+                     node_info => $process->{node_info}};
+              } elsif (@$catches) {
+                push @{$catches->[-1]->{nodes}}, $node;
+              } else {
+                push @$nodes, $node;
+              } 
+            }
+
+            my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+            $self->_schedule_nodes
+                ($nodes, $process->{node_info}, $sp, catches => $catches);
+            next;
           } elsif ($ln eq 'call') {
             $self->eval_attr_value
                 ($node, 'x', required => 'm', context => 'void',
@@ -680,7 +738,7 @@ sub __process ($$) {
       die "Process type |$process->{type}| is not supported";
     }
   } # @{$self->{processes}}
-} # _process
+} # __process
 
 ## Schedule processing of nodes, used for processing of <t:if>,
 ## <t:for>, and <t:try>.
@@ -701,7 +759,8 @@ sub _schedule_nodes ($$$$;%) {
   unshift @{$self->{processes}},
       {type => 'end block', node_info => $node_info,
        parent_node_info => $parent_node_info,
-       block_name => $args{block_name}};
+       block_name => $args{block_name},
+       catches => $args{catches}};
   unshift @{$self->{processes}},
       map { {type => 'node', node => $_, node_info => $node_info} } @$nodes;
 } # _schedule_nodes

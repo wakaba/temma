@@ -1,0 +1,62 @@
+#data
+<p>
+  <t:try>
+    <t:call x=die>
+    aaa
+  <t:catch package>
+    hoge
+  </t:try>
+#output
+<!DOCTYPE html><html><body><p>hoge</p></body></html>
+
+#data
+<p>
+  <t:try>
+    <t:call x="
+      my $package = 'foo::' . int rand 1100000;
+      eval qq{ package $package; use overload '&quot;&quot;' => sub { \$_[0]->{value} }, fallback => 1 };
+      die bless {value => 'abc52533'}, $package;
+    ">
+    aaa
+  <t:catch package>
+    hoge
+  </t:try>
+foo
+#errors
+3;13;m;temma:perl exception;abc52533;
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p>
+  <t:try>
+    <t:call x=die[]>
+  <t:catch package=ARRAY>
+    hoge
+  </t:try>fuga
+#output
+<!DOCTYPE html><html><body><p>hogefuga</p></body></html>
+
+#data
+<p>
+  <t:try>
+    <t:call x="die sub { }">
+  <t:catch package = Hoge::Fuga>
+    foo
+  <t:catch package=CODE>
+    hoge
+  </t:try>fuga
+#output
+<!DOCTYPE html><html><body><p>hogefuga</p></body></html>
+
+#data
+<p>
+  <t:try>
+    <t:call x="die bless {}, 'Hoge::Fuga'">
+  <t:catch package=Hoge>
+     Hoge
+  <t:catch package =Hoge::Fuga>
+    Hoge::Fuga
+  </t:try>
+#output
+<!DOCTYPE html><html><body><p>Hoge::Fuga</p></body></html>

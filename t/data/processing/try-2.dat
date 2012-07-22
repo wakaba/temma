@@ -1,0 +1,123 @@
+#data
+<t:try>
+  abc
+<t:catch>
+  foo
+</t:try>
+#output
+<!DOCTYPE html><html>abc</html>
+
+#data
+<link><t:try>
+  abc
+<t:catch>
+  foo
+</t:try>
+#output
+<!DOCTYPE html><html><head><link>abc</head></html>
+
+#data
+hoge<t:try>
+  abc
+<t:catch>
+  foo
+</t:try>
+#output
+<!DOCTYPE html><html><body>hogeabc</body></html>
+
+#data
+<p>
+  <t:try>
+    abc
+    <t:call x=die>
+    fff
+    <t:catch>
+    ddd
+  </t:try>
+zzz
+#output
+<!DOCTYPE html><html><body><p>abcddd
+zzz</p></body></html>
+
+#data
+<p>
+  <t:try>
+    abc
+    <t:call x=die>
+    fff
+    <t:catch>
+    ddd
+    <t:catch>
+    hoge
+  </t:try>
+zzz
+#output
+<!DOCTYPE html><html><body><p>abcddd
+zzz</p></body></html>
+
+#data
+<p>
+  <t:try>
+    abc
+    <t:call x=die>
+    fff
+    <t:catch t:space=preserve>
+    ddd
+  </t:try>
+zzz
+#output
+| <!DOCTYPE html><html><body><p>abc
+|     ddd
+|   
+| zzz</p></body></html>
+
+#data
+<p>
+  <t:try t:space=preserve>
+    abc
+    <t:call x=die>
+    fff
+    <t:catch>
+    ddd
+  </t:try>
+zzz
+#output
+<!DOCTYPE html><html><body><p>
+    abc
+    ddd
+zzz</p></body></html>
+
+#data
+<p>
+  <t:try>
+    foo
+    <t:try>
+      <t:call x=die>
+    </t:try>
+    bar
+  <t:catch>
+    aaaa
+  </t:try>
+<p>ddd
+#output
+<!DOCTYPE html><html><body><p>foo
+    aaaa</p><p>ddd</p></body></html>
+
+#data
+<p>
+  <t:try>
+    foo
+    <t:try>
+      <t:call x=die>
+    <t:catch>
+      xyz
+    </t:try>
+    bar
+  <t:catch>
+    aaaa
+  </t:try>
+<p>ddd
+#output
+<!DOCTYPE html><html><body><p>foo
+    xyz
+    bar</p><p>ddd</p></body></html>
