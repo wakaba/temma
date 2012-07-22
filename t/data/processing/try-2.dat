@@ -133,3 +133,27 @@ zzz</p></body></html>
 5;13;m;temma:perl exception;2 at html>body>p>t:try>t:call[x] (at line 5 column 13) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p>
+  <t:wait cv=" use AnyEvent; my $cv = AE::cv; $cv->send (2); $cv ">
+  <t:try>
+    <t:call x="die 123">
+  <t:catch>
+    aaaa
+  </t:try>
+#output
+<!DOCTYPE html><html><body><p>aaaa</p></body></html>
+
+#data
+<p>
+  <t:try>
+    <t:wait cv=" use AnyEvent; my $cv = AE::cv; $cv->send (2); $cv ">
+    dddd
+  <t:catch>
+    aaaa
+  </t:try>
+  zz
+#output
+<!DOCTYPE html><html><body><p>dddd
+  zz</p></body></html>
