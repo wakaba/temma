@@ -364,3 +364,25 @@ a<t:text>b</t:text>bb
 |     <svg svg>
 |       <svg foreignObject>
 |         <temma attr>
+
+#data
+<t:barehtml>hoge
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma barehtml>
+|     "hoge"
+
+#data
+<title t:parse><t:barehtml>hoge</title>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <title>
+|       temma parse=""
+|       <temma barehtml>
+|       "hoge"

@@ -82,6 +82,7 @@ sub _processed : Tests {
     try-3.dat
     try-4.dat
     my-1.dat
+    barehtml-1.dat
   );
 } # _processed
 

@@ -1,0 +1,23 @@
+#data
+<p><t:barehtml value=" 'fuga <p>abc <html> Q &amp; A' ">hoge
+#output
+<!DOCTYPE html><html><body><p>fuga <p>abc <html> Q & Ahoge</p></body></html>
+
+#data
+<p><t:barehtml value="''">
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p><t:barehtml value="undef">a
+#errors
+1;16;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body><p>a</p></body></html>
+
+#data
+<p><t:barehtml>hoge
+#errors
+1;4;m;attribute missing;;value
+#output
+<!DOCTYPE html><html><body><p>hoge</p></body></html>

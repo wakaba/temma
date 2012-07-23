@@ -559,6 +559,23 @@ sub __process ($$) {
                                  level => 'm');
             }
             next;
+          } elsif ($ln eq 'barehtml') {
+            next if $self->_close_start_tag ($process, $fh);
+            $self->_before_non_space ($process => $fh);
+            
+            my $value = $self->eval_attr_value
+                ($node, 'value', disallow_undef => 'w', required => 'm',
+                 node_info => $process->{node_info});
+            if (defined $value) {
+              if ($process->{node_info}->{rawtext}) {
+                $self->{onerror}->(type => 'element not allowed:rawtext',
+                                   node => $node,
+                                   level => 'm');
+              } else {
+                $fh->print ($value);
+              }
+            }
+            next;
           } else { # $ln
             next if $self->_close_start_tag ($process, $fh);
 
