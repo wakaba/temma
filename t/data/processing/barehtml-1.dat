@@ -21,3 +21,10 @@
 1;4;m;attribute missing;;value
 #output
 <!DOCTYPE html><html><body><p>hoge</p></body></html>
+
+#data
+<script t:parse><t:barehtml value="'hoge fuga'"></script>
+#errors
+1;17;m;element not allowed:rawtext;;
+#output
+<!DOCTYPE html><html><head><script></script></head></html>
