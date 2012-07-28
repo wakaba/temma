@@ -1,0 +1,47 @@
+#data
+<t:macro>hoge</t:macro><link><t:macro>foo</t:macro><p><t:macro>hoge</t:macro>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma macro>
+|       "hoge"
+|     <link>
+|     <temma macro>
+|       "foo"
+|   <body>
+|     <p>
+|       <temma macro>
+|         "hoge"
+
+#data
+<p><t:macro>foo<t:content>abc</t:macro>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma macro>
+|         "foo"
+|         <temma content>
+|         "abc"
+
+#data
+<p><t:macro>hoge<t:macro>fo<p>o<t:content>aa</t:macro>bb</t:macro>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma macro>
+|         "hoge"
+|         <temma macro>
+|           "fo"
+|           <p>
+|             "o"
+|             <temma content>
+|             "aa"
+|         "bb"

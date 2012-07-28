@@ -118,8 +118,12 @@ sub _construct_tree ($) {
         while (1) {
           my $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<text>'};
           if ($ao) {
-            my $el = $self->{document}->create_element_ns
-                (HTML_NS, [undef, $ao]);
+            my $ln = $ao;
+            my $el = $ln =~ s/^t://
+                ? $self->{document}->create_element_ns
+                      (TEMMA_NS, ['t', $ln])
+                : $self->{document}->create_element_ns
+                      (HTML_NS, [undef, $ln]);
             $self->{open_elements}->[-1]->[0]->append_child ($el);
             push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
           } else {
@@ -197,8 +201,12 @@ sub _construct_tree ($) {
           $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<start>'}
               if not defined $ao;
           if ($ao) {
-            my $el = $self->{document}->create_element_ns
-                (HTML_NS, [undef, $ao]);
+            my $ln = $ao;
+            my $el = $ln =~ s/^t://
+                ? $self->{document}->create_element_ns
+                      (TEMMA_NS, ['t', $ln])
+                : $self->{document}->create_element_ns
+                      (HTML_NS, [undef, $ln]);
             $self->{open_elements}->[-1]->[0]->append_child ($el);
             push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
           } else {

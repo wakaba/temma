@@ -1,0 +1,143 @@
+#data
+<p><t:include>hoge</t:include>foo
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         <temma field>
+|           "hoge"
+|       "foo"
+
+#data
+<p><t:include>   </t:include>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         "   "
+|       "a"
+
+#data
+<p><t:include>   xxy  </t:include>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         "   "
+|         <temma field>
+|           "xxy  "
+|       "a"
+
+#data
+<p><t:include>hoge<t:field>bar</t:include>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         <temma field>
+|           "hoge"
+|         <temma field>
+|           "bar"
+
+#data
+<p><t:include><t:field>foo</t:field>abc</t:include>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         <temma field>
+|           "foo"
+|         <temma field>
+|           "abc"
+
+#data
+<p><t:include><a>foo</a></t:include>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         <temma field>
+|           <a>
+|             "foo"
+|       "a"
+
+#data
+<p><t:include><a>foo</t:include>a
+#errors
+1;33;m;not closed;;a
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         <temma field>
+|           <a>
+|             "foo"
+|       "a"
+
+#data
+<p><t:include><p>foo</t:include>a
+#errors
+1;18;m;not closed;;t:include
+1;33;m;unmatched end tag;;t:include
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         <temma field>
+|     <p>
+|       "fooa"
+
+#data
+<p><t:include><t:field><t:field></t:include>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         <temma field>
+|         <temma field>
+
+#data
+<p><t:include><t:include>foo<b>xx<t:field>yy</t:include>aaa</t:include>xg
+#errors
+1;43;m;not closed;;b
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma include>
+|         <temma field>
+|           <temma include>
+|             <temma field>
+|               "foo"
+|               <b>
+|                 "xx"
+|             <temma field>
+|               "yy"
+|           "aaa"
+|       "xg"

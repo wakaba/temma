@@ -27,11 +27,11 @@ my @transparentcontent = qw(
 );
 my @metacontent = qw(
   title style script noscript
-  t:element t:comment
+  t:element t:comment t:macro
 );
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
-  col t:text t:barehtml t:elsif t:else t:sep t:next t:last t:catch
+  col t:text t:barehtml t:elsif t:else t:sep t:next t:last t:catch t:content
 );
 
 our $AutoOpen = {
@@ -47,6 +47,11 @@ our $AutoOpen = {
   },
   'table' => {
     'tr' => 'tbody',
+  },
+  't:include' => {
+    '<start>' => 't:field',
+    '<text>' => 't:field',
+    't:field' => '',
   },
 };
 
@@ -148,6 +153,7 @@ our $CloseIfInScope = {
   't:elsif' => {'t:if' => 0},
   't:sep' => {'t:for' => 0},
   't:catch' => {'t:try' => 0},
+  't:field' => {'t:include' => 0},
 };
 
 our $EndTagOptional = {
@@ -166,6 +172,7 @@ our $EndTagOptional = {
   option => 1,
   optgroup => 1,
   colgroup => 1,
+  't:field' => 1,
 };
 
 our $PreserveWhiteSpace = {
