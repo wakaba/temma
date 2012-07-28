@@ -26,7 +26,7 @@ my @metavoid = qw(
   link meta base basefont bgsound command
 );
 my @transparentcontent = qw(
-  t:if t:for t:try
+  t:if t:for t:try t:include
 );
 my @metacontent = qw(
   title style script noscript

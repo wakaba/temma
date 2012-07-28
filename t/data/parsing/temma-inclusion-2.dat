@@ -141,3 +141,28 @@
 |               "yy"
 |           "aaa"
 |       "xg"
+
+#data
+<t:include>hh</t:include><link>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <temma include>
+|     <temma field>
+|       "hh"
+|   <head>
+|     <link>
+
+#data
+<link><t:include><meta></t:include><base>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <link>
+|     <temma include>
+|       <temma field>
+|         <meta>
+|     <base>
