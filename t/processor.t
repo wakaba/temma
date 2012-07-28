@@ -84,6 +84,7 @@ sub _processed : Tests {
     my-1.dat
     barehtml-1.dat
     macro-1.dat
+    macro-2.dat
   );
 } # _processed
 

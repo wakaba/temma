@@ -296,7 +296,8 @@ sub __process ($$) {
             my $node_info = {rawtext => 1, rawtext_value => \(my $v = ''),
                              allow_children => 1, comment => 1,
                              has_non_space => 1, preserve_space => 1,
-                             binds => $process->{node_info}->{binds}};
+                             binds => $process->{node_info}->{binds},
+                             fields => $process->{node_info}->{fields}};
 
             unshift @{$self->{processes}},
                 {type => 'end tag', node_info => $node_info};
@@ -522,6 +523,20 @@ sub __process ($$) {
                    preserve_space => $process->{node_info}->{preserve_space}};
 
             next;
+          } elsif ($ln eq 'content') {
+            my $name = $node->get_attribute ('name');
+            $name = '' unless defined $name;
+
+            my $def = $process->{node_info}->{fields}->{$name};
+            next unless $def;
+
+            $self->_schedule_nodes
+              ([grep { $_->node_type == ELEMENT_NODE or
+                       $_->node_type == TEXT_NODE }
+                @{$def->{node}->child_nodes->to_a}],
+               $process->{node_info}, $def->{sp});
+
+            next;
           } elsif ($ln eq 'call') {
             $self->eval_attr_value
                 ($node, 'x', required => 'm', context => 'void',
@@ -629,6 +644,14 @@ sub __process ($$) {
             next;
           }
 
+          if (($process->{node_info}->{macro_depth} || 0) > 100) {
+            $self->{onerror}->(type => 'temma:macro too deep',
+                               level => 'm',
+                               node => $node);
+            next;
+          }
+
+          my $sp = $macro->{node}->get_attribute_ns (TEMMA_NS, 'space') || '';
           my $fields = {};
           for (@{$node->child_nodes->to_a}) {
             next unless $_->node_type == ELEMENT_NODE;
@@ -637,22 +660,33 @@ sub __process ($$) {
 
             my $name = $_->get_attribute ('name');
             $name = '' unless defined $name;
-            # XXXname duplication
-            $fields->{$name} = $_;
+            if ($fields->{$name}) {
+              $self->{onerror}->(type => 'temma:duplicate field',
+                                 value => $name,
+                                 level => 'm',
+                                 node => $node);
+              next;
+            }
+
+            my $_sp = $_->get_attribute_ns (TEMMA_NS, 'space') || '';
+            my $sp = {preserve => 'preserve', trim => 'trim'}->{$_sp}
+                || {preserve => 'preserve', trim => 'trim'}->{$sp}
+                || ($process->{node_info}->{preserve_space} ? 'preserve' : 'trim');
+            $fields->{$name} = {node => $_, sp => $sp};
           }
-
-          # XXX recursion
+          my $has_field = [[{map { $_ => 1 } keys %$fields}], 0];
           
-          # XXX fields
-
-          my $sp = $macro->{node}->get_attribute_ns (TEMMA_NS, 'space') || '';
           $sp = {preserve => 'preserve', trim => 'trim'}->{$sp} ||
               ($macro->{preserve_space} ? 'preserve' : 'trim');
           $self->_schedule_nodes
               ([grep { $_->node_type == ELEMENT_NODE or
                        $_->node_type == TEXT_NODE }
                 @{$macro->{node}->child_nodes->to_a}],
-               $process->{node_info}, $sp);
+               $process->{node_info}, $sp,
+               binds => {%{$process->{node_info}->{binds} or {}},
+                         has_field => $has_field},
+               fields => $fields,
+               macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1);
 
           next;
         } else { # $ns
@@ -677,7 +711,8 @@ sub __process ($$) {
           $fh->print ('<' . $ln);
           my $node_info = $self->{current_tag} =
               {node => $node, ns => $ns, ln => $ln, lnn => $ln, attrs => {},
-               binds => $process->{node_info}->{binds}};
+               binds => $process->{node_info}->{binds},
+               fields => $process->{node_info}->{fields}};
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
           
           for my $attr (@$attrs) {
@@ -768,7 +803,8 @@ sub __process ($$) {
                              level => 'm');
 
           my $node_info = {allow_children => 1,
-                           binds => $process->{node_info}->{binds}};
+                           binds => $process->{node_info}->{binds},
+                           fields => $process->{node_info}->{fields}};
           unshift @{$self->{processes}},
               map { {type => 'node', node => $_,
                      node_info => $node_info} } 
@@ -869,6 +905,8 @@ sub _schedule_nodes ($$$$;%) {
     %{$parent_node_info},
     trailing_space => '',
     binds => $args{binds} || $parent_node_info->{binds},
+    fields => $args{fields} || $parent_node_info->{fields},
+    macro_depth => $args{macro_depth} || $parent_node_info->{macro_depth},
   };
   $node_info->{preserve_space}
       = $sp eq 'preserve' ? 1 :

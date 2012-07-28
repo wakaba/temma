@@ -1,0 +1,274 @@
+#data
+<t:macro name=x>a<t:content>b</t:macro>
+<p><m:x>hoge</m:x>
+#output
+<!DOCTYPE html><html><head></head><body><p>ahogeb</p></body></html>
+
+#data
+<t:macro name=x>a<t:content>b<p><t:content></t:macro>
+<p><m:x>hoge</m:x>
+#output
+<!DOCTYPE html><html><head></head><body><p>ahogeb<p>hoge</p></p></body></html>
+
+#data
+<link>
+<t:macro name=y>
+  <p>
+    <t:content name=attr>
+    <t:attr name="'align'" value="'left'">
+    <span>
+      <t:content>
+    </span>
+</t:macro>
+<m:y>
+  hoge abc
+  <t:field name=attr>
+    <t:attr name="'class'" value=12>
+    <t:attr name="'title'" value="'abc'">
+</m:y>
+#output
+<!DOCTYPE html><html><head><link><p title="abc" align="left" class="12"><span>hoge abc</span></p></head></html>
+
+#data
+<t:macro name=_a>
+  <p><t:content name=aaa>
+  <p><t:content name=bbB>
+</t:macro>
+<div>
+  <m:_a>
+    <t:field name=aaa><span>abc</span><span>AA</span>
+    <t:field name=bbB><span>ddd</span>
+    <t:field name=AAA><span>aaa</span>
+  </m:_a>
+</div>
+<m:_a><t:field name=aaa><br><img></m:_a>
+#output
+<!DOCTYPE html><html><head></head><body><div><p><span>abc</span><span>AA</span></p><p><span>ddd</span></p></div><p><br><img></p><p></p></body></html>
+
+#data
+<t:macro name=title>
+  <h1>
+    <t:if x=" $has_field->{prefix} ">
+      <t:content name=prefix>:&nbsp;
+    </t:if>
+    <t:content>
+  </h1>
+</t:macro>
+<body>
+  <m:title>Hoge</m:title>
+  <m:title>
+    <t:field name=prefix>Section 1
+    <t:field>Hoge <b>fuga</b> foo
+  </m:title>
+#output escaped
+<!DOCTYPE html><html><head></head><body><h1>Hoge</h1><h1>Section 1:\u00A0Hoge <b>fuga</b> foo</h1></body></html>
+
+#data
+<br>
+<t:macro name=hoge>
+  <t:content>
+</t:macro>
+<pre><m:hoge>  ab cd  </m:hoge></pre>
+#output escaped
+| <!DOCTYPE html><html><body><br>
+| 
+| <pre>
+| ab cd  </pre></body></html>
+
+#data
+<br>
+<t:macro name=hoge>
+  <t:content>
+</t:macro>
+<pre><m:hoge><t:field>  ab cd  </m:hoge></pre>
+#output escaped
+| <!DOCTYPE html><html><body><br>
+| 
+| <pre>
+|   ab cd  </pre></body></html>
+
+#data
+<br>
+<t:macro name=hoge>
+  <t:content>
+</t:macro>
+<m:hoge>
+  <t:field t:space=preserve>  ab  </t:field>
+</m:hoge>
+#output
+<!DOCTYPE html><html><body><br>  ab  </body></html>
+
+#data
+<br>
+<t:macro name=hoge>
+  <t:content>
+</t:macro>
+<m:hoge t:space=preserve>
+  <t:field t:space=trim>  ab  </t:field>
+</m:hoge>
+#output
+<!DOCTYPE html><html><body><br>ab</body></html>
+
+#data
+<br>
+<t:macro name=hoge>
+  <t:content>
+</t:macro>
+<div t:space=preserve>
+<m:hoge>
+  <t:field t:space=trim>  ab  </t:field>
+</m:hoge>
+</div>
+#output
+| <!DOCTYPE html><html><body><br>
+| 
+| <div>
+| ab
+| </div></body></html>
+
+#data
+<br><t:macro name=a><t:content t:space=preserve></t:macro>
+<div><m:a><t:field>  aa   bb  </m:a></div>
+#output
+<!DOCTYPE html><html><body><br>
+<div>aa   bb</div></body></html>
+
+#data
+<t:macro name=a>
+  <t:text value=" $has_field->{foo} ">
+</t:macro>
+<div><m:a/></div><div><m:a><t:field name=foo></m:a></div>
+#errors
+2;11;w;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head><body><div></div><div>1</div></body></html>
+
+#data
+<t:macro name=a>
+  <t:text value=" $has_field->{''} ">
+</t:macro>
+<div><m:a/></div><div><m:a><t:field name=foo></m:a></div>
+<div><m:a>hoge</m:a></div>
+#errors
+2;11;w;temma:undef;;
+2;11;w;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head><body><div></div><div></div>
+<div>1</div></body></html>
+
+#data
+<t:macro name=a>
+  <t:for as=has_field x=[1,2]>
+    <t:text value=$has_field>
+  </t:for>
+  <t:text value="$has_field->{hoge}">
+</t:macro>
+<p><m:a><t:field name=hoge></m:a>
+<p><m:a><t:field name=HOGE></m:a>
+#errors
+5;11;w;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head><body><p>12
+  1</p><p>12
+  </p></body></html>
+
+#data
+<t:macro name=a />
+<p><m:a/><t:text value=$has_field>
+#errors escaped
+2;18;m;temma:perl exception;Global symbol "$has_field" requires explicit package name at html>body>p>t:text[value] (at line 2 column 18) line 1.\u000A;
+#output
+<!DOCTYPE html><html><head></head><body><p></p></body></html>
+
+#data
+<t:macro name=a>
+  <m:b>hoge</m:b> (<t:content>)
+</t:macro>
+<t:macro name=b>
+  <span><t:content></span>
+</t:macro>
+<m:a>abc</m:a>
+#output
+<!DOCTYPE html><html><head><span>hoge</span> (abc)</head></html>
+
+#data
+<t:macro name=a>
+  <t:content>
+</t:macro>
+<p><m:a><t:field>a<t:field>b</m:a>
+#errors
+4;4;m;temma:duplicate field;;
+#output
+<!DOCTYPE html><html><head></head><body><p>a</p></body></html>
+
+#data
+<t:macro name=a>
+  <t:content>
+</t:macro>
+<p><m:a><t:field name>a<t:field>b</m:a>
+#errors
+4;4;m;temma:duplicate field;;
+#output
+<!DOCTYPE html><html><head></head><body><p>a</p></body></html>
+
+#data
+<t:macro name=a>
+  <t:content name=abc>
+</t:macro>
+<p><m:a><t:field name=abc>a<t:field name=Abc>b</m:a>
+#errors
+#output
+<!DOCTYPE html><html><head></head><body><p>a</p></body></html>
+
+#data
+<t:macro name=a>
+  <t:content name=abcx>
+</t:macro>
+<p><m:a><t:field name=abcx>a<t:field name=abcx>b</m:a>
+#errors
+4;4;m;temma:duplicate field;abcx;
+#output
+<!DOCTYPE html><html><head></head><body><p>a</p></body></html>
+
+#data
+<t:macro name=a>
+  <t:text value=" ++our $Counter ">
+  <m:b/>
+</t:macro>
+<t:macro name=b>
+  <m:a/>
+</t:macro>
+<m:a/>
+#errors
+3;3;m;temma:macro too deep;;
+#output
+<!DOCTYPE html><html><head>123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051</head></html>
+
+#data
+<t:macro name=a>
+  <t:text value=" ++our $Counter ">
+  <m:b/>
+</t:macro>
+<t:macro name=b>
+  <m:c/>
+</t:macro>
+<t:macro name=c>
+  <m:a/>
+</t:macro>
+<m:a/>
+#errors
+6;3;m;temma:macro too deep;;
+#output
+<!DOCTYPE html><html><head>12345678910111213141516171819202122232425262728293031323334</head></html>
+
+#data
+<p><t:content>abc
+#output
+<!DOCTYPE html><html><body><p>abc</p></body></html>
+
+#data
+<t:macro name=x>
+  <t:content name=abc>
+</t:macro><m:x/>
+#output
+<!DOCTYPE html><html><head></head></html>
