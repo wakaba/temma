@@ -117,6 +117,8 @@ sub _construct_tree ($) {
         
         while (1) {
           my $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<text>'};
+          $ao = $Temma::Defs::AutoOpen->{'<m>'}->{'<text>'}
+              if not defined $ao and $self->{open_elements}->[-1]->[1] =~ /^m:/;
           if ($ao) {
             my $ln = $ao;
             my $el = $ln =~ s/^t://
@@ -198,6 +200,13 @@ sub _construct_tree ($) {
 
         while (1) {
           my $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{$tag_name};
+          $ao = $Temma::Defs::AutoOpen->{'<m>'}->{$tag_name}
+              if not defined $ao and
+                  $self->{open_elements}->[-1]->[1] =~ /^m:/;
+          $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<m>'}
+              if not defined $ao and $tag_name =~ /^m:/;
+          $ao = $Temma::Defs::AutoOpen->{'<m>'}->{'<start>'}
+              if not defined $ao and $self->{open_elements}->[-1]->[1] =~ /^m:/;
           $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<start>'}
               if not defined $ao;
           if ($ao) {
@@ -219,6 +228,7 @@ sub _construct_tree ($) {
           my $i = 0;
           for (reverse @{$self->{open_elements}}) {
             my $diff = $cis->{$_->[1]};
+            $diff = $cis->{'<m>'} if not defined $diff and $_->[1] =~ /^m:/;
             if (defined $diff) {
               last if $diff < 0;
               my @closed = splice @{$self->{open_elements}},
@@ -246,6 +256,9 @@ sub _construct_tree ($) {
       if ($local_name =~ s/^t:(?=.)//s) {
         $ns = TEMMA_NS;
         $prefix = 't';
+      } elsif ($local_name =~ s/^m:(?=.)//s) {
+        $ns = TEMMA_MACRO_NS;
+        $prefix = 'm';
       } elsif ($local_name eq 'svg') {
         $ns = SVG_NS;
         $im = IM_SVG;
@@ -285,6 +298,9 @@ sub _construct_tree ($) {
         } elsif ($attr_name =~ s/^t:(?=.)//s) {
           $attr = $self->{document}->create_attribute_ns
               (TEMMA_NS, ['t', $attr_name]);
+        } elsif ($attr_name =~ s/^m:(?=.)//s) {
+          $attr = $self->{document}->create_attribute_ns
+              (TEMMA_MACRO_NS, ['m', $attr_name]);
         } else {
           $attr = $self->{document}->create_attribute_ns
               (undef, [undef, $attr_fixup->{$attr_name} || $attr_name]);
@@ -324,7 +340,7 @@ sub _construct_tree ($) {
         if ($attrs->{'t:parse'}) {
           #
         } elsif (($orig_im == IM_SVG or $orig_im == IM_MML) and
-                 not $tag_name =~ /^t:/) {
+                 not $tag_name =~ /^t:/ and not $tag_name =~ /^m:/) {
           #
         } elsif ($Temma::Defs::Void->{$tag_name}) {
           pop @{$self->{open_elements}};

@@ -6,7 +6,9 @@ use Whatpm::HTML::Defs;
 use Whatpm::HTML::ParserData;
 use Exporter::Lite;
 
-our @EXPORT = qw(HTML_NS MML_NS SVG_NS TEMMA_NS XML_NS XMLNS_NS XLINK_NS);
+our @EXPORT = qw(
+  HTML_NS MML_NS SVG_NS TEMMA_NS TEMMA_MACRO_NS XML_NS XMLNS_NS XLINK_NS
+);
 
 sub HTML_NS (); *HTML_NS = \&Whatpm::HTML::ParserData::HTML_NS;
 sub SVG_NS (); *SVG_NS = \&Whatpm::HTML::ParserData::SVG_NS;
@@ -15,6 +17,7 @@ sub XML_NS (); *XML_NS = \&Whatpm::HTML::ParserData::XML_NS;
 sub XMLNS_NS (); *XMLNS_NS = \&Whatpm::HTML::ParserData::XMLNS_NS;
 sub XLINK_NS (); *XLINK_NS = \&Whatpm::HTML::ParserData::XLINK_NS;
 sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
+sub TEMMA_MACRO_NS () { q<http://suika.fam.cx/www/markup/temma/macro> }
 
 my @transparentvoid = qw(
   t:attr t:class t:wait t:call t:my
@@ -44,11 +47,17 @@ our $AutoOpen = {
     (map { $_ => '' } @transparentvoid),
     (map { $_ => 'head' } @metacontent),
     (map { $_ => '' } @transparentcontent),
+    '<m>' => 'head',
   },
   'table' => {
     'tr' => 'tbody',
   },
   't:include' => {
+    '<start>' => 't:field',
+    '<text>' => 't:field',
+    't:field' => '',
+  },
+  '<m>' => {
     '<start>' => 't:field',
     '<text>' => 't:field',
     't:field' => '',
@@ -153,7 +162,7 @@ our $CloseIfInScope = {
   't:elsif' => {'t:if' => 0},
   't:sep' => {'t:for' => 0},
   't:catch' => {'t:try' => 0},
-  't:field' => {'t:include' => 0},
+  't:field' => {'t:include' => 0, '<m>' => 0},
 };
 
 our $EndTagOptional = {

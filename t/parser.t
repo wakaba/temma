@@ -61,6 +61,7 @@ sub _parsed_tree : Tests {
     temma-flow-1.dat
     temma-inclusion-1.dat
     temma-inclusion-2.dat
+    temma-macro-1.dat
   );
 } # _parsed_tree
 

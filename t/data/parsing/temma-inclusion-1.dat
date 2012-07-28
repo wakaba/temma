@@ -29,7 +29,7 @@
 |         "abc"
 
 #data
-<p><t:macro>hoge<t:macro>fo<p>o<t:content>aa</t:macro>bb</t:macro>
+<p><t:macro>hoge<t:macro>fo<li>o<t:content>aa</t:macro>bb</t:macro>
 #errors
 #document
 | <!DOCTYPE html>
@@ -40,7 +40,7 @@
 |         "hoge"
 |         <temma macro>
 |           "fo"
-|           <p>
+|           <li>
 |             "o"
 |             <temma content>
 |             "aa"

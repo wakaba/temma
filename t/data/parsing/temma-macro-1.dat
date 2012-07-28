@@ -1,0 +1,106 @@
+#data
+<m:hoge>foo</m:hoge>aa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temmacro hoge>
+|       <temma field>
+|         "foo"
+|   <body>
+|     "aa"
+
+#data
+<li><m:aBc>ar<p>ww</m:abc>x
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <li>
+|       <temmacro abc>
+|         <temma field>
+|           "ar"
+|           <p>
+|             "ww"
+|       "x"
+
+#data
+a<m:eee-aa>aaaa<m:xyz>aaa</m:xyz>bb</m:eee-aa>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temmacro eee-aa>
+|       <temma field>
+|         "aaaa"
+|         <temmacro xyz>
+|           <temma field>
+|             "aaa"
+|         "bb"
+|     "a"
+
+#data
+aa<m:xag>hoge<t:include>aaa</t:include>gge</m:xag>aaa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aa"
+|     <temmacro xag>
+|       <temma field>
+|         "hoge"
+|         <temma include>
+|           <temma field>
+|             "aaa"
+|         "gge"
+|     "aaa"
+
+#data
+aa<m:a>hoge<t:field>abc</m:a>b
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aa"
+|     <temmacro a>
+|       <temma field>
+|         "hoge"
+|       <temma field>
+|         "abc"
+|     "b"
+
+#data
+a<m:_><t:field>b<t:field>c</t:field>a</m:_>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temmacro _>
+|       <temma field>
+|         "b"
+|       <temma field>
+|         "c"
+|       <temma field>
+|         "a"
+
+#data
+foo<m:hoge m:abc m:xy=aa>aa</m:hoge>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <temmacro hoge>
+|       temmacro abc=""
+|       temmacro xy="aa"
+|       <temma field>
+|         "aa"
