@@ -1,0 +1,122 @@
+#data
+<t:macro name=hoge>
+  foo
+</t:macro>
+<p><m:hoge/>a
+#output
+<!DOCTYPE html><html><head></head><body><p>fooa</p></body></html>
+
+#data
+<t:macro name=ab-cd>hoge</t:macro>
+<p><m:ab-cd/>
+<p><m:ab-cd/>
+#output
+<!DOCTYPE html><html><head></head><body><p>hoge</p><p>hoge</p></body></html>
+
+#data
+<div><t:macro name=x120><p>aa<p>bb</t:macro></div>
+<p><m:x120/><span><m:x120></m:x120></span>
+#output
+<!DOCTYPE html><html><body><div></div>
+<p><p>aa</p><p>bb</p><span><p>aa</p><p>bb</p></span></p></body></html>
+
+#data
+<t:macro name=v t:space=preserve>  hoge  </t:macro>
+<m:v/>
+#output
+<!DOCTYPE html><html><head>  hoge  </head></html>
+
+#data
+<pre><t:macro name=v>  xyz  </t:macro></pre>
+<p><m:v/></p>
+#output
+<!DOCTYPE html><html><body><pre>
+</pre>
+<p>  xyz  </p></body></html>
+
+#data
+<pre><t:macro name=v>  xyz  </t:macro></pre>
+<p t:space=preserve><m:v/></p>
+#output
+<!DOCTYPE html><html><body><pre>
+</pre>
+<p>  xyz  </p></body></html>
+
+#data
+<pre><t:macro name=v t:space=trim>  xyz  </t:macro></pre>
+<p t:space=preserve><m:v/></p>
+#output
+<!DOCTYPE html><html><body><pre>
+</pre>
+<p>xyz</p></body></html>
+
+#data
+<t:macro name=a><p><t:macro name=b>foo</t:macro>xyz</t:macro>
+<div><m:a/></div>
+<div><m:b/></div>
+#output
+<!DOCTYPE html><html><head></head><body><div><p>xyz</p></div>
+<div>foo</div></body></html>
+
+#data
+<t:if x=1>
+  <t:macro name=a>hoge</t:macro>
+<t:else>
+  <t:macro name=a>fuga</t:macro>
+</t:if>
+<p><m:a/>
+#output
+<!DOCTYPE html><html><body><p>hoge</p></body></html>
+
+#data
+<t:macro>hoge</t:macro>
+<p><m:/>aaa
+#errors
+1;1;m;attribute missing;;name
+2;4;m;temma:name not serializable;m:;
+#output
+<!DOCTYPE html><html><head></head><body><p>aaa</p></body></html>
+
+#data
+<t:macro name>hoge</t:macro>
+<p><m:/>aaa
+#errors
+1;1;m;temma:bad macro name;;
+2;4;m;temma:name not serializable;m:;
+#output
+<!DOCTYPE html><html><head></head><body><p>aaa</p></body></html>
+
+#data
+<t:macro name=210>hoge</t:macro>
+<p><m:210>aa</m:210>
+#errors
+1;1;m;temma:bad macro name;;
+2;4;m;temma:macro not defined;;
+#output
+<!DOCTYPE html><html><head></head><body><p></p></body></html>
+
+#data
+<t:macro name=AbC>hoge</t:macro>
+<t:macro name=abc>fuga</t:macro>
+<p><m:abc/>
+#errors
+1;1;m;temma:bad macro name;;
+#output
+<!DOCTYPE html><html><head></head><body><p>fuga</p></body></html>
+
+#data
+<t:macro name=hoge>abc</t:macro>
+<t:macro name=hoge>xyz</t:macro>
+#errors
+2;1;m;temma:macro already defined;hoge;
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:macro name=hoge>abc</t:macro>
+<t:macro name=hoge>xyz</t:macro>
+<p><m:hoge/>
+#errors
+2;1;m;temma:macro already defined;hoge;
+#output
+<!DOCTYPE html><html><head></head><body><p>abc</p></body></html>

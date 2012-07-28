@@ -494,6 +494,34 @@ sub __process ($$) {
                 = {%{$process->{node_info}->{binds} || {}},
                    $as => [[$value], 0]};
             next;
+          } elsif ($ln eq 'macro') {
+            my $name = $node->get_attribute ('name');
+            if (not defined $name) {
+              $self->{onerror}->(type => 'attribute missing',
+                                 text => 'name',
+                                 level => 'm',
+                                 node => $node);
+              next;
+            } elsif (not $name =~ /\A[a-z_.][a-z_.0-9-]*\z/) {
+              $self->{onerror}->(type => 'temma:bad macro name',
+                                 level => 'm',
+                                 node => $node);
+              next;
+            }
+
+            if ($self->{macros}->{$name}) {
+              $self->{onerror}->(type => 'temma:macro already defined',
+                                 level => 'm',
+                                 value => $name,
+                                 node => $node);
+              next;
+            }
+
+            $self->{macros}->{$name}
+                = {node => $node,
+                   preserve_space => $process->{node_info}->{preserve_space}};
+
+            next;
           } elsif ($ln eq 'call') {
             $self->eval_attr_value
                 ($node, 'x', required => 'm', context => 'void',
@@ -591,10 +619,46 @@ sub __process ($$) {
             }
             next;
           } # $ln
-        } else {
+        } elsif ($ns eq TEMMA_MACRO_NS) {
+          my $ln = $node->manakai_local_name;
+          my $macro = $self->{macros}->{$ln};
+          unless ($macro) {
+            $self->{onerror}->(type => 'temma:macro not defined',
+                               level => 'm',
+                               node => $node);
+            next;
+          }
+
+          my $fields = {};
+          for (@{$node->child_nodes->to_a}) {
+            next unless $_->node_type == ELEMENT_NODE;
+            next unless ($_->namespace_uri || '') eq TEMMA_NS;
+            next unless $_->manakai_local_name eq 'field';
+
+            my $name = $_->get_attribute ('name');
+            $name = '' unless defined $name;
+            # XXXname duplication
+            $fields->{$name} = $_;
+          }
+
+          # XXX recursion
+          
+          # XXX fields
+
+          my $sp = $macro->{node}->get_attribute_ns (TEMMA_NS, 'space') || '';
+          $sp = {preserve => 'preserve', trim => 'trim'}->{$sp} ||
+              ($macro->{preserve_space} ? 'preserve' : 'trim');
+          $self->_schedule_nodes
+              ([grep { $_->node_type == ELEMENT_NODE or
+                       $_->node_type == TEXT_NODE }
+                @{$macro->{node}->child_nodes->to_a}],
+               $process->{node_info}, $sp);
+
+          next;
+        } else { # $ns
           next if $self->_close_start_tag ($process, $fh);
           $attrs = $node->attributes;
-        }
+        } # $ns
 
         if (not $process->{node_info}->{allow_children} or
             $process->{node_info}->{rawtext}) {

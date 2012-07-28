@@ -104,3 +104,38 @@ foo<m:hoge m:abc m:xy=aa>aa</m:hoge>
 |       temmacro xy="aa"
 |       <temma field>
 |         "aa"
+
+#data
+<link><t:macro/><base>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <link>
+|     <temma macro>
+|     <base>
+
+#data
+<link><m:macro/><base>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <link>
+|     <temmacro macro>
+|     <base>
+
+#data
+<t:macro name=v t:space=preserve>  hoge  </t:macro><m:v/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma macro>
+|       name="v"
+|       temma space="preserve"
+|       "  hoge  "
+|     <temmacro v>

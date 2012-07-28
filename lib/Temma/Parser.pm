@@ -189,6 +189,8 @@ sub _construct_tree ($) {
       if ($self->{open_elements}->[-1]->[2] == IM_HTML) {
         while (1) {
           my $ac = $Temma::Defs::AutoClose->{$self->{open_elements}->[-1]->[1]}->{$tag_name};
+          $ac = $Temma::Defs::AutoClose->{$self->{open_elements}->[-1]->[1]}->{'<m>'}
+              if not defined $ac and $tag_name =~ /^m:/;
           $ac = $Temma::Defs::AutoClose->{$self->{open_elements}->[-1]->[1]}->{'<start>'}
               if not defined $ac;
           if ($ac) {

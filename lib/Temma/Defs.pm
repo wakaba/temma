@@ -73,6 +73,7 @@ our $AutoClose = {
     (map { $_ => '' } @transparentvoid),
     (map { $_ => '' } @metacontent),
     (map { $_ => '' } @transparentcontent),
+    '<m>' => '',
   },
   tr => {
     thead => 1,
