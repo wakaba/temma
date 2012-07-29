@@ -563,9 +563,9 @@ sub __process ($$) {
             my $included_f = file ($path);
             $included_f = $included_f->absolute ($base_f->dir) if $base_f;
 
-            # XXX fields
-            my $has_field = [[], 0];
-            my $fields = {};
+            my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+            my ($fields, $has_field) = $self->_process_fields
+                ($node, $sp, $process);
 
             my $parse_context = 'html';
             my $n = $node->parent_node;
@@ -590,7 +590,8 @@ sub __process ($$) {
                      if ($html_el) {
                        my $attrs = $html_el->attributes;
                        if (@$attrs) {
-                         if ($self->{current_tag}) {
+                         if ($self->{current_tag} and
+                             $self->{current_tag}->{lnn} eq 'html') {
                            $self->_print_attrs
                                ($attrs => $fh, $self->{current_tag});
                          } else {
@@ -737,30 +738,9 @@ sub __process ($$) {
           }
 
           my $sp = $macro->{node}->get_attribute_ns (TEMMA_NS, 'space') || '';
-          my $fields = {};
-          for (@{$node->child_nodes->to_a}) {
-            next unless $_->node_type == ELEMENT_NODE;
-            next unless ($_->namespace_uri || '') eq TEMMA_NS;
-            next unless $_->manakai_local_name eq 'field';
+          my ($fields, $has_field) = $self->_process_fields
+              ($node, $sp, $process);
 
-            my $name = $_->get_attribute ('name');
-            $name = '' unless defined $name;
-            if ($fields->{$name}) {
-              $self->{onerror}->(type => 'temma:duplicate field',
-                                 value => $name,
-                                 level => 'm',
-                                 node => $node);
-              next;
-            }
-
-            my $_sp = $_->get_attribute_ns (TEMMA_NS, 'space') || '';
-            my $sp = {preserve => 'preserve', trim => 'trim'}->{$_sp}
-                || {preserve => 'preserve', trim => 'trim'}->{$sp}
-                || ($process->{node_info}->{preserve_space} ? 'preserve' : 'trim');
-            $fields->{$name} = {node => $_, sp => $sp};
-          }
-          my $has_field = [[{map { $_ => 1 } keys %$fields}], 0];
-          
           $sp = {preserve => 'preserve', trim => 'trim'}->{$sp} ||
               ($macro->{preserve_space} ? 'preserve' : 'trim');
           $self->_schedule_nodes
@@ -797,7 +777,8 @@ sub __process ($$) {
           my $node_info = $self->{current_tag} =
               {node => $node, ns => $ns, ln => $ln, lnn => $ln, attrs => {},
                binds => $process->{node_info}->{binds},
-               fields => $process->{node_info}->{fields}};
+               fields => $process->{node_info}->{fields},
+               macro_depth => $process->{node_info}->{macro_depth}};
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
           $self->_print_attrs ($attrs => $fh, $node_info);
 
@@ -1132,6 +1113,36 @@ sub eval_attr_value ($$$;%) {
 
   return $evaled;
 } # eval_attr_value
+
+sub _process_fields ($$$$) {
+  my ($self, $node, $sp, $process) = @_;
+  
+  my $fields = {};
+  for (@{$node->child_nodes->to_a}) {
+    next unless $_->node_type == ELEMENT_NODE;
+    next unless ($_->namespace_uri || '') eq TEMMA_NS;
+    next unless $_->manakai_local_name eq 'field';
+
+    my $name = $_->get_attribute ('name');
+    $name = '' unless defined $name;
+    if ($fields->{$name}) {
+      $self->{onerror}->(type => 'temma:duplicate field',
+                         value => $name,
+                         level => 'm',
+                         node => $node);
+      next;
+    }
+
+    my $_sp = $_->get_attribute_ns (TEMMA_NS, 'space') || '';
+    my $sp = {preserve => 'preserve', trim => 'trim'}->{$_sp}
+        || {preserve => 'preserve', trim => 'trim'}->{$sp}
+        || ($process->{node_info}->{preserve_space} ? 'preserve' : 'trim');
+    $fields->{$name} = {node => $_, sp => $sp};
+  }
+  my $has_field = [[{map { $_ => 1 } keys %$fields}], 0];
+  
+  return ($fields, $has_field);
+} # _process_fields
 
 sub process_include ($$%) {
   my ($self, $f, %args) = @_;

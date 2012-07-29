@@ -133,6 +133,7 @@ sub _processed : Tests {
     macro-2.dat
     include-1.dat
     include-2.dat
+    include-3.dat
   );
 } # _processed
 

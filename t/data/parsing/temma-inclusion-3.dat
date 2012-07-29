@@ -1,0 +1,20 @@
+#data
+<t:content><link>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temma content>
+|     <link>
+
+#data
+<p><t:content><link>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma content>
+|       <link>

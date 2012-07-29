@@ -1,0 +1,210 @@
+#data
+<div>
+  <t:include path=hoge>
+    abc
+  </t:include>
+</div>
+#data hoge
+<p><t:content>
+#output
+<!DOCTYPE html><html><body><div><p>abc</p></div></body></html>
+
+#data
+<t:include path=hoge>
+  abc
+  <t:field name=title>
+    <span>f</span>oo
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html>
+  <t:content name=meta>
+  <h1><t:content name=title></h1>
+<t:content>
+#output
+<!DOCTYPE html><html><head></head><body><h1><span>f</span>oo</h1>abc</body></html>
+
+#data
+<t:include path=hoge>
+  abc
+  <t:field name=meta>
+    <base><style>abc</style>
+  <t:field name=title>
+    <span>f</span>oo
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html>
+  <t:content name=meta>
+  <h1><t:content name=title></h1>
+<t:content>
+#output
+<!DOCTYPE html><html><head><base><style>abc</style></head><body><h1><span>f</span>oo</h1>abc</body></html>
+
+#data
+<t:include path=hoge>
+  abc
+  <t:field name=meta>
+    <base><style>abc</style>xyz
+  <t:field name=title>
+    <span>f</span>oo
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html>
+  <t:content name=meta>
+  <h1><t:content name=title></h1>
+<t:content>
+#output
+<!DOCTYPE html><html><head><base><style>abc</style>xyz</head><body><h1><span>f</span>oo</h1>abc</body></html>
+
+#data
+<t:include t:space=preserve path=a>
+  abc
+</t:include>
+#data a
+<p><t:content>
+#output
+<!DOCTYPE html><html><body><p>abc
+</p></body></html>
+
+#data
+<t:include t:space=preserve path=a>
+<t:field>
+  abc
+</t:include>
+#data a
+<p><t:content>
+#output
+<!DOCTYPE html><html><body><p>
+  abc
+</p></body></html>
+
+#data
+<t:include path=a>
+<t:field t:space=preserve>
+  abc
+</t:include>
+#data a
+<p><t:content>
+#output
+<!DOCTYPE html><html><body><p>
+  abc
+</p></body></html>
+
+#data
+<t:include path=a t:space=preserve>
+<t:field t:space=trim>
+  abc
+</t:include>
+#data a
+<p><t:content>
+#output
+<!DOCTYPE html><html><body><p>abc</p></body></html>
+
+#data
+<t:include path=a t:space=preserve>
+<t:field>
+  abc
+</t:include>
+#data a
+<p><t:content t:space=trim>
+#output
+<!DOCTYPE html><html><body><p>
+  abc
+</p></body></html>
+
+#data
+<t:include path=a t:space=trim>
+<t:field>
+  abc
+</t:include>
+#data a
+<p><t:content t:space=preserve>
+#output
+<!DOCTYPE html><html><body><p>abc</p></body></html>
+
+#data
+<t:include path=a>
+<t:field>
+  abc
+</t:include>
+#data a
+<pre><t:content></pre>
+#output
+<!DOCTYPE html><html><body><pre>
+abc</pre></body></html>
+
+#data
+<t:include path=a>
+  <t:include path=a>
+    foo
+  </t:include>
+</t:include>
+#data a
+<div><t:content></div>
+#output
+<!DOCTYPE html><html><body><div><body><div>foo</div></body></div></body></html>
+
+#data
+<t:include path=a>
+  <t:include path=a>
+    foo
+  </t:include>
+</t:include>
+#data a
+<!DOCTYPE html>
+<html class=aaa>
+<t:attr name="'a'" value=31>
+<t:content>
+#errors
+/a;1;1;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html a="31" class="aaa"><head a="31"><head>foo</head></head></html>
+
+#data
+<t:include path=a>
+  <t:include path=a>
+    foo
+  </t:include>
+</t:include>
+#data a
+<!DOCTYPE html>
+<html>
+<t:attr name="'a'" value=31>
+<t:content>
+#errors
+#output
+<!DOCTYPE html><html a="31"><head a="31"><head>foo</head></head></html>
+
+#data a
+<div a>
+  <t:include path=b>
+    <t:content>
+  </t:include>
+</div>
+#data b
+<div b>
+  <t:include path=a>
+    <t:content>
+  </t:include>
+</div>
+#errors
+/b;2;3;m;temma:macro too deep;;
+#output
+<!DOCTYPE html><html><body><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></body></html>
+
+#data a
+<div a>
+  <t:include path=b>
+    <t:include path=a>
+      hoge
+    </t:include>
+  </t:include>
+</div>
+#data b
+<div b><t:content></div>
+#errors
+3;5;m;temma:macro too deep;;
+#output
+<!DOCTYPE html><html><body><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""><div a=""><div b=""></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></body></html>

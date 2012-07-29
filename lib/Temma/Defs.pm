@@ -23,7 +23,7 @@ my @transparentvoid = qw(
   t:attr t:class t:wait t:call t:my
 );
 my @metavoid = qw(
-  link meta base basefont bgsound command
+  link meta base basefont bgsound command t:content
 );
 my @transparentcontent = qw(
   t:if t:for t:try t:include
@@ -34,7 +34,7 @@ my @metacontent = qw(
 );
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
-  col t:text t:barehtml t:elsif t:else t:sep t:next t:last t:catch t:content
+  col t:text t:barehtml t:elsif t:else t:sep t:next t:last t:catch
 );
 
 our $AutoOpen = {
