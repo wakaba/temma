@@ -58,6 +58,13 @@ aaaa<t:hoge/>bbb
 <!DOCTYPE html><html><body>aaaabbb</body></html>
 
 #data
+aaaa<t:hoge>abc</t:hoge>bbb
+#errors
+1;5;m;temma:unknown element;hoge;
+#output
+<!DOCTYPE html><html><body>aaaabbb</body></html>
+
+#data
 aaaa<svg><foreignobject><p>foo<math>bar</math></foreignObject>aa</svg>b
 #output
 <!DOCTYPE html><html><body>aaaa<svg><foreignObject><p>foo<math>bar</math></p></foreignObject>aa</svg>b</body></html>
