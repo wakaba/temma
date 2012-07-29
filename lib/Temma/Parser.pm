@@ -189,8 +189,11 @@ sub _construct_tree ($) {
             for my $attr_name (keys %{$attrs}) {
               next if $el->has_attribute_ns (undef, $attr_name);
               my $attr_t = $attrs->{$attr_name};
-              my $attr = $self->{document}->create_attribute_ns
-                  (undef, [undef, $attr_name]);
+              my $attr = $attr_name =~ s/^t://
+                  ? $self->{document}->create_attribute_ns
+                      (TEMMA_NS, ['t', $attr_name])
+                  : $self->{document}->create_attribute_ns
+                      (undef, [undef, $attr_name]);
               $attr->value ($attr_t->{value});
               $attr->set_user_data (manakai_source_line => $attr_t->{line});
               $attr->set_user_data (manakai_source_column => $attr_t->{column});

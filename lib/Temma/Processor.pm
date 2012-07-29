@@ -548,6 +548,13 @@ sub __process ($$) {
               next;
             }
 
+            if (($process->{node_info}->{macro_depth} || 0) > 50) {
+              $self->{onerror}->(type => 'temma:macro too deep',
+                                 level => 'm',
+                                 node => $node);
+              next;
+            }
+            
             $self->_before_non_space ($process => $fh)
                 unless $self->{current_tag};
 
@@ -559,9 +566,6 @@ sub __process ($$) {
             # XXX fields
             my $has_field = [[], 0];
             my $fields = {};
-            # XXX recursion
-
-            # XXX white space tests
 
             my $parse_context = 'html';
             my $n = $node->parent_node;
@@ -584,14 +588,16 @@ sub __process ($$) {
                    if ($parse_context eq 'html') {
                      my $html_el = $_[0]->manakai_html;
                      if ($html_el) {
-                       if ($self->{current_tag}) {
-                         $self->_print_attrs
-                             ($html_el->attributes => $fh,
-                              $self->{current_tag});
-                       } else {
-                         $self->{onerror}->(type => 'temma:start tag already closed',
-                                            node => $html_el,
-                                            level => 'm');
+                       my $attrs = $html_el->attributes;
+                       if (@$attrs) {
+                         if ($self->{current_tag}) {
+                           $self->_print_attrs
+                               ($attrs => $fh, $self->{current_tag});
+                         } else {
+                           $self->{onerror}->(type => 'temma:start tag already closed',
+                                              node => $html_el,
+                                              level => 'm');
+                         }
                        }
                        $nodes = $html_el->child_nodes->to_a;
                      }
@@ -723,7 +729,7 @@ sub __process ($$) {
             next;
           }
 
-          if (($process->{node_info}->{macro_depth} || 0) > 100) {
+          if (($process->{node_info}->{macro_depth} || 0) > 50) {
             $self->{onerror}->(type => 'temma:macro too deep',
                                level => 'm',
                                node => $node);

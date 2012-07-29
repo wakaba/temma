@@ -242,7 +242,7 @@
 #errors
 3;3;m;temma:macro too deep;;
 #output
-<!DOCTYPE html><html><head>123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051</head></html>
+<!DOCTYPE html><html><head>1234567891011121314151617181920212223242526</head></html>
 
 #data
 <t:macro name=a>
@@ -257,9 +257,9 @@
 </t:macro>
 <m:a/>
 #errors
-6;3;m;temma:macro too deep;;
+9;3;m;temma:macro too deep;;
 #output
-<!DOCTYPE html><html><head>12345678910111213141516171819202122232425262728293031323334</head></html>
+<!DOCTYPE html><html><head>1234567891011121314151617</head></html>
 
 #data
 <p><t:content>abc

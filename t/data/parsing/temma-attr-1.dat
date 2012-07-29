@@ -71,3 +71,11 @@
 |   <body>
 |     <temma hoge>
 |       temma parse=""
+
+#data
+<html t:parse>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   temma parse=""

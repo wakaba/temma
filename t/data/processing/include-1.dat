@@ -147,3 +147,31 @@ ho&abc;
 /foo;1;3;m;entity not declared;abc;;
 #output
 <!DOCTYPE html><html><body><p>ho&amp;abc;</p></body></html>
+
+#data
+<pre>  <t:include path= inc /> </pre>
+#data inc
+   ho   ge  
+#output
+<!DOCTYPE html><html><body><pre>
+  ho   ge </pre></body></html>
+
+#data
+<p><t:include path=i />
+#data i
+<body t:space=preserve>  aa  
+#errors
+/i;1;24;m;start tag not allowed;;body
+#output
+<!DOCTYPE html><html><body><p>aa</p></body></html>
+
+#data
+<div><t:include path=foo /></div>
+#data foo
+<t:include path=bar />
+#data bar
+<t:include path=foo /><t:text value=" ++our $count ">
+#errors
+/foo;1;1;m;temma:macro too deep;;
+#output
+<!DOCTYPE html><html><body><div>12345678910111213141516171819202122232425</div></body></html>

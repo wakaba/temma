@@ -118,3 +118,12 @@
 <html class=aaaa>
 #output
 <!DOCTYPE html><html class="aaaa 412 1324"></html>
+
+#data
+<html t:space=preserve>
+  <t:include path = foo />
+#data foo
+   foo   bar  
+#output
+<!DOCTYPE html><html>
+  <body>foo   bar</body></html>
