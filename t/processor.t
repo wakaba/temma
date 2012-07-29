@@ -1,6 +1,7 @@
 package test::Temma::Processor;
 use strict;
 use warnings;
+no warnings 'redefine';
 use Path::Class;
 use lib file (__FILE__)->dir->parent->subdir ('lib')->stringify;
 use lib glob file (__FILE__)->dir->parent->subdir ('modules', '*', 'lib')->stringify;
@@ -19,7 +20,7 @@ sub _processed : Tests {
   my $dom = Message::DOM::DOMImplementation->new;
 
   for_each_test $_->stringify, {
-    data => {is_prefixed => 1},
+    data => {is_prefixed => 1, multiple => 1},
     errors => {is_list => 1},
     output => {is_prefixed => 1},
   }, sub {
@@ -41,8 +42,39 @@ sub _processed : Tests {
       } @opt{qw(line column level type value text)};
     }; # onerror
 
+    my $datas = $test->{data} || [];
+    my $data_by_file_name = {};
+    for my $data (@$datas) {
+      my $file_name = $data->[1]->[-1];
+      $file_name = '' unless defined $file_name;
+      if ($data_by_file_name->{$file_name}) {
+        die "Multiple #data section with file name |$file_name|";
+        next;
+      }
+      $data_by_file_name->{$file_name} = $data;
+    }
+    local *Temma::Processor::process_include = sub ($$%) {
+      my ($self, $f, %args) = @_;
+
+      my $data = $data_by_file_name->{$f};
+      unless ($data) {
+        $args{onerror}->("File |$f| not found");
+        return;
+      }
+
+      my $parser = Temma::Parser->new;
+      my $doc = $args{dom}->create_document;
+      $parser->parse_char_string ($data->[0] => $doc, $self->onerror);
+  
+      $args{onparsed}->($doc);
+    }; # process_include
+
     my $doc = $dom->create_document;
-    $parser->parse_char_string ($test->{data}->[0] => $doc, $onerror);
+    $parser->parse_char_string ($test->{data}->[0]->[0] => $doc, $onerror);
+    if (defined $test->{data}->[0]->[1]->[-1]) {
+      $doc->set_user_data
+          (manakai_source_f => file ($test->{data}->[0]->[1]->[-1]));
+    }
 
     my $output = '';
     open my $fh, '>', \$output;
@@ -85,6 +117,7 @@ sub _processed : Tests {
     barehtml-1.dat
     macro-1.dat
     macro-2.dat
+    include-1.dat
   );
 } # _processed
 
@@ -115,6 +148,45 @@ sub _processed : Tests {
     return $_[0]->{sent_value};
   } # recv
 }
+
+sub _include_1 : Test(1) {
+  my $parser = Temma::Parser->new;
+  my $f = $test_data_d->file ('doc-include-1.html.tm');
+  my $doc = Message::DOM::DOMImplementation->new->create_document;
+  $parser->parse_f ($f => $doc);
+
+  my $output = '';
+  open my $fh, '>', \$output;
+  binmode $fh, ':utf8';
+
+  my $processor = Temma::Processor->new;
+  $processor->process_document ($doc => $fh);
+
+  is $output, '<!DOCTYPE html><html><body><p>foo</p><div><p>abc</p><p>xyz</p></div>
+<p>bar</p></body></html>';
+} # _include_1
+
+sub _include_3 : Test(3) {
+  my $parser = Temma::Parser->new;
+  my $f = $test_data_d->file ('doc-include-3.html.tm');
+  my $doc = Message::DOM::DOMImplementation->new->create_document;
+  $parser->parse_f ($f => $doc);
+
+  my $output = '';
+  open my $fh, '>', \$output;
+  binmode $fh, ':utf8';
+
+  my @error;
+  my $processor = Temma::Processor->new;
+  $processor->onerror (sub {
+    push @error, {@_};
+  });
+  $processor->process_document ($doc => $fh);
+
+  is $output, '<!DOCTYPE html><html><body><p>foo</p><div';
+  is $error[-1]->{type}, 'temma:include error';
+  like $error[-1]->{value}, qr{not/found/file};
+} # _include_3
 
 __PACKAGE__->runtests;
 

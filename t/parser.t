@@ -65,7 +65,35 @@ sub _parsed_tree : Tests {
   );
 } # _parsed_tree
 
+sub _parse_f : Test(3) {
+  my $parser = Temma::Parser->new;
+  my $f = $test_data_d->file ('doc-1.html.tm');
+  my $doc = Message::DOM::DOMImplementation->new->create_document;
+  $parser->parse_f ($f => $doc);
+  is $doc->inner_html, q{<!DOCTYPE html><html>
+
+  <head><link href="/foo/bar.css" rel="stylesheet">
+  <title t:parse=""><t:text value=" foo () "></t:text></title>
+  <t:macro name="text">
+    <t:text value="bar()"></t:text>
+  </t:macro>
+  </head><body><p><m:text></m:text>
+
+</p></body></html>};
+  my $f2 = $doc->get_user_data ('manakai_source_f');
+  isa_ok $f2, 'Path::Class::File';
+  is $f2->stringify, $f->stringify;
+} # _parse_f
+
 __PACKAGE__->runtests;
 
 1;
 
+=head1 LICENSE
+
+Copyright 2012 Wakaba <w@suika.fam.cx>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

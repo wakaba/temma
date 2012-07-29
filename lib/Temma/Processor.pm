@@ -2,12 +2,13 @@ package Temma::Processor;
 use strict;
 use warnings;
 no warnings 'utf8';
-
+#
 sub _eval ($) {
   return eval ('local @_;' . "\n" . $_[0]);
 } # _eval
-
+#
 our $VERSION = '1.0';
+use Path::Class;
 use Message::DOM::Node;
 use Temma::Defs;
 
@@ -537,6 +538,51 @@ sub __process ($$) {
                $process->{node_info}, $def->{sp});
 
             next;
+          } elsif ($ln eq 'include') {
+            my $path = $node->get_attribute ('path');
+            unless (defined $path) {
+              $self->{onerror}->(type => 'attribute missing',
+                                 text => 'path',
+                                 level => 'm',
+                                 node => $node);
+              next;
+            }
+
+            my $base_f = $node->owner_document->get_user_data
+                ('manakai_source_f'); # or undef
+            my $included_f = file ($path);
+            $included_f = $included_f->absolute ($base_f->dir) if $base_f;
+
+            # XXX fields
+            my $has_field = {};
+            my $fields = {};
+            # XXX recursion
+
+            $self->process_include
+                ($included_f,
+                 parse_context => 'body', # XXX impl
+                 dom => $node->owner_document->implementation,
+                 onparsed => sub {
+                   my $body_el = $_[0]->body;
+
+                   $self->_schedule_nodes
+                       ([grep { $_->node_type == ELEMENT_NODE or
+                                $_->node_type == TEXT_NODE }
+                         @{$body_el->child_nodes->to_a}],
+                        $process->{node_info}, 'trim',
+                        binds => {%{$process->{node_info}->{binds} or {}},
+                                  has_field => $has_field},
+                        fields => $fields,
+                        macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1);
+                   $self->_process ($fh);
+                 },
+                 onerror => sub {
+                   $self->{onerror}->(type => 'temma:include error',
+                                      level => 'm',
+                                      value => $_[0],
+                                      node => $node);
+                 });
+            return;
           } elsif ($ln eq 'call') {
             $self->eval_attr_value
                 ($node, 'x', required => 'm', context => 'void',
@@ -1032,6 +1078,23 @@ sub eval_attr_value ($$$;%) {
 
   return $evaled;
 } # eval_attr_value
+
+sub process_include ($$%) {
+  my ($self, $f, %args) = @_;
+
+  my $file = eval { $f->openr };
+  if ($@) {
+    $args{onerror}->($@);
+    return;
+  }
+
+  require Temma::Parser;
+  my $parser = Temma::Parser->new;
+  my $doc = $args{dom}->create_document;
+  $parser->parse_f ($f => $doc, $self->onerror);
+  
+  $args{onparsed}->($doc);
+} # process_include
 
 1;
 

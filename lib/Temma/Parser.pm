@@ -44,6 +44,16 @@ sub parse_char_string ($$$;$$) {
   return $doc;
 } # parse_char_string
 
+sub parse_f ($$$;$) {
+  my ($self, $f => $doc, $onerror) = @_;
+  require Encode;
+  $self->parse_char_string
+      (Encode::decode ('utf-8', scalar $f->slurp), # or die
+       $doc, $onerror);
+  $doc->set_user_data (manakai_source_f => $f);
+  return $doc;
+} # parse_f
+
 ## ------ Tree construction ------
 
 sub _initialize_tree_constructor ($) {
