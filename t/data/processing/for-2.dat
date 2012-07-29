@@ -53,7 +53,7 @@
   <t:text value=$x>
 </t:for>
 #errors escaped
-4;11;m;temma:perl exception;Global symbol "$x" requires explicit package name at html>head>t:for>t:text[value] (at line 4 column 11) line 1.\u000A;
+4;11;m;temma:perl exception;Global symbol "$x" requires explicit package name at html>head>t:for>t:text[value] (at /index.html.tm line 4 column 11) line 1.\u000A;
 #output
 <!DOCTYPE html><html><head>a</head></html>
 

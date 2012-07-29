@@ -26,55 +26,69 @@ sub _processed : Tests {
   }, sub {
     my $test = shift;
 
+    my $datas = $test->{data} || [];
+    my $data_by_file_name = {};
+    my $initial_file_name;
+    for my $data (@$datas) {
+      my $file_name = $data->[1]->[-1];
+      $file_name = 'index.html.tm' unless defined $file_name;
+      $file_name = '/' . $file_name unless $file_name =~ m{^/};
+      if ($data_by_file_name->{$file_name}) {
+        die "Multiple #data section with file name |$file_name|";
+        next;
+      }
+      $data_by_file_name->{$file_name} = $data;
+      $initial_file_name ||= $file_name;
+    }
+
     my @error;
     my $parser = Temma::Parser->new;
     my $onerror = sub {
       my %opt = @_;
       my $node = $opt{node};
+      $opt{f} ||= ($node->owner_document || $node)
+          ->get_user_data ('manakai_source_f') if $node;
       while ($node) {
         $opt{line} //= $node->get_user_data ('manakai_source_line');
         $opt{column} //= $node->get_user_data ('manakai_source_column');
         last if defined $opt{line} and defined $opt{column};
         $node = $node->parent_node;
       }
-      push @error, join ';', map { 
-        defined $_ ? $_ : '';
-      } @opt{qw(line column level type value text)};
+      push @error,
+          (($opt{f} && $opt{f} ne $initial_file_name) ? $opt{f} . ';' : '') .
+          join ';', map { 
+            defined $_ ? $_ : '';
+          } @opt{qw(line column level type value text)};
     }; # onerror
 
-    my $datas = $test->{data} || [];
-    my $data_by_file_name = {};
-    for my $data (@$datas) {
-      my $file_name = $data->[1]->[-1];
-      $file_name = '' unless defined $file_name;
-      if ($data_by_file_name->{$file_name}) {
-        die "Multiple #data section with file name |$file_name|";
-        next;
-      }
-      $data_by_file_name->{$file_name} = $data;
-    }
     local *Temma::Processor::process_include = sub ($$%) {
       my ($self, $f, %args) = @_;
 
-      my $data = $data_by_file_name->{$f};
+      my $file_name = $f->stringify;
+      $file_name =~ s{/[^/]+/\.\.(?=/|$)}{}g;
+      $f = file ($file_name);
+
+      my $data = $data_by_file_name->{$file_name};
       unless ($data) {
-        $args{onerror}->("File |$f| not found");
+        $args{onerror}->("File |$file_name| not found");
         return;
       }
 
       my $parser = Temma::Parser->new;
       my $doc = $args{dom}->create_document;
-      $parser->parse_char_string ($data->[0] => $doc, $self->onerror);
+      $parser->{initial_state} = $args{parse_context};
+      $parser->parse_char_string ($data->[0] => $doc, sub {
+        $self->onerror->(@_, f => $f);
+      });
+      $doc->set_user_data (manakai_source_f => $f);
   
       $args{onparsed}->($doc);
     }; # process_include
 
     my $doc = $dom->create_document;
-    $parser->parse_char_string ($test->{data}->[0]->[0] => $doc, $onerror);
-    if (defined $test->{data}->[0]->[1]->[-1]) {
-      $doc->set_user_data
-          (manakai_source_f => file ($test->{data}->[0]->[1]->[-1]));
-    }
+    my $data = $data_by_file_name->{$initial_file_name};
+    $parser->parse_char_string ($data->[0] => $doc, $onerror);
+    $doc->set_user_data (manakai_source_f => file ($initial_file_name));
 
     my $output = '';
     open my $fh, '>', \$output;

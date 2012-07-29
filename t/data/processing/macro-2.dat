@@ -176,7 +176,7 @@
 <t:macro name=a />
 <p><m:a/><t:text value=$has_field>
 #errors escaped
-2;18;m;temma:perl exception;Global symbol "$has_field" requires explicit package name at html>body>p>t:text[value] (at line 2 column 18) line 1.\u000A;
+2;18;m;temma:perl exception;Global symbol "$has_field" requires explicit package name at html>body>p>t:text[value] (at /index.html.tm line 2 column 18) line 1.\u000A;
 #output
 <!DOCTYPE html><html><head></head><body><p></p></body></html>
 

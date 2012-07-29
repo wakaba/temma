@@ -263,7 +263,7 @@ a<t:for x=[1,2,3]>a</t:for>
 </t:for>
 <t:text value=$abc>
 #errors escaped
-6;9;m;temma:perl exception;Global symbol "$abc" requires explicit package name at html>body>t:text[value] (at line 6 column 9) line 1.\u000A;
+6;9;m;temma:perl exception;Global symbol "$abc" requires explicit package name at html>body>t:text[value] (at /index.html.tm line 6 column 9) line 1.\u000A;
 #output
 <!DOCTYPE html><html><head>12</head><body></body></html>
 

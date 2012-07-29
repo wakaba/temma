@@ -39,7 +39,7 @@ aa<t:try>
   xyz
 </div>
 #errors escaped
-4;13;m;temma:perl exception;Died at html>body>div>t:try>t:call[x] (at line 4 column 13) line 1.\u000A;
+4;13;m;temma:perl exception;Died at html>body>div>t:try>t:call[x] (at /index.html.tm line 4 column 13) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body><div>abc</div></body></html>
 
@@ -55,7 +55,7 @@ aa<t:try>
   hoge
 </div>
 #errors escaped
-5;13;m;temma:perl exception;Died at html>body>div>t:try>t:call[x] (at line 5 column 13) line 1.\u000A;
+5;13;m;temma:perl exception;Died at html>body>div>t:try>t:call[x] (at /index.html.tm line 5 column 13) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body><div class="1 2"></div></body></html>
 

@@ -4,3 +4,136 @@
 <p>abc
 #output
 <!DOCTYPE html><html><body><div><p>abc</p></div></body></html>
+
+#data
+<div><t:include path=hoge.txt /></div>
+#data hoge.txt
+<p>abc
+#output
+<!DOCTYPE html><html><body><div><p>abc</p></div></body></html>
+
+#data hoge/fuga
+<div><t:include path=abc.txt /></div>
+#data hoge/abc.txt
+<p>abc
+#output
+<!DOCTYPE html><html><body><div><p>abc</p></div></body></html>
+
+#data /a/b/c/d.tm
+<div><t:include path=../x/y/z.tm /></div>
+#data /a/b/x/y/z.tm
+<p>abc
+#output
+<!DOCTYPE html><html><body><div><p>abc</p></div></body></html>
+
+#data
+<div><t:include/>a</div>
+#errors
+1;6;m;attribute missing;;path
+#output
+<!DOCTYPE html><html><body><div>a</div></body></html>
+
+#data
+<div><t:include path /></div>
+#errors
+1;6;m;temma:include error;File |/| not found;
+#output
+<!DOCTYPE html><html><body><div
+
+#data
+<div><t:include path=/abc /></div>
+#errors
+1;6;m;temma:include error;File |/abc| not found;
+#output
+<!DOCTYPE html><html><body><div
+
+#data
+<div><t:include path=body.txt /></div>
+#data body.txt
+<link>
+#output
+<!DOCTYPE html><html><body><div><link></div></body></html>
+
+#data
+<div><t:include path=body.txt /></div>
+#data body.txt
+<t:if x=0>
+<p>hoge
+<t:else>
+<base>
+</t:if>
+#output
+<!DOCTYPE html><html><body><div><base></div></body></html>
+
+#data
+<link>
+<t:include path=head.txt />
+<p>hoge
+#data head.txt
+<link>
+<base>
+<p>abc
+#output
+<!DOCTYPE html><html><head><link><link>
+<base>
+<p>abc</p></head><body><p>hoge</p></body></html>
+
+#data
+<p><t:include path=foo />
+#data /foo
+hoge</body>fuga</html>abvc
+#errors
+#output
+<!DOCTYPE html><html><body><p>hogefugaabvc</p></body></html>
+
+#data
+<p><t:include path=foo />
+#data /foo
+<!DOCTYPE html>
+<html lanG=en>
+<title>abc</title>
+<body>hoge</body>fuga</html>abvc
+#errors
+/foo;3;0;m;start tag not allowed;;html
+/foo;4;7;m;start tag not allowed;;body
+#output
+<!DOCTYPE html><html><body><p><title>abc</title>
+hogefugaabvc</p></body></html>
+
+#data
+<t:for as=hoge x=[1]>
+<p><t:include path=hoge />xy</p>
+</t:for>
+#data hoge
+<t:if x=$hoge>
+fuga
+</t:if>
+#errors escaped
+/hoge;1;7;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>t:if[x] (at /hoge line 1 column 7) line 1.\u000A;
+#output
+<!DOCTYPE html><html><p></p></html>
+
+#data
+<t:for as=hoge x=[1]>
+<p><t:include path=hoge />xy</p>
+<t:text value=$hoge>
+</t:for>
+#data hoge
+<t:for as=hoge x=[2]>
+<t:if x=$hoge>
+fuga<t:text value=$hoge>
+</t:if>
+</t:for>
+#errors escaped
+#output
+<!DOCTYPE html><html><p>fuga2xy</p>
+1</html>
+
+#data
+<p><t:include path=foo />
+#data foo
+ho&abc;
+#errors
+/foo;1;3;m;entity not declared;abc;;
+#output
+<!DOCTYPE html><html><body><p>ho&amp;abc;</p></body></html>

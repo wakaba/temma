@@ -18,11 +18,19 @@ sub parse_char_string ($$$;$$) {
   ## Confidence: irrelevant.
   $self->{confident} = 1 unless exists $self->{confident};
 
-  $self->{line_prev} = $self->{line} = 1;
-  $self->{column_prev} = -1;
-  $self->{column} = 0;
+  my @prefix;
+  my $delta = 0;
+  if ($self->{initial_state} and
+      $self->{initial_state} eq 'body') {
+    @prefix = split //, '<body>';
+    $delta += -@prefix;
+  }
 
-  $self->{chars} = [split //, $_[1]];
+  $self->{line_prev} = $self->{line} = 1;
+  $self->{column_prev} = -1 + $delta;
+  $self->{column} = 0 + $delta;
+
+  $self->{chars} = [@prefix, split //, $_[1]];
   $self->{chars_pos} = 0;
   $self->{chars_pull_next} = sub { 0 };
   delete $self->{chars_was_cr};

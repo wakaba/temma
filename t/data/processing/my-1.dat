@@ -36,7 +36,7 @@
 </div>
 <t:text value=$foo>
 #errors escaped
-4;9;m;temma:perl exception;Global symbol "$foo" requires explicit package name at html>body>t:text[value] (at line 4 column 9) line 1.\u000A;
+4;9;m;temma:perl exception;Global symbol "$foo" requires explicit package name at html>body>t:text[value] (at /index.html.tm line 4 column 9) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body><div></div>
 </body></html>
@@ -49,7 +49,7 @@
   <t:text value=$hoge>
 </div>
 #errors escaped
-5;11;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>div>t:text[value] (at line 5 column 11) line 1.\u000A;
+5;11;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>div>t:text[value] (at /index.html.tm line 5 column 11) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body><div></div></body></html>
 

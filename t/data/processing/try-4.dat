@@ -6,7 +6,7 @@
     foo<t:text value=$hoge>bar
   </t:try>
 #output
-<!DOCTYPE html><html><body><p>fooDied at html&gt;body&gt;p&gt;t:try&gt;t:call[x] (at line 3 column 13) line 1.
+<!DOCTYPE html><html><body><p>fooDied at html&gt;body&gt;p&gt;t:try&gt;t:call[x] (at /index.html.tm line 3 column 13) line 1.
 bar</p></body></html>
 
 #data
@@ -27,7 +27,7 @@ bar</p></body></html>
     <t:text value=" $aiueo->value ">
   </t:try>
 #output
-<!DOCTYPE html><html><body><p>hoge fuga abc at html&gt;body&gt;p&gt;t:try&gt;t:call[x] (at line 3 column 13) line 1.
+<!DOCTYPE html><html><body><p>hoge fuga abc at html&gt;body&gt;p&gt;t:try&gt;t:call[x] (at /index.html.tm line 3 column 13) line 1.
 </p></body></html>
 
 #data
@@ -55,11 +55,11 @@ bar</p></body></html>
 #output
 | <!DOCTYPE html><html><body><p>1
 |     1
-|       Died at html&gt;body&gt;p&gt;t:for&gt;t:try&gt;t:text[value] (at line 6 column 15) line 1.
+|       Died at html&gt;body&gt;p&gt;t:for&gt;t:try&gt;t:text[value] (at /index.html.tm line 6 column 15) line 1.
 | 
 |     12
 |     2
-|       Died at html&gt;body&gt;p&gt;t:for&gt;t:try&gt;t:text[value] (at line 6 column 15) line 1.
+|       Died at html&gt;body&gt;p&gt;t:for&gt;t:try&gt;t:text[value] (at /index.html.tm line 6 column 15) line 1.
 | 
 |     2</p></body></html>
 
@@ -84,9 +84,9 @@ bar</p></body></html>
     </t:try>
   </t:try>
 #output
-<!DOCTYPE html><html><body><p><b></b><i></i><u>123 at html&gt;body&gt;p&gt;t:try&gt;b&gt;t:call[x] (at line 4 column 15) line 1.
+<!DOCTYPE html><html><body><p><b></b><i></i><u>123 at html&gt;body&gt;p&gt;t:try&gt;b&gt;t:call[x] (at /index.html.tm line 4 column 15) line 1.
 </u>
-      <u>61 at html&gt;body&gt;p&gt;t:try&gt;t:try&gt;i&gt;t:call[x] (at line 9 column 17) line 1.
+      <u>61 at html&gt;body&gt;p&gt;t:try&gt;t:try&gt;i&gt;t:call[x] (at /index.html.tm line 9 column 17) line 1.
 </u></p></body></html>
 
 #data

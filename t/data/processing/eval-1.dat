@@ -1,21 +1,21 @@
 #data
 <t:text value=" hoge "/>
 #errors escaped
-1;9;m;temma:perl exception;Bareword "hoge" not allowed while "strict subs" in use at html>body>t:text[value] (at line 1 column 9) line 1.\u000A;
+1;9;m;temma:perl exception;Bareword "hoge" not allowed while "strict subs" in use at html>body>t:text[value] (at /index.html.tm line 1 column 9) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body></body></html>
 
 #data
 <t:text value=" $hoge; "/>
 #errors escaped
-1;9;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>t:text[value] (at line 1 column 9) line 1.\u000A;
+1;9;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>t:text[value] (at /index.html.tm line 1 column 9) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body></body></html>
 
 #data
 <t:text value="$self;"/>
 #errors escaped
-1;9;m;temma:perl exception;Global symbol "$self" requires explicit package name at html>body>t:text[value] (at line 1 column 9) line 1.\u000A;
+1;9;m;temma:perl exception;Global symbol "$self" requires explicit package name at html>body>t:text[value] (at /index.html.tm line 1 column 9) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body></body></html>
 
@@ -48,14 +48,14 @@
 #data
 <t:text value=" $VERSION; "/>
 #errors escaped
-1;9;m;temma:perl exception;Global symbol "$VERSION" requires explicit package name at html>body>t:text[value] (at line 1 column 9) line 1.\u000A;
+1;9;m;temma:perl exception;Global symbol "$VERSION" requires explicit package name at html>body>t:text[value] (at /index.html.tm line 1 column 9) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body></body></html>
 
 #data
 <p><t:text value=" 20 / $hoge::fuga "/>
 #errors escaped
-1;12;m;temma:perl exception;Illegal division by zero at html>body>p>t:text[value] (at line 1 column 12) line 1.\u000A;
+1;12;m;temma:perl exception;Illegal division by zero at html>body>p>t:text[value] (at /index.html.tm line 1 column 12) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body><p></p></body></html>
 
@@ -65,7 +65,7 @@
   hoge::fuga ()
 "/>aa</script>
 #errors escaped
-1;25;m;temma:perl exception;Undefined subroutine &hoge::fuga called at html>head>script>t:text[value] (at line 1 column 25) line 3.\u000A;
+1;25;m;temma:perl exception;Undefined subroutine &hoge::fuga called at html>head>script>t:text[value] (at /index.html.tm line 1 column 25) line 3.\u000A;
 #output
 <!DOCTYPE html><html><head><script></script></head></html>
 
@@ -76,7 +76,7 @@
   die '123';
 "/>aa</script>
 #errors escaped
-1;25;m;temma:perl exception;123 at html>head>script>t:text[value] (at line 1 column 25) line 4.\u000A;
+1;25;m;temma:perl exception;123 at html>head>script>t:text[value] (at /index.html.tm line 1 column 25) line 4.\u000A;
 #output
 <!DOCTYPE html><html><head><script></script></head></html>
 
@@ -87,7 +87,7 @@
   die '123';
 "/>aa</script>
 #errors escaped
-1;25;m;temma:perl exception;Bareword "abc" not allowed while "strict subs" in use at html>head>script>t:text[value] (at line 1 column 25) line 1.\u000A;
+1;25;m;temma:perl exception;Bareword "abc" not allowed while "strict subs" in use at html>head>script>t:text[value] (at /index.html.tm line 1 column 25) line 1.\u000A;
 #output
 <!DOCTYPE html><html><head><script></script></head></html>
 
@@ -118,6 +118,6 @@
   <t:call x=" our $hoge = 123 ">
   <t:text value=" $hoge ">
 #errors escaped
-3;11;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>p>t:text[value] (at line 3 column 11) line 1.\u000A;
+3;11;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>p>t:text[value] (at /index.html.tm line 3 column 11) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body><p></p></body></html>

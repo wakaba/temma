@@ -130,7 +130,7 @@ zzz</p></body></html>
     <t:call x="die 2">
   </t:try>abc
 #errors escaped
-5;13;m;temma:perl exception;2 at html>body>p>t:try>t:call[x] (at line 5 column 13) line 1.\u000A;
+5;13;m;temma:perl exception;2 at html>body>p>t:try>t:call[x] (at /index.html.tm line 5 column 13) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body><p></p></body></html>
 

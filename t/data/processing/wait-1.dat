@@ -137,14 +137,14 @@ a<t:wait cv="
 #data
 a<t:wait cv="new Test::Temma::CV" cb=" die 123 ">b
 #errors escaped
-1;35;m;temma:perl exception;123 at html>body>t:wait[cb] (at line 1 column 35) line 1.\u000A;
+1;35;m;temma:perl exception;123 at html>body>t:wait[cb] (at /index.html.tm line 1 column 35) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body>a</body></html>
 
 #data
 a<t:wait cv="new Test::Temma::CV">b<t:text value=die>c
 #errors escaped
-1;44;m;temma:perl exception;Died at html>body>t:text[value] (at line 1 column 44) line 1.\u000A;
+1;44;m;temma:perl exception;Died at html>body>t:text[value] (at /index.html.tm line 1 column 44) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body>ab</body></html>
 

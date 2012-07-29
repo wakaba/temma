@@ -554,13 +554,15 @@ sub __process ($$) {
             $included_f = $included_f->absolute ($base_f->dir) if $base_f;
 
             # XXX fields
-            my $has_field = {};
+            my $has_field = [[], 0];
             my $fields = {};
             # XXX recursion
 
+            # XXX white space tests
+
             $self->process_include
                 ($included_f,
-                 parse_context => 'body', # XXX impl
+                 parse_context => 'body', # XXX
                  dom => $node->owner_document->implementation,
                  onparsed => sub {
                    my $body_el = $_[0]->body;
@@ -570,8 +572,7 @@ sub __process ($$) {
                                 $_->node_type == TEXT_NODE }
                          @{$body_el->child_nodes->to_a}],
                         $process->{node_info}, 'trim',
-                        binds => {%{$process->{node_info}->{binds} or {}},
-                                  has_field => $has_field},
+                        binds => {has_field => $has_field},
                         fields => $fields,
                         macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1);
                    $self->_process ($fh);
@@ -1025,12 +1026,14 @@ sub eval_attr_value ($$$;%) {
         if $parent->node_type == ELEMENT_NODE;
     $parent = $parent->parent_node;
   }
+  my $f = $node->owner_document->get_user_data ('manakai_source_f');
   my $line = $attr_node->get_user_data ('manakai_source_line')
       || $node->get_user_data ('manakai_source_line');
   my $column = $attr_node->get_user_data ('manakai_source_column')
       || $node->get_user_data ('manakai_source_column');
   if (defined $line and defined $column) {
-    $location .= sprintf ' (at line %d column %d)', $line || 0, $column || 0;
+    $location .= sprintf ' (at %sline %d column %d)',
+        $f ? $f . ' ' : '', $line || 0, $column || 0;
   }
   $location =~ s/[\x00-\x1F\x22]+/ /g;
   my $value = qq<local \$_;\n#line 1 "$location"\n> . $attr_node->value . q<;>;
@@ -1091,7 +1094,10 @@ sub process_include ($$%) {
   require Temma::Parser;
   my $parser = Temma::Parser->new;
   my $doc = $args{dom}->create_document;
-  $parser->parse_f ($f => $doc, $self->onerror);
+  $parser->{initial_state} = $args{parse_context};
+  $parser->parse_f ($f => $doc, sub {
+    $self->onerror->(@_, f => $f);
+  });
   
   $args{onparsed}->($doc);
 } # process_include
