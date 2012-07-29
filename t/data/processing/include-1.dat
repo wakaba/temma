@@ -26,6 +26,15 @@
 #output
 <!DOCTYPE html><html><body><div><p>abc</p></div></body></html>
 
+#data hoge/fuga/abc
+<div><t:include path=../xyz /></div>
+#data hoge/xyz
+<t:include path=../foo />
+#data foo
+<p>abc
+#output
+<!DOCTYPE html><html><body><div><p>abc</p></div></body></html>
+
 #data
 <div><t:include/>a</div>
 #errors
@@ -74,7 +83,8 @@
 <base>
 <p>abc
 #output
-<!DOCTYPE html><html><head><link><link>
+<!DOCTYPE html><html><head><link>
+<link>
 <base>
 <p>abc</p></head><body><p>hoge</p></body></html>
 
@@ -109,7 +119,7 @@ hogefugaabvc</p></body></html>
 fuga
 </t:if>
 #errors escaped
-/hoge;1;7;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>t:if[x] (at /hoge line 1 column 7) line 1.\u000A;
+/hoge;1;7;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>t:if[x] (at /hoge line 1 column 7) line 1.\u000A;
 #output
 <!DOCTYPE html><html><p></p></html>
 

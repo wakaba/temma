@@ -1,0 +1,120 @@
+#data
+<t:include path=wrapper />
+#data wrapper
+<!DOCTYPE html>
+<html lang=en>
+  <title>hoge</title>
+  <link>
+  <p>abc
+  <p>xyz
+#output
+<!DOCTYPE html><html lang="en"><head><title>hoge</title>
+  <link></head><body><p>abc</p><p>xyz</p></body></html>
+
+#data
+<html title=hoge><t:include path=wrapper />
+#data wrapper
+<!DOCTYPE html>
+<html lang=en>
+  <title>hoge</title>
+  <link>
+  <p>abc
+  <p>xyz
+#output
+<!DOCTYPE html><html title="hoge" lang="en"><head><title>hoge</title>
+  <link></head><body><p>abc</p><p>xyz</p></body></html>
+
+#data
+<html class="hoge fuga">
+<t:include path = foo />
+#data foo
+<html class="abc def">
+<t:attr name="'class'" value=120>
+<p>hoge
+#output
+<!DOCTYPE html><html class="hoge fuga abc def 120"><body><p>hoge</p></body></html>
+
+#data
+<html hoge=abc>
+<title>hoge</title>
+</head>
+<t:include path=xyxz />
+#data xyxz
+<html fuga=xyz>aaa
+#errors
+/xyxz;1;1;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html hoge="abc"><head><title>hoge</title></head>
+<body>aaa</body></html>
+
+#data
+<html hoge=abc>
+<t:include path=xyxz />
+#data xyxz
+<html hoge=xyz>aaa
+#errors
+/xyxz;1;7;m;temma:duplicate attr;hoge;
+#output
+<!DOCTYPE html><html hoge="abc"><body>aaa</body></html>
+
+#data
+<t:include path=aa />
+<t:include path=ab />
+#data aa
+<html hoge=abc>
+#data ab
+<html abc=fuga>
+#output
+<!DOCTYPE html><html hoge="abc" abc="fuga"></html>
+
+#data
+<t:include path=aa />
+<t:include path=ab />
+#data aa
+<html hoge=abc><link>
+#data ab
+<html abc=fuga><meta>
+#errors
+/ab;1;1;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html hoge="abc"><head><link></head>
+<head><meta></head></html>
+
+#data
+<t:include path=aa />
+<t:include path=ab />
+#data aa
+<html hoge=abc><p><link>
+#data ab
+<html abc=fuga><p><meta>
+#errors
+/ab;1;1;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html hoge="abc"><body><p><link></p></body>
+<body><p><meta></p></body></html>
+
+#data
+<t:include path=aa />
+<base></head>
+<t:include path=ab /><p>aaa
+#data aa
+<html hoge=abc><p><link>
+#data ab
+<html abc=fuga><p><meta>
+#errors
+/ab;1;1;m;temma:start tag already closed;;
+#output
+| <!DOCTYPE html><html hoge="abc"><body><p><link></p></body>
+| <head><base></head>
+| <body><p><meta></p></body><body><p>aaa</p></body></html>
+
+#data
+<t:include path=hoge />
+<t:class name=1324>
+#data hoge
+<t:include path=fuga />
+<t:class name=412>
+#data fuga
+<html class=aaaa>
+#output
+<!DOCTYPE html><html class="aaaa 412 1324"></html>

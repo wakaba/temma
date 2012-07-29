@@ -548,6 +548,9 @@ sub __process ($$) {
               next;
             }
 
+            $self->_before_non_space ($process => $fh)
+                unless $self->{current_tag};
+
             my $base_f = $node->owner_document->get_user_data
                 ('manakai_source_f'); # or undef
             my $included_f = file ($path);
@@ -560,21 +563,50 @@ sub __process ($$) {
 
             # XXX white space tests
 
+            my $parse_context = 'html';
+            my $n = $node->parent_node;
+            while ($n) {
+              if ($n->node_type == ELEMENT_NODE and
+                  ($n->manakai_local_name eq 'body' or
+                   $n->manakai_local_name eq 'head')) {
+                $parse_context = 'body';
+                last;
+              }
+              $n = $n->parent_node;
+            }
+
             $self->process_include
                 ($included_f,
-                 parse_context => 'body', # XXX
+                 parse_context => $parse_context,
                  dom => $node->owner_document->implementation,
                  onparsed => sub {
-                   my $body_el = $_[0]->body;
-
+                   my $nodes;
+                   if ($parse_context eq 'html') {
+                     my $html_el = $_[0]->manakai_html;
+                     if ($html_el) {
+                       if ($self->{current_tag}) {
+                         $self->_print_attrs
+                             ($html_el->attributes => $fh,
+                              $self->{current_tag});
+                       } else {
+                         $self->{onerror}->(type => 'temma:start tag already closed',
+                                            node => $html_el,
+                                            level => 'm');
+                       }
+                       $nodes = $html_el->child_nodes->to_a;
+                     }
+                   } else {
+                     my $body_el = $_[0]->body;
+                     $nodes = $body_el->child_nodes->to_a if $body_el;
+                   }
                    $self->_schedule_nodes
                        ([grep { $_->node_type == ELEMENT_NODE or
-                                $_->node_type == TEXT_NODE }
-                         @{$body_el->child_nodes->to_a}],
+                                $_->node_type == TEXT_NODE } @$nodes],
                         $process->{node_info}, 'trim',
                         binds => {has_field => $has_field},
                         fields => $fields,
-                        macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1);
+                        macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1)
+                           if $nodes;
                    $self->_process ($fh);
                  },
                  onerror => sub {
@@ -761,48 +793,7 @@ sub __process ($$) {
                binds => $process->{node_info}->{binds},
                fields => $process->{node_info}->{fields}};
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
-          
-          for my $attr (@$attrs) {
-            ## Note that if there are multiple attributes with only
-            ## case differences in their names, or with same qualified
-            ## name but in different namespaces, then, in HTML
-            ## serialization, the only first one has effect (and the
-            ## name is interpreted ASCII case-insensitively by
-            ## parser).  We don't try to detect such an error as it is
-            ## unlikely happens in typical use cases.
-
-            my $attr_ns = $attr->namespace_uri;
-            my $attr_name;
-            if (not defined $attr_ns) {
-              $attr_name = $attr->manakai_local_name;
-            } elsif ($attr_ns eq XML_NS) {
-              $attr_name = 'xml:' . $attr->manakai_local_name;
-            } elsif ($attr_ns eq XMLNS_NS) {
-              $attr_name = 'xmlns:' . $attr->manakai_local_name;
-              $attr_name = 'xmlns' if $attr_name eq 'xmlns:xmlns';
-            } elsif ($attr_ns eq XLINK_NS) {
-              $attr_name = 'xlink:' . $attr->manakai_local_name;
-            } elsif ($attr_ns eq TEMMA_NS) {
-              next;
-            } else {
-              $attr_name = $attr->name;
-            }
-
-            unless ($attr_name =~ /\A[A-Za-z_-][A-Za-z0-9_:-]*\z/) {
-              $self->{onerror}->(type => 'temma:name not serializable',
-                                 node => $attr,
-                                 value => $attr_name,
-                                 level => 'm');
-              next;
-            }
-
-            if ($attr_name eq 'class') {
-              $node_info->{classes} = [grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $attr->value];
-            } else {
-              $node_info->{attrs}->{$attr_name} = 1;
-              $fh->print (' ' . $attr_name . '="' . (htescape $attr->value) . '"');
-            }
-          }
+          $self->_print_attrs ($attrs => $fh, $node_info);
 
           if ($node_info->{ns} eq HTML_NS and
               $Whatpm::HTML::ParserData::AllVoidElements->{$node_info->{lnn}}) {
@@ -969,6 +960,60 @@ sub _schedule_nodes ($$$$;%) {
   unshift @{$self->{processes}},
       map { {type => 'node', node => $_, node_info => $node_info} } @$nodes;
 } # _schedule_nodes
+
+sub _print_attrs ($$$$) {
+  my ($self, $attrs => $fh, $node_info) = @_;
+  my @attr;
+  for my $attr (@$attrs) {
+    ## Note that if there are multiple attributes with only case
+    ## differences in their names, or with same qualified name but in
+    ## different namespaces, then, in HTML serialization, the only
+    ## first one has effect (and the name is interpreted ASCII
+    ## case-insensitively by parser).  We don't try to detect such an
+    ## error as it is unlikely happens in typical use cases.
+
+    my $attr_ns = $attr->namespace_uri;
+    my $attr_name;
+    if (not defined $attr_ns) {
+      $attr_name = $attr->manakai_local_name;
+    } elsif ($attr_ns eq XML_NS) {
+      $attr_name = 'xml:' . $attr->manakai_local_name;
+    } elsif ($attr_ns eq XMLNS_NS) {
+      $attr_name = 'xmlns:' . $attr->manakai_local_name;
+      $attr_name = 'xmlns' if $attr_name eq 'xmlns:xmlns';
+    } elsif ($attr_ns eq XLINK_NS) {
+      $attr_name = 'xlink:' . $attr->manakai_local_name;
+    } elsif ($attr_ns eq TEMMA_NS) {
+      next;
+    } else {
+      $attr_name = $attr->name;
+    }
+
+    unless ($attr_name =~ /\A[A-Za-z_-][A-Za-z0-9_:-]*\z/) {
+      $self->{onerror}->(type => 'temma:name not serializable',
+                         node => $attr,
+                         value => $attr_name,
+                         level => 'm');
+      next;
+    }
+
+    if ($attr_name eq 'class') {
+      push @{$node_info->{classes} ||= []},
+          grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $attr->value;
+    } else {
+      if ($node_info->{attrs}->{$attr_name}) {
+        $self->{onerror}->(type => 'temma:duplicate attr',
+                           node => $attr,
+                           value => $attr_name,
+                           level => 'm');
+        next;
+      }
+      $node_info->{attrs}->{$attr_name} = 1;
+      push @attr, ' ' . $attr_name . '="' . (htescape $attr->value) . '"';
+    }
+  }
+  $fh->print (join '', @attr);
+} # _print_attrs
 
 sub _close_start_tag ($$$) {
   my ($self, $current_process, $fh) = @_;
