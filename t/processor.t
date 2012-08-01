@@ -131,6 +131,7 @@ sub _processed : Tests {
     barehtml-1.dat
     macro-1.dat
     macro-2.dat
+    macro-3.dat
     include-1.dat
     include-2.dat
     include-3.dat

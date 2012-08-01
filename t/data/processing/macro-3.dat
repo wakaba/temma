@@ -1,0 +1,217 @@
+#data
+<t:macro name=macro1 t:params="$hoge $fuga">
+  <p class=hoge><t:text value=$hoge>
+  <p class=fuga><t:text value=$fuga>
+</t:macro>
+<section>
+  <m:macro1 m:hoge=10*20 m:fuga="'abcde'"/>
+</section>
+#output
+<!DOCTYPE html><html><head></head><body><section><p class="hoge">200</p><p class="fuga">abcde</p></section></body></html>
+
+#data
+<t:macro name=macro1 t:params="$hoge $fuga">
+  <p class=hoge><t:text value=$hoge>
+  <p class=fuga><t:text value=$fuga>
+</t:macro>
+<section>
+  <m:macro1 m:hoge=10*20 m:fuga="'abcde'" m:hage="124"/>
+</section>
+#output
+<!DOCTYPE html><html><head></head><body><section><p class="hoge">200</p><p class="fuga">abcde</p></section></body></html>
+
+#data
+<t:macro name=macro1 t:params="$hoge $fuga">
+  <p class=hoge><t:text value=$hoge>
+  <p class=fuga><t:text value=$fuga>
+</t:macro>
+<section>
+  <m:macro1 m:hoge=10*20 m:fuga="'abcde'" m:hage="abc"/>
+</section>
+#output
+<!DOCTYPE html><html><head></head><body><section><p class="hoge">200</p><p class="fuga">abcde</p></section></body></html>
+
+#data
+<t:macro name=macro1 t:params="$hoge $fuga">
+  <p class=hoge><t:text value=$hoge>
+  <p class=fuga><t:text value=$fuga>
+  <p class=hage><t:text value=$hage>
+</t:macro>
+<section>
+  <m:macro1 m:hoge=10*20 m:fuga="'abcde'" m:hage="xyz"/>
+</section>
+#errors escaped
+4;25;m;temma:perl exception;Global symbol "$hage" requires explicit package name at html>head>t:macro>p>t:text[value] (at /index.html.tm line 4 column 25) line 1.\u000A;
+#output
+<!DOCTYPE html><html><head></head><body><section><p class="hoge">200</p><p class="fuga">abcde</p><p class="hage"></p></section></body></html>
+
+#data
+<t:macro name=macro1 t:params="$hoge $fuga $hoge  &#x09;">
+  <p class=hoge><t:text value=$hoge>
+  <p class=fuga><t:text value=$fuga>
+</t:macro>
+<section>
+  <m:macro1 m:hoge=10*20 m:fuga="'abcde'"/>
+</section>
+#errors
+1;1;m;temma:duplicate param;hoge;
+#output
+<!DOCTYPE html><html><head></head><body><section><p class="hoge">200</p><p class="fuga">abcde</p></section></body></html>
+
+#data
+<t:macro name=macro1 t:params="$hoge $fuga $hoge?">
+  <p class=hoge><t:text value=$hoge>
+  <p class=fuga><t:text value=$fuga>
+</t:macro>
+<section>
+  <m:macro1 m:fuga="'abcde'"/>
+</section>
+#errors
+1;1;m;temma:duplicate param;hoge;
+2;25;w;temma:undef;;
+6;3;m;attribute missing;;hoge
+#output
+<!DOCTYPE html><html><head></head><body><section><p class="hoge"></p><p class="fuga">abcde</p></section></body></html>
+
+#data
+<t:macro name=macro1 t:params="$hoge? $fuga $hoge">
+  <p class=hoge><t:text value=$hoge>
+  <p class=fuga><t:text value=$fuga>
+</t:macro>
+<section>
+  <m:macro1 m:fuga="'abcde'"/>
+</section>
+#errors
+1;1;m;temma:duplicate param;hoge;
+2;25;w;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head><body><section><p class="hoge"></p><p class="fuga">abcde</p></section></body></html>
+
+#data
+<t:macro name=macro1 t:params="$hoge $fuga?">
+  <p class=hoge><t:text value=$hoge>
+  <p class=fuga><t:text value=$fuga>
+</t:macro>
+<section>
+  <m:macro1 m:hoge=10*20 />
+</section>
+#errors
+3;25;w;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head><body><section><p class="hoge">200</p><p class="fuga"></p></section></body></html>
+
+#data
+<t:macro name=macro1 t:params="$hoge $fuga">
+  <p class=hoge><t:text value=$hoge>
+  <p class=fuga><t:text value=$fuga>
+</t:macro>
+<section>
+  <m:macro1 m:hoge=10*20 />
+</section>
+#errors
+3;25;w;temma:undef;;
+6;3;m;attribute missing;;fuga
+#output
+<!DOCTYPE html><html><head></head><body><section><p class="hoge">200</p><p class="fuga"></p></section></body></html>
+
+#data
+<t:macro name=macro1 t:params="$200"/>
+#errors
+1;22;m;temma:bad params;$200;
+#output
+<!DOCTYPE html><html><head></head></html>
+
+#data
+<t:macro name=foo t:params=$has_field>
+  <t:text value=$has_field>
+</t:macro>
+<p><m:foo m:has_field=14>
+#output
+<!DOCTYPE html><html><head></head><body><p>14</p></body></html>
+
+#data
+<t:macro name=foo t:params=$hoge>
+  <t:text value=$hoge>
+</t:macro>
+<body>
+<t:for as=hoge x=[15]>
+<p><m:foo m:hoge=14 />
+<p><t:text value=$hoge>
+</t:for>
+#output
+<!DOCTYPE html><html><head></head><body><p>14</p><p>15</p></body></html>
+
+#data
+<t:macro name=foo t:params>
+  <t:text value=$hoge>aa
+</t:macro>
+<body>
+<t:for as=hoge x=[31]>
+  <m:foo/>
+</t:for>xyz
+#errors escaped
+2;11;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>head>t:macro>t:text[value] (at /index.html.tm line 2 column 11) line 1.\u000A;
+#output
+<!DOCTYPE html><html><head></head><body></body></html>
+
+#data
+<body>
+<t:for as=hoge x=[31]>
+  <t:macro name=foo t:params>
+    <t:text value=$hoge>aa
+  </t:macro>
+  <m:foo/>
+</t:for>xyz
+#errors escaped
+4;13;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>t:for>t:macro>t:text[value] (at /index.html.tm line 4 column 13) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body></body></html>
+
+#data
+<body>
+<t:macro name=foo t:params=$hoge>
+  <t:text value=$hoge>
+</t:macro>
+<t:for as=fuga x=[31]>
+  <m:foo m:hoge=1242 />
+  <t:text value=$hoge>
+</t:for>xyz
+#errors escaped
+7;11;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>t:for>t:text[value] (at /index.html.tm line 7 column 11) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body>1242
+  </body></html>
+
+#data
+<t:macro name=foo t:params=$hog>
+  <t:text value=$hog>
+</t:macro>
+<p>
+  <t:for as=hog x=[30]>
+    <m:foo m:hog=$hog*2 />
+  </t:for>
+#output
+<!DOCTYPE html><html><head></head><body><p>60</p></body></html>
+
+#data
+<t:macro name=foo t:params=$hog>
+  <t:text value=$hog>abc
+</t:macro>
+<p>
+  <m:foo m:hog=$hog*2 />xyza
+#errors escaped
+5;10;m;temma:perl exception;Global symbol "$hog" requires explicit package name at html>body>p>m:foo[hog] (at /index.html.tm line 5 column 10) line 1.\u000A;
+#output
+<!DOCTYPE html><html><head></head><body><p></p></body></html>
+
+#data
+<t:macro name=foo t:params=$hog>
+  <t:my as=xyz x=31>
+  <t:text value=$hog*$xyz>abc
+</t:macro>
+<p>
+  <m:foo m:hog=20 /><t:text value=$xyz>xyza
+#errors escaped
+6;29;m;temma:perl exception;Global symbol "$xyz" requires explicit package name at html>body>p>t:text[value] (at /index.html.tm line 6 column 29) line 1.\u000A;
+#output
+<!DOCTYPE html><html><head></head><body><p>620abc</p></body></html>

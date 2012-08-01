@@ -519,9 +519,41 @@ sub __process ($$) {
               next;
             }
 
+            my $params = $node->get_attribute_ns (TEMMA_NS, 'params');
+            my $param_found = {};
+            $params = defined $params
+                ? [grep {
+                     if ($param_found->{$_->[0]}) {
+                       $self->{onerror}->(type => 'temma:duplicate param',
+                                          value => $_->[0],
+                                          node => $node,
+                                          level => 'm');
+                       0;
+                     } else {
+                       $param_found->{$_->[0]} = 1;
+                       1;
+                     }
+                   }
+                   map { s/^\$//; s/\?$// ? [$_, 1] : [$_, 0] } 
+                   grep {
+                     if (/\A\$[A-Za-z_][A-Za-z0-9_]*\??\z/) {
+                       1;
+                     } else {
+                       if (length) {
+                         $self->{onerror}->(type => 'temma:bad params',
+                                            value => $_,
+                                            node => $node->get_attribute_node_ns(TEMMA_NS, 'params') || $node,
+                                            level => 'm');
+                       }
+                       0;
+                     }
+                   }
+                   split /[\x09\x0A\x0C\x0D\x20]+/, $params] : [];
+
             $self->{macros}->{$name}
                 = {node => $node,
-                   preserve_space => $process->{node_info}->{preserve_space}};
+                   preserve_space => $process->{node_info}->{preserve_space},
+                   params => $params};
 
             next;
           } elsif ($ln eq 'content') {
@@ -741,6 +773,16 @@ sub __process ($$) {
           my ($fields, $has_field) = $self->_process_fields
               ($node, $sp, $process);
 
+          my $binds = {has_field => $has_field};
+          for my $param (@{$macro->{params}}) {
+            my $value = $self->eval_attr_value
+                ($node, $param->[0],
+                 nsurl => TEMMA_MACRO_NS,
+                 required => $param->[1] ? undef : 'm',
+                 node_info => $process->{node_info});
+            $binds->{$param->[0]} = [[$value], 0];
+          }
+          
           $sp = {preserve => 'preserve', trim => 'trim'}->{$sp} ||
               ($macro->{preserve_space} ? 'preserve' : 'trim');
           $self->_schedule_nodes
@@ -748,8 +790,7 @@ sub __process ($$) {
                        $_->node_type == TEXT_NODE }
                 @{$macro->{node}->child_nodes->to_a}],
                $process->{node_info}, $sp,
-               binds => {%{$process->{node_info}->{binds} or {}},
-                         has_field => $has_field},
+               binds => $binds,
                fields => $fields,
                macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1);
 
@@ -1041,7 +1082,7 @@ sub _before_non_space ($$;%) {
 sub eval_attr_value ($$$;%) {
   my ($self, $node, $name, %args) = @_;
   
-  my $attr_node = $node->get_attribute_node ($name) or do {
+  my $attr_node = $node->get_attribute_node_ns ($args{nsurl}, $name) or do {
     if ($args{required}) {
       $self->{onerror}->(type => 'attribute missing',
                          text => $name,
