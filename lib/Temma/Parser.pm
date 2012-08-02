@@ -20,10 +20,12 @@ sub parse_char_string ($$$;$$) {
 
   my @prefix;
   my $delta = 0;
+  $self->{token_count} = 0;
   if ($self->{initial_state} and
       $self->{initial_state} eq 'body') {
     @prefix = split //, '<body>';
     $delta += -@prefix;
+    $self->{token_count}--;
   }
 
   $self->{line_prev} = $self->{line} = 1;
@@ -123,6 +125,7 @@ sub _construct_tree ($) {
         next B;
       }
 
+      $self->{token_count}++;
       if ($self->{open_elements}->[-1]->[2] == IM_HTML) {
         while (1) {
           my $ac = $Temma::Defs::AutoClose->{$self->{open_elements}->[-1]->[1]}->{'<text>'};
@@ -167,9 +170,8 @@ sub _construct_tree ($) {
       $tag_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
       delete $self->{ignore_first_newline};
 
-      if ($tag_name eq 'html' or
-          $tag_name eq 'head' or
-          $tag_name eq 'body') {
+      $self->{token_count}++;
+      if ($tag_name eq 'head' or $tag_name eq 'body') {
         if (@{$self->{open_elements}} > 1 and
             not (@{$self->{open_elements}} == 2 and
                  $self->{open_elements}->[1]->[1] eq 'head' and
@@ -182,29 +184,59 @@ sub _construct_tree ($) {
           delete $self->{self_closing};
           $self->{t} = $self->_get_next_token;
           next B;
-        } elsif ($tag_name eq 'html') {
-          my $el = $self->{open_elements}->[0]->[0];
-          if ($el) {
-            my $attrs = $self->{t}->{attributes};
-            for my $attr_name (keys %{$attrs}) {
-              next if $el->has_attribute_ns (undef, $attr_name);
-              my $attr_t = $attrs->{$attr_name};
-              my $attr = $attr_name =~ s/^t://
-                  ? $self->{document}->create_attribute_ns
-                      (TEMMA_NS, ['t', $attr_name])
-                  : $self->{document}->create_attribute_ns
-                      (undef, [undef, $attr_name]);
-              $attr->value ($attr_t->{value});
-              $attr->set_user_data (manakai_source_line => $attr_t->{line});
-              $attr->set_user_data (manakai_source_column => $attr_t->{column});
-              $el->set_attribute_node_ns ($attr);
-            }
-          }
-
+        }
+      } elsif ($tag_name eq 'html') {
+        if ($self->{token_count} > 1) {
+          $self->{parse_error}->(type => 'start tag not allowed',
+                                 text => 'html',
+                                 token => $self->{t},
+                                 level => $self->{level}->{must});
           delete $self->{self_closing};
           $self->{t} = $self->_get_next_token;
           next B;
         }
+
+        my $allow_non_temma = @{$self->{open_elements}} <= 1;
+        my $el = $self->{open_elements}->[0]->[0];
+        if ($el) {
+          my $attrs = $self->{t}->{attributes};
+          for my $attr_name (keys %{$attrs}) {
+            my $attr_t = $attrs->{$attr_name};
+            if (not $attr_name =~ /^t:/ and not $allow_non_temma) {
+              $self->{parse_error}->(type => 'temma:html non temma attr',
+                                     text => $attr_name,
+                                     token => $self->{t},
+                                     level => $self->{level}->{must});
+              next;
+            }
+            my $attr = $attr_name =~ s/^t://
+                ? $self->{document}->create_attribute_ns
+                    (TEMMA_NS, ['t', $attr_name])
+                : $self->{document}->create_attribute_ns
+                    (undef, [undef, $attr_name]);
+            if ($el->has_attribute_ns ($attr->namespace_uri, $attr->manakai_local_name)) {
+              $self->{parse_error}->(type => 'duplicate attribute',
+                                     text => $attr->name,
+                                     token => $self->{t},
+                                     level => $self->{level}->{must});
+              next;
+            }
+            $attr->value ($attr_t->{value});
+            $attr->set_user_data (manakai_source_line => $attr_t->{line});
+            $attr->set_user_data (manakai_source_column => $attr_t->{column});
+            $el->set_attribute_node_ns ($attr);
+          } # $attr_name
+          if (not $allow_non_temma and not keys %$attrs) {
+            $self->{parse_error}->(type => 'start tag not allowed',
+                                   text => 'html',
+                                   token => $self->{t},
+                                   level => $self->{level}->{must});
+          }
+        } # $el
+        
+        delete $self->{self_closing};
+        $self->{t} = $self->_get_next_token;
+        next B;
       }
 
       if ($self->{open_elements}->[-1]->[2] == IM_HTML) {

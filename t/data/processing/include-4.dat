@@ -1,0 +1,116 @@
+#data
+<t:include path=hoge m:abc=144 />
+#data hoge
+<html t:params=$abc>
+<p><t:text value=$abc>
+#output
+<!DOCTYPE html><html><body><p>144</p></body></html>
+
+#data
+<t:include path=hoge m:abc=144 m:xyx="'foo bar'" />
+#data hoge
+<html t:params="$abc $xyx">
+<p><t:text value=$abc><t:text value=$xyx>
+#output
+<!DOCTYPE html><html><body><p>144foo bar</p></body></html>
+
+#data
+<t:include path=hoge m:abc=144 m:ddd=21raaa />
+#data hoge
+<html t:params=$abc>
+<p><t:text value=$abc>
+#output
+<!DOCTYPE html><html><body><p>144</p></body></html>
+
+#data
+<t:include path=hoge m:abc=144 />bbb
+#data hoge
+<html t:params=$abc>
+<p><t:text value=$abc><t:text value=$xyz>aaa
+#errors escaped
+/hoge;2;31;m;temma:perl exception;Global symbol "$xyz" requires explicit package name at html>body>p>t:text[value] (at /hoge line 2 column 31) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><p>144</p></body></html>
+
+#data
+<t:include path=hoge m:abc=144 m:xyx="'foo bar'" />yyy
+#data hoge
+<html t:params="$abc">
+<p><t:text value=$abc><t:text value=$xyx>xxy
+#errors escaped
+/hoge;2;31;m;temma:perl exception;Global symbol "$xyx" requires explicit package name at html>body>p>t:text[value] (at /hoge line 2 column 31) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><p>144</p></body></html>
+
+#data
+<t:include path=hoge m:abc=144 m:xyx="'foo bar'" />yyy
+#data hoge
+<html>
+<t:attr name="'t:params'" value="'$abc $xyx'">
+<p><t:text value=$abc><t:text value=$xyx>xxy
+#errors escaped
+/hoge;3;12;m;temma:perl exception;Global symbol "$abc" requires explicit package name at html>body>p>t:text[value] (at /hoge line 3 column 12) line 1.\u000A;
+#output
+<!DOCTYPE html><html t:params="$abc $xyx"><body><p></p></body></html>
+
+#data
+<t:include path=foo m:has_field=4212>aaa<t:field name=hehr>ggg</t:include>
+#data foo
+<html t:params=$has_field>
+<p><t:text value=$has_field>
+#output
+<!DOCTYPE html><html><body><p>4212</p></body></html>
+
+#data
+<p><t:include path=foo m:abc=1241 />
+#data foo
+<html t:params=$abc>
+<span><t:text value=$abc></span>
+#output
+<!DOCTYPE html><html><body><p><span>1241</span></p></body></html>
+
+#data
+<p><t:include path=foo m:abc=1241 />y
+#data foo
+<body><html t:params=$abc>
+<span><t:text value=$abc></span>x
+#errors escaped
+/foo;1;7;m;start tag not allowed;;body
+/foo;2;0;m;start tag not allowed;;html
+/foo;2;15;m;temma:perl exception;Global symbol "$abc" requires explicit package name at html>body>span>t:text[value] (at /foo line 2 column 15) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><p><span></span></p></body></html>
+
+#data
+<p><t:include path=foo />x
+#data foo
+<html t:params=$hoge>
+<p><t:text value=$hoge>
+#errors
+1;4;m;attribute missing;;m:hoge
+/foo;2;12;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body><p><p></p>x</p></body></html>
+
+#data
+<p><t:include path=foo />x
+#data foo
+<html t:params=$hoge?>
+<p><t:text value=$hoge>
+#errors
+/foo;2;12;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body><p><p></p>x</p></body></html>
+
+#data
+<div>
+  <t:for as=foo x=[431]>
+    <t:include path=foga />y
+  </t:for>
+</div>
+#data foga
+<t:text value=$foo>x
+#errors escaped
+/foga;1;9;m;temma:perl exception;Global symbol "$foo" requires explicit package name at html>body>t:text[value] (at /foga line 1 column 9) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><div></div></body></html>

@@ -519,41 +519,10 @@ sub __process ($$) {
               next;
             }
 
-            my $params = $node->get_attribute_ns (TEMMA_NS, 'params');
-            my $param_found = {};
-            $params = defined $params
-                ? [grep {
-                     if ($param_found->{$_->[0]}) {
-                       $self->{onerror}->(type => 'temma:duplicate param',
-                                          value => $_->[0],
-                                          node => $node,
-                                          level => 'm');
-                       0;
-                     } else {
-                       $param_found->{$_->[0]} = 1;
-                       1;
-                     }
-                   }
-                   map { s/^\$//; s/\?$// ? [$_, 1] : [$_, 0] } 
-                   grep {
-                     if (/\A\$[A-Za-z_][A-Za-z0-9_]*\??\z/) {
-                       1;
-                     } else {
-                       if (length) {
-                         $self->{onerror}->(type => 'temma:bad params',
-                                            value => $_,
-                                            node => $node->get_attribute_node_ns(TEMMA_NS, 'params') || $node,
-                                            level => 'm');
-                       }
-                       0;
-                     }
-                   }
-                   split /[\x09\x0A\x0C\x0D\x20]+/, $params] : [];
-
             $self->{macros}->{$name}
                 = {node => $node,
                    preserve_space => $process->{node_info}->{preserve_space},
-                   params => $params};
+                   params => $self->_get_params ($node)};
 
             next;
           } elsif ($ln eq 'content') {
@@ -616,9 +585,22 @@ sub __process ($$) {
                  parse_context => $parse_context,
                  dom => $node->owner_document->implementation,
                  onparsed => sub {
+                   my $html_el = $_[0]->manakai_html;
+                   my $binds = {has_field => $has_field};
+                   if ($html_el) {
+                     my $params = $self->_get_params ($html_el);
+                     for my $param (@{$params}) {
+                       my $value = $self->eval_attr_value
+                           ($node, $param->[0],
+                            nsurl => TEMMA_MACRO_NS,
+                            required => $param->[1] ? undef : 'm',
+                            node_info => $process->{node_info});
+                       $binds->{$param->[0]} = [[$value], 0];
+                     }
+                   }
+
                    my $nodes;
                    if ($parse_context eq 'html') {
-                     my $html_el = $_[0]->manakai_html;
                      if ($html_el) {
                        my $attrs = $html_el->attributes;
                        if (@$attrs) {
@@ -642,7 +624,7 @@ sub __process ($$) {
                        ([grep { $_->node_type == ELEMENT_NODE or
                                 $_->node_type == TEXT_NODE } @$nodes],
                         $process->{node_info}, 'trim',
-                        binds => {has_field => $has_field},
+                        binds => $binds,
                         fields => $fields,
                         macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1)
                            if $nodes;
@@ -1085,7 +1067,7 @@ sub eval_attr_value ($$$;%) {
   my $attr_node = $node->get_attribute_node_ns ($args{nsurl}, $name) or do {
     if ($args{required}) {
       $self->{onerror}->(type => 'attribute missing',
-                         text => $name,
+                         text => ($args{nsurl} && $args{nsurl} eq TEMMA_MACRO_NS ? 'm:' . $name : $name),
                          level => $args{required},
                          node => $node);
     }
@@ -1154,6 +1136,41 @@ sub eval_attr_value ($$$;%) {
 
   return $evaled;
 } # eval_attr_value
+
+sub _get_params ($$) {
+  my ($self, $node) = @_;
+  my $params = $node->get_attribute_ns (TEMMA_NS, 'params');
+  my $param_found = {};
+  $params = defined $params
+      ? [grep {
+           if ($param_found->{$_->[0]}) {
+             $self->{onerror}->(type => 'temma:duplicate param',
+                                value => $_->[0],
+                                node => $node,
+                                level => 'm');
+             0;
+           } else {
+             $param_found->{$_->[0]} = 1;
+             1;
+           }
+         } map {
+           s/^\$//; s/\?$// ? [$_, 1] : [$_, 0];
+         } grep {
+           if (/\A\$[A-Za-z_][A-Za-z0-9_]*\??\z/) {
+             1;
+           } else {
+             if (length) {
+               $self->{onerror}->(type => 'temma:bad params',
+                                  value => $_,
+                                  node => $node->get_attribute_node_ns(TEMMA_NS, 'params') || $node,
+                                  level => 'm');
+             }
+             0;
+           }
+         } split /[\x09\x0A\x0C\x0D\x20]+/, $params]
+      : [];
+  return $params;
+} # _get_params
 
 sub _process_fields ($$$$) {
   my ($self, $node, $sp, $process) = @_;

@@ -104,7 +104,7 @@ hoge</body>fuga</html>abvc
 <title>abc</title>
 <body>hoge</body>fuga</html>abvc
 #errors
-/foo;3;0;m;start tag not allowed;;html
+/foo;3;0;m;temma:html non temma attr;;lang
 /foo;4;7;m;start tag not allowed;;body
 #output
 <!DOCTYPE html><html><body><p><title>abc</title>
