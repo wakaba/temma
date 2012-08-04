@@ -65,3 +65,30 @@ sub html_n_as_components {
 }
 #output
 <!DOCTYPE html><html><body>ab & <>5&lt;>hoge&amp;</body></html>
+
+#data
+<t:barehtml msgID=foo t:parse msgn=6-1>
+  hoge&  <t:field>&lt;
+</t:barehtml>
+#locale
+sub html_n_as_components {
+  return [{type => 'html', value => 'ab & <>' . $_[2]},
+          {type => 'field', name => 2},
+          {type => 'html', value => '>'},
+          {type => 'field', name => 1}];
+}
+#output
+<!DOCTYPE html><html><body>ab & <>5&lt;>hoge&amp;</body></html>
+
+#data
+<t:barehtml msgid=hoge msgset=fuga>
+#locale
+sub for_text_set {
+  $_[0]->{text_set} = $_[1];
+  return $_[0];
+}
+sub html_as_components {
+  return [{type => 'text', value => $_[1] . ' of ' . $_[0]->{text_set}}];
+}
+#output
+<!DOCTYPE html><html><body>hoge of fuga</body></html>

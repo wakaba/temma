@@ -1263,11 +1263,14 @@ sub _print_msgid ($$$$$;%) {
   my $n = $self->eval_attr_value
       ($node, 'msgn', node_info => $process->{node_info});
 
+  my $locale = $self->{locale};
+  my $set = $node->get_attribute ('msgset');
+  $locale = $locale->for_text_set ($set) if defined $set;
+
   my $method = ($args{barehtml} ? 'html' : 'plain_text') .
                (defined $n ? '_n' : '') .
                '_as_components';
-  my $texts = $self->{locale} &&
-      $self->{locale}->$method ($msgid, defined $n ? (0+$n) : ());
+  my $texts = $locale && $locale->$method ($msgid, defined $n ? (0+$n) : ());
 
   if ($texts and ref $texts eq 'ARRAY') {
     if (@$texts == 1 and
