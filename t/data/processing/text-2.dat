@@ -16,6 +16,16 @@ sub plain_text_as_components {
 <t:text msgid=hoge.fuga>
 #locale
 sub plain_text_as_components {
+  return [{type => 'text', value => "???" . $_[1] . "???"},
+          {type => 'text', value => scalar @_}];
+}
+#output escaped
+<!DOCTYPE html><html><body>???hoge.fuga???2</body></html>
+
+#data
+<t:text msgid=hoge.fuga>
+#locale
+sub plain_text_as_components {
   return [{type => 'text', value => "0"}];
 }
 #output escaped
@@ -146,3 +156,130 @@ sub plain_text_as_components {
 1;1;m;temma:components:unknown type;u n k n o w n;
 #output
 <!DOCTYPE html><html><body>12abc</body></html>
+
+#data
+<t:text msgid=foo>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'ac'},
+          {type => 'field', name => 1},
+          {type => 'text', value => 'xy'}];
+}
+#errors
+#output
+<!DOCTYPE html><html><body>acxy</body></html>
+
+#data
+<t:text msgid=foo t:parse>
+  ABC
+</t:text>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'ac'},
+          {type => 'field', name => 1},
+          {type => 'text', value => 'xy'}];
+}
+#errors
+#output
+<!DOCTYPE html><html><body>acABCxy</body></html>
+
+#data
+<t:text msgid=foo t:parse>
+  AB<p>C
+</t:text>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'ac'},
+          {type => 'field', name => 1},
+          {type => 'text', value => 'xy'}];
+}
+#errors
+#output
+<!DOCTYPE html><html><body>acAB<p>C</p>xy</body></html>
+
+#data
+<t:text msgid=foo t:parse>
+  AB<t:wait cv="Test::Temma::CV->new">C
+</t:text>v
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'ac'},
+          {type => 'field', name => 1},
+          {type => 'text', value => 'xy'}];
+}
+#errors
+#output
+<!DOCTYPE html><html><body>acABCxyv</body></html>
+
+#data
+<t:text msgid=foo t:parse>
+  AB
+  <t:field>
+    CD
+</t:text>v
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'ac'},
+          {type => 'field', name => 2},
+          {type => 'text', value => 'xy'},
+          {type => 'field', name => 1}];
+}
+#errors
+#output
+<!DOCTYPE html><html><body>acCDxyABv</body></html>
+
+#data
+<t:text msgid=foo t:parse t:space=preserve>
+  AB
+  <t:field>
+    CD
+</t:text>v
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'ac'},
+          {type => 'field', name => 2},
+          {type => 'text', value => 'xy'},
+          {type => 'field', name => 1}];
+}
+#errors
+#output
+<!DOCTYPE html><html><body>ac
+    CD
+xyAB
+  v</body></html>
+
+#data
+<t:text msgid=foo t:parse t:space=preserve>
+  AB
+  <t:field t:space=trim>
+    CD
+</t:text>v
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'ac'},
+          {type => 'field', name => 2},
+          {type => 'text', value => 'xy'},
+          {type => 'field', name => 1}];
+}
+#errors
+#output
+<!DOCTYPE html><html><body>acCDxyAB
+  v</body></html>
+
+#data
+<t:text msgid=foo t:parse>
+  <t:field name=fuga>
+  AB
+  <t:field t:space=trim>
+    CD
+</t:text>v
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'ac'},
+          {type => 'field', name => "hoge"},
+          {type => 'text', value => 'xy'},
+          {type => 'field', name => "fuga"}];
+}
+#errors
+#output
+<!DOCTYPE html><html><body>acxyABv</body></html>

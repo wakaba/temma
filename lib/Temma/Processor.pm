@@ -222,10 +222,6 @@ sub __process ($$) {
 
               # XXX msgid-n
 
-              # XXX args
-
-              # XXX fallback
-
               if ($texts and ref $texts eq 'ARRAY') {
                 if (@$texts == 1 and
                     $texts->[0]->{type} eq 'text' and
@@ -234,23 +230,30 @@ sub __process ($$) {
                   next;
                 }
 
-                # XXX args
-                unshift @{$self->{processes}}, map {
+                my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+                my ($fields, $has_field) = $self->_process_fields
+                    ($node, $sp, $process);
+
+                for (reverse @$texts) {
                   if ($_->{type} eq 'text') {
-                    +{type => 'text', value => $_->{value},
-                      node_info => $process->{node_info}};
+                    unshift @{$self->{processes}},
+                        {type => 'text', value => $_->{value},
+                         node_info => $process->{node_info}};
                   } elsif ($_->{type} eq 'field') {
-                    # XXX
-                  } else {
+                    my $def = $fields->{$_->{name}};
+                    if ($def) {
+                      $self->_schedule_nodes
+                          ([grep { $_->node_type == ELEMENT_NODE or
+                                   $_->node_type == TEXT_NODE }
+                            @{$def->{node}->child_nodes->to_a}],
+                           $process->{node_info}, $def->{sp});
+                    }
+                  } else { # $_->{type} unknown
                     $self->{onerror}->(type => 'temma:components:unknown type',
                                        value => $_->{type},
                                        level => 'm',
                                        node => $node);
-                    ();
-                  }
-                } @$texts;
-                for (@$texts) {
-                  
+                  } # $_->{type}
                 }
               } else {
                 # XXX fallback
@@ -261,7 +264,7 @@ sub __process ($$) {
               }
               
               next;
-            }
+            } # $msgid
             
             my $value = $self->eval_attr_value
                 ($node, 'value', disallow_undef => 'w', required => 'm',
