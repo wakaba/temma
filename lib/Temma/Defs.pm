@@ -57,7 +57,7 @@ our $AutoOpen = {
     '<text>' => 't:field',
     't:field' => '',
   },
-  't:rawhtml' => {
+  't:barehtml' => {
     '<start>' => 't:field',
     '<text>' => 't:field',
     't:field' => '',
@@ -173,7 +173,8 @@ our $CloseIfInScope = {
   't:elsif' => {'t:if' => 0},
   't:sep' => {'t:for' => 0},
   't:catch' => {'t:try' => 0},
-  't:field' => {'t:include' => 0, '<m>' => 0, 't:text' => 0, 't:rawhtml' => 0},
+  't:field' => {'t:include' => 0, '<m>' => 0,
+                't:text' => 0, 't:barehtml' => 0},
 }; # $CloseIfInScope
 
 our $EndTagOptional = {

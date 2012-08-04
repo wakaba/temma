@@ -4,6 +4,11 @@
 <!DOCTYPE html><html><body>foobar.baz</body></html>
 
 #data
+<t:text msgid="foobar&baz<>">
+#output
+<!DOCTYPE html><html><body>foobar&amp;baz&lt;&gt;</body></html>
+
+#data
 <t:text msgid=hoge.fuga>
 #locale
 sub plain_text_as_components {
@@ -21,6 +26,27 @@ sub plain_text_as_components {
 }
 #output escaped
 <!DOCTYPE html><html><body>???hoge.fuga???2</body></html>
+
+#data
+<t:text msgID=foo>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'ab & <>'}];
+}
+#output
+<!DOCTYPE html><html><body>ab &amp; &lt;&gt;</body></html>
+
+#data
+<t:text msgID=foo>
+#locale
+sub plain_text_as_components {
+  return [{type => 'html', value => 'ab & <>'},
+          {type => 'text', value => 12}];
+}
+#errors
+1;1;m;temma:components:unknown type;html;
+#output
+<!DOCTYPE html><html><body>12</body></html>
 
 #data
 <t:text msgid=hoge.fuga>

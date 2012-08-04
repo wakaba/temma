@@ -138,6 +138,7 @@ sub _processed : Tests {
     try-4.dat
     my-1.dat
     barehtml-1.dat
+    barehtml-2.dat
     macro-1.dat
     macro-2.dat
     macro-3.dat

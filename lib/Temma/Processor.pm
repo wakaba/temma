@@ -718,6 +718,13 @@ sub __process ($$) {
           } elsif ($ln eq 'barehtml') {
             next if $self->_close_start_tag ($process, $fh);
             $self->_before_non_space ($process => $fh);
+
+            my $msgid = $node->get_attribute ('msgid');
+            if (defined $msgid) {
+              $self->_print_msgid
+                  ($node, $process => $msgid => $fh, barehtml => 1);
+              next;
+            } # $msgid
             
             my $value = $self->eval_attr_value
                 ($node, 'value', disallow_undef => 'w', required => 'm',
@@ -957,6 +964,14 @@ sub __process ($$) {
                               node_info => $process->{node_info});
     } elsif ($process->{type} eq 'end') {
       next if $self->_close_start_tag ($process, $fh);
+    } elsif ($process->{type} eq 'barehtml') {
+      if ($process->{node_info}->{rawtext}) {
+        $self->{onerror}->(type => 'element not allowed:rawtext',
+                           node => $process->{node},
+                           level => 'm');
+      } else {
+        $fh->print ($process->{value});
+      }
     } else {
       die "Process type |$process->{type}| is not supported";
     }
@@ -1242,16 +1257,18 @@ sub process_include ($$%) {
   $args{onparsed}->($doc);
 } # process_include
 
-sub _print_msgid ($$$$$) {
-  my ($self, $node, $process => $msgid, $fh) = @_;
+sub _print_msgid ($$$$$;%) {
+  my ($self, $node, $process => $msgid, $fh, %args) = @_;
 
   my $n = $self->eval_attr_value
       ($node, 'msgn', node_info => $process->{node_info});
-  my $method = defined $n
-      ? 'plain_text_n_as_components' : 'plain_text_as_components';
 
+  my $method = ($args{barehtml} ? 'html' : 'plain_text') .
+               (defined $n ? '_n' : '') .
+               '_as_components';
   my $texts = $self->{locale} &&
       $self->{locale}->$method ($msgid, defined $n ? (0+$n) : ());
+
   if ($texts and ref $texts eq 'ARRAY') {
     if (@$texts == 1 and
         $texts->[0]->{type} eq 'text' and
@@ -1277,6 +1294,10 @@ sub _print_msgid ($$$$$) {
                 @{$def->{node}->child_nodes->to_a}],
                $process->{node_info}, $def->{sp});
         }
+      } elsif ($_->{type} eq 'html' and $args{barehtml}) {
+        unshift @{$self->{processes}},
+            {type => 'barehtml', value => $_->{value},
+             node => $node, node_info => $process->{node_info}};
       } else { # $_->{type} unknown
         $self->{onerror}->(type => 'temma:components:unknown type',
                            value => $_->{type},

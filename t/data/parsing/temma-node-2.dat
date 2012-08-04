@@ -97,72 +97,72 @@
 |         <temma text>
 
 #data
-<t:rawhtml t:parse></t:rawhtml>
+<t:barehtml t:parse></t:barehtml>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
-|     <temma rawhtml>
+|     <temma barehtml>
 |       temma parse=""
 
 #data
-<t:rawhtml t:parse>   </t:rawhtml>
+<t:barehtml t:parse>   </t:barehtml>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
-|     <temma rawhtml>
+|     <temma barehtml>
 |       temma parse=""
 |       "   "
 
 #data
-<t:rawhtml t:parse>abc</t:rawhtml>
+<t:barehtml t:parse>abc</t:barehtml>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
-|     <temma rawhtml>
+|     <temma barehtml>
 |       temma parse=""
 |       <temma field>
 |         "abc"
 
 #data
-<t:rawhtml t:parse><p>abc</t:rawhtml>
+<t:barehtml t:parse><p>abc</t:barehtml>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
-|     <temma rawhtml>
+|     <temma barehtml>
 |       temma parse=""
 |       <temma field>
 |         <p>
 |           "abc"
 
 #data
-<t:rawhtml t:parse>abc<t:field></t:rawhtml>
+<t:barehtml t:parse>abc<t:field></t:barehtml>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
-|     <temma rawhtml>
+|     <temma barehtml>
 |       temma parse=""
 |       <temma field>
 |         "abc"
 |       <temma field>
 
 #data
-<t:rawhtml t:parse>ab<p>c<t:field></t:rawhtml>
+<t:barehtml t:parse>ab<p>c<t:field></t:barehtml>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
-|     <temma rawhtml>
+|     <temma barehtml>
 |       temma parse=""
 |       <temma field>
 |         "ab"
@@ -171,25 +171,25 @@
 |       <temma field>
 
 #data
-<t:rawhtml t:parse><t:field></t:rawhtml>
+<t:barehtml t:parse><t:field></t:barehtml>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
-|     <temma rawhtml>
+|     <temma barehtml>
 |       temma parse=""
 |       <temma field>
 
 #data
-<t:rawhtml t:parse><t:field>xyz<t:rawhtml></t:rawhtml>
+<t:barehtml t:parse><t:field>xyz<t:barehtml></t:barehtml>
 #errors
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
-|     <temma rawhtml>
+|     <temma barehtml>
 |       temma parse=""
 |       <temma field>
 |         "xyz"
-|         <temma rawhtml>
+|         <temma barehtml>
