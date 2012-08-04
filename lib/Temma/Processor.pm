@@ -217,54 +217,7 @@ sub __process ($$) {
 
             my $msgid = $node->get_attribute ('msgid');
             if (defined $msgid) {
-              my $n = $self->eval_attr_value
-                  ($node, 'msgn', node_info => $process->{node_info});
-              my $method = defined $n
-                  ? 'plain_text_n_as_components' : 'plain_text_as_components';
-
-              my $texts = $self->{locale} &&
-                  $self->{locale}->$method ($msgid, defined $n ? (0+$n) : ());
-              if ($texts and ref $texts eq 'ARRAY') {
-                if (@$texts == 1 and
-                    $texts->[0]->{type} eq 'text' and
-                    not $process->{node_info}->{rawtext}) {
-                  $fh->print (htescape $texts->[0]->{value});
-                  next;
-                }
-
-                my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
-                my ($fields, $has_field) = $self->_process_fields
-                    ($node, $sp, $process);
-
-                for (reverse @$texts) {
-                  if ($_->{type} eq 'text') {
-                    unshift @{$self->{processes}},
-                        {type => 'text', value => $_->{value},
-                         node_info => $process->{node_info}};
-                  } elsif ($_->{type} eq 'field') {
-                    my $def = $fields->{$_->{name}};
-                    if ($def) {
-                      $self->_schedule_nodes
-                          ([grep { $_->node_type == ELEMENT_NODE or
-                                   $_->node_type == TEXT_NODE }
-                            @{$def->{node}->child_nodes->to_a}],
-                           $process->{node_info}, $def->{sp});
-                    }
-                  } else { # $_->{type} unknown
-                    $self->{onerror}->(type => 'temma:components:unknown type',
-                                       value => $_->{type},
-                                       level => 'm',
-                                       node => $node);
-                  } # $_->{type}
-                }
-              } else {
-                my $msgstr = $node->get_attribute ('msgstr');
-                unshift @{$self->{processes}},
-                    {type => 'text',
-                     value => defined $msgstr ? $msgstr : $msgid,
-                     node_info => $process->{node_info}};
-              }
-              
+              $self->_print_msgid ($node, $process => $msgid => $fh);
               next;
             } # $msgid
             
@@ -1288,6 +1241,57 @@ sub process_include ($$%) {
   
   $args{onparsed}->($doc);
 } # process_include
+
+sub _print_msgid ($$$$$) {
+  my ($self, $node, $process => $msgid, $fh) = @_;
+
+  my $n = $self->eval_attr_value
+      ($node, 'msgn', node_info => $process->{node_info});
+  my $method = defined $n
+      ? 'plain_text_n_as_components' : 'plain_text_as_components';
+
+  my $texts = $self->{locale} &&
+      $self->{locale}->$method ($msgid, defined $n ? (0+$n) : ());
+  if ($texts and ref $texts eq 'ARRAY') {
+    if (@$texts == 1 and
+        $texts->[0]->{type} eq 'text' and
+        not $process->{node_info}->{rawtext}) {
+      $fh->print (htescape $texts->[0]->{value});
+      return;
+    }
+
+    my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+    my ($fields, $has_field) = $self->_process_fields ($node, $sp, $process);
+    
+    for (reverse @$texts) {
+      if ($_->{type} eq 'text') {
+        unshift @{$self->{processes}},
+            {type => 'text', value => $_->{value},
+             node_info => $process->{node_info}};
+      } elsif ($_->{type} eq 'field') {
+        my $def = $fields->{$_->{name}};
+        if ($def) {
+          $self->_schedule_nodes
+              ([grep { $_->node_type == ELEMENT_NODE or
+                       $_->node_type == TEXT_NODE }
+                @{$def->{node}->child_nodes->to_a}],
+               $process->{node_info}, $def->{sp});
+        }
+      } else { # $_->{type} unknown
+        $self->{onerror}->(type => 'temma:components:unknown type',
+                           value => $_->{type},
+                           level => 'm',
+                           node => $node);
+      } # $_->{type}
+    }
+  } else {
+    my $msgstr = $node->get_attribute ('msgstr');
+    unshift @{$self->{processes}},
+        {type => 'text',
+         value => defined $msgstr ? $msgstr : $msgid,
+         node_info => $process->{node_info}};
+  }
+} # _print_msgid
 
 1;
 
