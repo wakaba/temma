@@ -283,3 +283,99 @@ sub plain_text_as_components {
 #errors
 #output
 <!DOCTYPE html><html><body>acxyABv</body></html>
+
+#data
+<t:macro name=abc>
+  <b>
+    <t:text msgid=foobar t:parse>
+      <t:content>
+    </t:text>
+  </b>
+</t:macro>
+<p><m:abc>hoge<i>fuga</i></m:abc>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'FOOBAR = '},
+          {type => 'field', name => 1}];
+}
+#output
+<!DOCTYPE html><html><head></head><body><p><b>FOOBAR = hoge<i>fuga</i></b></p></body></html>
+
+#data
+<t:text msgid=hoge msgn=12>
+#output
+<!DOCTYPE html><html><body>hoge</body></html>
+
+#data
+<t:text msgid=hoge msgn=12>
+#locale
+sub plain_text_n_as_components {
+  return [{type => 'text', value => $_[1] . '[' . $_[2] . ']'}];
+}
+#output
+<!DOCTYPE html><html><body>hoge[12]</body></html>
+
+#data
+<t:text msgid=hoge msgn=12 t:parse>
+  fuga
+</t:text>
+#locale
+sub plain_text_n_as_components {
+  return [{type => 'text', value => $_[1] . '[' . $_[2] . ']'},
+          {type => 'field', name => 1}];
+}
+#output
+<!DOCTYPE html><html><body>hoge[12]fuga</body></html>
+
+#data
+<t:text msgid=hoge msgn=12*20 t:parse>
+  fuga
+</t:text>
+#locale
+sub plain_text_n_as_components {
+  return [{type => 'text', value => $_[1] . '[' . $_[2] . ']'},
+          {type => 'field', name => 1}];
+}
+#output
+<!DOCTYPE html><html><body>hoge[240]fuga</body></html>
+
+#data
+<t:text msgid=hoge msgn=undef t:parse>
+  fuga
+</t:text>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => $_[1] . '[' . (defined $_[2]) . ']'},
+          {type => 'field', name => 1}];
+}
+#output
+<!DOCTYPE html><html><body>hoge[]fuga</body></html>
+
+#data
+<t:text msgid=hoge msgn=0 t:parse>
+  fuga
+</t:text>
+#locale
+sub plain_text_n_as_components {
+  return [{type => 'text', value => $_[1] . '[' . $_[2] . ']'},
+          {type => 'field', name => 1}];
+}
+#output
+<!DOCTYPE html><html><body>hoge[0]fuga</body></html>
+
+#data
+<t:text msgid=hoge msgn="'abc'" t:parse>
+  fuga
+</t:text>
+#locale
+sub plain_text_n_as_components {
+  return [{type => 'text', value => $_[1] . '[' . $_[2] . ']'},
+          {type => 'field', name => 1}];
+}
+#output
+<!DOCTYPE html><html><body>hoge[0]fuga</body></html>
+
+#data
+<t:text msgid=hoge msgstr="&#x1240;xaa">hoge
+#output escaped
+<!DOCTYPE html><html><body>\u1240xaahoge</body></html>

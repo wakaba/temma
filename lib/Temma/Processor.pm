@@ -217,11 +217,13 @@ sub __process ($$) {
 
             my $msgid = $node->get_attribute ('msgid');
             if (defined $msgid) {
+              my $n = $self->eval_attr_value
+                  ($node, 'msgn', node_info => $process->{node_info});
+              my $method = defined $n
+                  ? 'plain_text_n_as_components' : 'plain_text_as_components';
+
               my $texts = $self->{locale} &&
-                  $self->{locale}->plain_text_as_components ($msgid);
-
-              # XXX msgid-n
-
+                  $self->{locale}->$method ($msgid, defined $n ? (0+$n) : ());
               if ($texts and ref $texts eq 'ARRAY') {
                 if (@$texts == 1 and
                     $texts->[0]->{type} eq 'text' and
@@ -256,10 +258,10 @@ sub __process ($$) {
                   } # $_->{type}
                 }
               } else {
-                # XXX fallback
-
+                my $msgstr = $node->get_attribute ('msgstr');
                 unshift @{$self->{processes}},
-                    {type => 'text', value => $msgid,
+                    {type => 'text',
+                     value => defined $msgstr ? $msgstr : $msgid,
                      node_info => $process->{node_info}};
               }
               
