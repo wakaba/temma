@@ -152,6 +152,20 @@
 #errors
 2;11;w;temma:undef;;
 2;11;w;temma:undef;;
+2;11;w;temma:undef;;
+#output
+<!DOCTYPE html><html><head></head><body><div></div><div></div>
+<div></div></body></html>
+
+#data
+<t:macro name=a>
+  <t:text value=" $has_field->{1} ">
+</t:macro>
+<div><m:a/></div><div><m:a><t:field name=foo></m:a></div>
+<div><m:a>hoge</m:a></div>
+#errors
+2;11;w;temma:undef;;
+2;11;w;temma:undef;;
 #output
 <!DOCTYPE html><html><head></head><body><div></div><div></div>
 <div>1</div></body></html>
@@ -197,7 +211,6 @@
 </t:macro>
 <p><m:a><t:field>a<t:field>b</m:a>
 #errors
-4;19;m;temma:duplicate field;;
 #output
 <!DOCTYPE html><html><head></head><body><p>a</p></body></html>
 
@@ -207,9 +220,8 @@
 </t:macro>
 <p><m:a><t:field name>a<t:field>b</m:a>
 #errors
-4;24;m;temma:duplicate field;;
 #output
-<!DOCTYPE html><html><head></head><body><p>a</p></body></html>
+<!DOCTYPE html><html><head></head><body><p>b</p></body></html>
 
 #data
 <t:macro name=a>

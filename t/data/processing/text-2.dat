@@ -1,0 +1,148 @@
+#data
+<t:text msgid=foobar.baz>
+#output
+<!DOCTYPE html><html><body>foobar.baz</body></html>
+
+#data
+<t:text msgid=hoge.fuga>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => ""}];
+}
+#output escaped
+<!DOCTYPE html><html><body></body></html>
+
+#data
+<t:text msgid=hoge.fuga>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => "0"}];
+}
+#output escaped
+<!DOCTYPE html><html><body>0</body></html>
+
+#data
+<t:text msgid=hoge.fuga>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => "\x{4e00}\x{3000}abc d0"}];
+}
+#output escaped
+<!DOCTYPE html><html><body>\u4e00\u3000abc d0</body></html>
+
+#data
+<t:text msgid=hoge.fuga>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => "\x{4e00}\x{3000}"},
+          {type => 'text', value => 'abc d0'}];
+}
+#output escaped
+<!DOCTYPE html><html><body>\u4e00\u3000abc d0</body></html>
+
+#data
+<t:text msgid=hoge.fuga>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'Q & A <p>'}];
+}
+#output escaped
+<!DOCTYPE html><html><body>Q &amp; A &lt;p&gt;</body></html>
+
+#data
+<title t:parse><t:text msgid=hoge.fuga></title>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'Q & A <p>'}];
+}
+#output escaped
+<!DOCTYPE html><html><head><title>Q &amp; A &lt;p&gt;</title></head></html>
+
+#data
+<style t:parse><t:text msgid=hoge.fuga></style>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'Q & A <p>'}];
+}
+#output escaped
+<!DOCTYPE html><html><head><style>Q & A <p></style></head></html>
+
+#data
+<script t:parse><t:text msgid=hoge.fuga></script>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'Q & A <p></script>a'}];
+}
+#errors
+1;1;m;temma:not representable in raw text;;
+#output escaped
+<!DOCTYPE html><html><head><script>Q & A <p></script></head></html>
+
+#data
+<script t:parse><t:text msgid=hoge.fuga></script>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'Q & A <p></scr'},
+          {type => 'text', value => 'ipt>a'}];
+}
+#errors
+1;1;m;temma:not representable in raw text;;
+#output escaped
+<!DOCTYPE html><html><head><script>Q & A <p></script></head></html>
+
+#data
+<t:comment><t:text msgid=hoge.fuga></t:comment>
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => 'Q & A <p>--</script>a-'}];
+}
+#errors
+#output escaped
+<!DOCTYPE html><html><head><!--Q & A <p>- - </script>a- --></head></html>
+
+#data
+<t:text msgid=hoge>
+#locale
+sub plain_text_as_components {
+  return [];
+}
+#output
+<!DOCTYPE html><html><body></body></html>
+
+#data
+<t:text msgid=hoge>
+#locale
+sub plain_text_as_components {
+  return undef;
+}
+#output
+<!DOCTYPE html><html><body>hoge</body></html>
+
+#data
+<t:text msgid=hoge>
+#locale
+sub plain_text_as_components {
+  return 5125;
+}
+#output
+<!DOCTYPE html><html><body>hoge</body></html>
+
+#data
+<t:text msgid=hoge>
+#locale
+sub plain_text_as_components {
+  return {fuga => 5125};
+}
+#output
+<!DOCTYPE html><html><body>hoge</body></html>
+
+#data
+<t:text msgid=hoge>abc
+#locale
+sub plain_text_as_components {
+  return [{type => 'u n k n o w n'}, {type => 'text', value => 12}];
+}
+#errors
+1;1;m;temma:components:unknown type;u n k n o w n;
+#output
+<!DOCTYPE html><html><body>12abc</body></html>

@@ -58,7 +58,7 @@
 #output
 <!DOCTYPE html><html lang="en"><head><link href="foo" rel="stylesheet">
     <meta content="fuga" name="hoge">
-    <title>abc</title></head><body>foo <p>bar</p></body></html>
+    <title>abc</title></head><body></body></html>
 
 #data
 <t:include path=hoge>
@@ -78,7 +78,6 @@
   <body>
     <t:content>
 #errors
-7;3;m;temma:duplicate field;;
 #output
 <!DOCTYPE html><html lang="en"><head><link href="foo" rel="stylesheet">
     <meta content="fuga" name="hoge">

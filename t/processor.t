@@ -96,6 +96,14 @@ sub _processed : Tests {
 
     my $processor = Temma::Processor->new;
     $processor->onerror ($onerror);
+
+    if ($test->{locale}) {
+      my $package = 'test::Locale::' . int rand 1000000;
+      eval ("package $package;\n" . $test->{locale}->[0] .
+            "\nsub new { return bless {}, \$_[0] } 1;") or die $@;
+      $processor->locale ($package->new);
+    }
+
     $processor->process_document ($doc => $fh);
 
     while (@Test::Temma::CV::Instance) {
@@ -115,6 +123,7 @@ sub _processed : Tests {
     attr-1.dat
     comment-1.dat
     text-1.dat
+    text-2.dat
     space-1.dat
     eval-1.dat
     wait-1.dat

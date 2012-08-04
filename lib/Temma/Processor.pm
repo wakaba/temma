@@ -44,6 +44,13 @@ sub onerror ($;$) {
   return $_[0]->{onerror};
 } # onerror
 
+sub locale ($;$) {
+  if (@_ > 1) {
+    $_[0]->{locale} = $_[1];
+  }
+  return $_[0]->{locale};
+} # locale
+
 sub htescape ($) {
   return $_[0] unless $_[0] =~ /[&"<>]/;
   my $s = $_[0];
@@ -207,6 +214,54 @@ sub __process ($$) {
           if ($ln eq 'text') {
             next if $self->_close_start_tag ($process, $fh);
             $self->_before_non_space ($process => $fh);
+
+            my $msgid = $node->get_attribute ('msgid');
+            if (defined $msgid) {
+              my $texts = $self->{locale} &&
+                  $self->{locale}->plain_text_as_components ($msgid);
+
+              # XXX msgid-n
+
+              # XXX args
+
+              # XXX fallback
+
+              if ($texts and ref $texts eq 'ARRAY') {
+                if (@$texts == 1 and
+                    $texts->[0]->{type} eq 'text' and
+                    not $process->{node_info}->{rawtext}) {
+                  $fh->print (htescape $texts->[0]->{value});
+                  next;
+                }
+
+                # XXX args
+                unshift @{$self->{processes}}, map {
+                  if ($_->{type} eq 'text') {
+                    +{type => 'text', value => $_->{value},
+                      node_info => $process->{node_info}};
+                  } elsif ($_->{type} eq 'field') {
+                    # XXX
+                  } else {
+                    $self->{onerror}->(type => 'temma:components:unknown type',
+                                       value => $_->{type},
+                                       level => 'm',
+                                       node => $node);
+                    ();
+                  }
+                } @$texts;
+                for (@$texts) {
+                  
+                }
+              } else {
+                # XXX fallback
+
+                unshift @{$self->{processes}},
+                    {type => 'text', value => $msgid,
+                     node_info => $process->{node_info}};
+              }
+              
+              next;
+            }
             
             my $value = $self->eval_attr_value
                 ($node, 'value', disallow_undef => 'w', required => 'm',
@@ -527,7 +582,7 @@ sub __process ($$) {
             next;
           } elsif ($ln eq 'content') {
             my $name = $node->get_attribute ('name');
-            $name = '' unless defined $name;
+            $name = '1' unless defined $name;
 
             my $def = $process->{node_info}->{fields}->{$name};
             next unless $def;
@@ -911,6 +966,12 @@ sub __process ($$) {
       }
 
       $fh->print ('</' . $process->{node_info}->{ln} . '>');
+    } elsif ($process->{type} eq 'text') {
+      if ($process->{node_info}->{rawtext}) {
+        ${$process->{node_info}->{rawtext_value}} .= $process->{value};
+      } else {
+        $fh->print (htescape $process->{value});
+      }
     } elsif ($process->{type} eq 'for block') {
       my $index = $process->{index};
       if (++$process->{index} <= $#{$process->{items}}) {
@@ -1176,13 +1237,14 @@ sub _process_fields ($$$$) {
   my ($self, $node, $sp, $process) = @_;
   
   my $fields = {};
+  my $anon_id = 1;
   for (@{$node->child_nodes->to_a}) {
     next unless $_->node_type == ELEMENT_NODE;
     next unless ($_->namespace_uri || '') eq TEMMA_NS;
     next unless $_->manakai_local_name eq 'field';
 
     my $name = $_->get_attribute ('name');
-    $name = '' unless defined $name;
+    $name = $anon_id++ unless defined $name;
     if ($fields->{$name}) {
       $self->{onerror}->(type => 'temma:duplicate field',
                          value => $name,
