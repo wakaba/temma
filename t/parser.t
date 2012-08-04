@@ -58,6 +58,7 @@ sub _parsed_tree : Tests {
     mml-1.dat
     temma-attr-1.dat
     temma-node-1.dat
+    temma-node-2.dat
     temma-flow-1.dat
     temma-inclusion-1.dat
     temma-inclusion-2.dat

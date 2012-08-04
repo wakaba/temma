@@ -1,0 +1,195 @@
+#data
+<t:text t:parse></t:text>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma text>
+|       temma parse=""
+
+#data
+<t:text t:parse>   </t:text>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma text>
+|       temma parse=""
+|       "   "
+
+#data
+<t:text t:parse>abc</t:text>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma text>
+|       temma parse=""
+|       <temma field>
+|         "abc"
+
+#data
+<t:text t:parse><p>abc</t:text>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma text>
+|       temma parse=""
+|       <temma field>
+|         <p>
+|           "abc"
+
+#data
+<t:text t:parse>abc<t:field></t:text>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma text>
+|       temma parse=""
+|       <temma field>
+|         "abc"
+|       <temma field>
+
+#data
+<t:text t:parse>ab<p>c<t:field></t:text>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma text>
+|       temma parse=""
+|       <temma field>
+|         "ab"
+|         <p>
+|           "c"
+|       <temma field>
+
+#data
+<t:text t:parse><t:field></t:text>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma text>
+|       temma parse=""
+|       <temma field>
+
+#data
+<t:text t:parse><t:field>xyz<t:text></t:text>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma text>
+|       temma parse=""
+|       <temma field>
+|         "xyz"
+|         <temma text>
+
+#data
+<t:rawhtml t:parse></t:rawhtml>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma rawhtml>
+|       temma parse=""
+
+#data
+<t:rawhtml t:parse>   </t:rawhtml>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma rawhtml>
+|       temma parse=""
+|       "   "
+
+#data
+<t:rawhtml t:parse>abc</t:rawhtml>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma rawhtml>
+|       temma parse=""
+|       <temma field>
+|         "abc"
+
+#data
+<t:rawhtml t:parse><p>abc</t:rawhtml>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma rawhtml>
+|       temma parse=""
+|       <temma field>
+|         <p>
+|           "abc"
+
+#data
+<t:rawhtml t:parse>abc<t:field></t:rawhtml>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma rawhtml>
+|       temma parse=""
+|       <temma field>
+|         "abc"
+|       <temma field>
+
+#data
+<t:rawhtml t:parse>ab<p>c<t:field></t:rawhtml>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma rawhtml>
+|       temma parse=""
+|       <temma field>
+|         "ab"
+|         <p>
+|           "c"
+|       <temma field>
+
+#data
+<t:rawhtml t:parse><t:field></t:rawhtml>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma rawhtml>
+|       temma parse=""
+|       <temma field>
+
+#data
+<t:rawhtml t:parse><t:field>xyz<t:rawhtml></t:rawhtml>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma rawhtml>
+|       temma parse=""
+|       <temma field>
+|         "xyz"
+|         <temma rawhtml>

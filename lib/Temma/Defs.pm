@@ -52,6 +52,16 @@ our $AutoOpen = {
   'table' => {
     'tr' => 'tbody',
   },
+  't:text' => {
+    '<start>' => 't:field',
+    '<text>' => 't:field',
+    't:field' => '',
+  },
+  't:rawhtml' => {
+    '<start>' => 't:field',
+    '<text>' => 't:field',
+    't:field' => '',
+  },
   't:include' => {
     '<start>' => 't:field',
     '<text>' => 't:field',
@@ -62,7 +72,7 @@ our $AutoOpen = {
     '<text>' => 't:field',
     't:field' => '',
   },
-};
+}; # $AutoOpen
 
 our $AutoClose = {
   head => {
@@ -163,8 +173,8 @@ our $CloseIfInScope = {
   't:elsif' => {'t:if' => 0},
   't:sep' => {'t:for' => 0},
   't:catch' => {'t:try' => 0},
-  't:field' => {'t:include' => 0, '<m>' => 0},
-};
+  't:field' => {'t:include' => 0, '<m>' => 0, 't:text' => 0, 't:rawhtml' => 0},
+}; # $CloseIfInScope
 
 our $EndTagOptional = {
   p => 1,

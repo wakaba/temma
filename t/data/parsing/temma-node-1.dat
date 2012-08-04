@@ -273,7 +273,8 @@ a<t:text>b</t:text>bb
 |   <body>
 |     <temma text>
 |       temma parse=""
-|       "hoge"
+|       <temma field>
+|         "hoge"
 |     "xxy"
 
 #data
