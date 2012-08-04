@@ -166,3 +166,31 @@
 |       <temma field>
 |         <meta>
 |     <base>
+
+#data
+<t:include path=hoge>
+  <t:field name=metadata>
+    abc
+  <t:field name=content>
+    foo <p>bar
+</t:include>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <temma include>
+|     path="hoge"
+|     "
+  "
+|     <temma field>
+|       name="metadata"
+|       "
+    abc
+  "
+|     <temma field>
+|       name="content"
+|       "
+    foo "
+|       <p>
+|         "bar
+"

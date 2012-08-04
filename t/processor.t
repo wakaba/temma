@@ -136,6 +136,7 @@ sub _processed : Tests {
     include-2.dat
     include-3.dat
     include-4.dat
+    include-5.dat
   );
 } # _processed
 

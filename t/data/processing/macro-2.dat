@@ -197,7 +197,7 @@
 </t:macro>
 <p><m:a><t:field>a<t:field>b</m:a>
 #errors
-4;4;m;temma:duplicate field;;
+4;19;m;temma:duplicate field;;
 #output
 <!DOCTYPE html><html><head></head><body><p>a</p></body></html>
 
@@ -207,7 +207,7 @@
 </t:macro>
 <p><m:a><t:field name>a<t:field>b</m:a>
 #errors
-4;4;m;temma:duplicate field;;
+4;24;m;temma:duplicate field;;
 #output
 <!DOCTYPE html><html><head></head><body><p>a</p></body></html>
 
@@ -226,7 +226,7 @@
 </t:macro>
 <p><m:a><t:field name=abcx>a<t:field name=abcx>b</m:a>
 #errors
-4;4;m;temma:duplicate field;abcx;
+4;29;m;temma:duplicate field;abcx;
 #output
 <!DOCTYPE html><html><head></head><body><p>a</p></body></html>
 

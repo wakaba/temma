@@ -1187,7 +1187,7 @@ sub _process_fields ($$$$) {
       $self->{onerror}->(type => 'temma:duplicate field',
                          value => $name,
                          level => 'm',
-                         node => $node);
+                         node => $_);
       next;
     }
 

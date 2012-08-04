@@ -1,0 +1,109 @@
+#data
+<t:include path=hoge>
+  foo <p>bar
+  <t:field name=metadata>
+    <link rel=stylesheet href=foo>
+    <meta name=hoge content=fuga>
+    <title>abc</title>
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+    <t:content name=metadata>
+  <body>
+    <t:content>
+#output
+<!DOCTYPE html><html lang="en"><head><link href="foo" rel="stylesheet">
+    <meta content="fuga" name="hoge">
+    <title>abc</title></head><body>foo <p>bar</p></body></html>
+
+#data
+<t:include path=hoge>
+  <t:field name=metadata>
+    <link rel=stylesheet href=foo>
+    <meta name=hoge content=fuga>
+    <title>abc</title>
+  <t:field>
+    foo <p>bar
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+    <t:content name=metadata>
+  <body>
+    <t:content>
+#output
+<!DOCTYPE html><html lang="en"><head><link href="foo" rel="stylesheet">
+    <meta content="fuga" name="hoge">
+    <title>abc</title></head><body>foo <p>bar</p></body></html>
+
+#data
+<t:include path=hoge>
+  <t:field name=metadata>
+    <link rel=stylesheet href=foo>
+    <meta name=hoge content=fuga>
+    <title>abc</title>
+  <t:field name>
+    foo <p>bar
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+    <t:content name=metadata>
+  <body>
+    <t:content>
+#output
+<!DOCTYPE html><html lang="en"><head><link href="foo" rel="stylesheet">
+    <meta content="fuga" name="hoge">
+    <title>abc</title></head><body>foo <p>bar</p></body></html>
+
+#data
+<t:include path=hoge>
+  abcde
+  <t:field name=metadata>
+    <link rel=stylesheet href=foo>
+    <meta name=hoge content=fuga>
+    <title>abc</title>
+  <t:field name>
+    foo <p>bar
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+    <t:content name=metadata>
+  <body>
+    <t:content>
+#errors
+7;3;m;temma:duplicate field;;
+#output
+<!DOCTYPE html><html lang="en"><head><link href="foo" rel="stylesheet">
+    <meta content="fuga" name="hoge">
+    <title>abc</title></head><body>abcde</body></html>
+
+#data
+<t:include path=hoge>
+  abcde
+  <t:field name=metadata>
+    <link rel=stylesheet href=foo>
+    <meta name=hoge content=fuga>
+    <title>abc</title>
+  <t:field name=metadata>
+    foo <p>bar
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+    <t:content name=metadata>
+  <body>
+    <t:content>
+#errors
+7;3;m;temma:duplicate field;metadata;
+#output
+<!DOCTYPE html><html lang="en"><head><link href="foo" rel="stylesheet">
+    <meta content="fuga" name="hoge">
+    <title>abc</title></head><body>abcde</body></html>
