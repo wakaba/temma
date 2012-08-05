@@ -1,10 +1,24 @@
 #data
 <t:text msgid=foobar.baz>
+#errors
+1;1;m;temma:no locale;;
 #output
 <!DOCTYPE html><html><body>foobar.baz</body></html>
 
 #data
 <t:text msgid="foobar&baz<>">
+#errors
+1;1;m;temma:no locale;;
+#output
+<!DOCTYPE html><html><body>foobar&amp;baz&lt;&gt;</body></html>
+
+#data
+<t:text msgid="foobar&baz<>">
+#locale
+sub plain_text_as_components {
+  return;
+}
+#errors
 #output
 <!DOCTYPE html><html><body>foobar&amp;baz&lt;&gt;</body></html>
 
@@ -329,6 +343,8 @@ sub plain_text_as_components {
 
 #data
 <t:text msgid=hoge msgn=12>
+#errors
+1;1;m;temma:no locale;;
 #output
 <!DOCTYPE html><html><body>hoge</body></html>
 
@@ -403,6 +419,8 @@ sub plain_text_n_as_components {
 
 #data
 <t:text msgid=hoge msgstr="&#x1240;xaa">hoge
+#errors
+1;1;m;temma:no locale;;
 #output escaped
 <!DOCTYPE html><html><body>\u1240xaahoge</body></html>
 

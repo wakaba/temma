@@ -1018,19 +1018,36 @@ sub _print_attrs ($$$$) {
 
     my $attr_ns = $attr->namespace_uri;
     my $attr_name;
+    my $value;
     if (not defined $attr_ns) {
       $attr_name = $attr->manakai_local_name;
+      $value = $attr->value;
     } elsif ($attr_ns eq XML_NS) {
       $attr_name = 'xml:' . $attr->manakai_local_name;
+      $value = $attr->value;
     } elsif ($attr_ns eq XMLNS_NS) {
       $attr_name = 'xmlns:' . $attr->manakai_local_name;
       $attr_name = 'xmlns' if $attr_name eq 'xmlns:xmlns';
+      $value = $attr->value;
     } elsif ($attr_ns eq XLINK_NS) {
       $attr_name = 'xlink:' . $attr->manakai_local_name;
+      $value = $attr->value;
+    } elsif ($attr_ns eq TEMMA_MSGID_NS) {
+      my $msgid = $attr->value;
+      my $locale = $self->{locale} || do {
+        $self->{onerror}->(type => 'temma:no locale',
+                           node => $attr,
+                           level => 'm');
+        undef;
+      };
+      $value = $locale && $locale->plain_text ($msgid);
+      $value = $msgid if not defined $value;
+      $attr_name = $attr->manakai_local_name;
     } elsif ($attr_ns eq TEMMA_NS) {
       next;
     } else {
       $attr_name = $attr->name;
+      $value = $attr->value;
     }
 
     unless ($attr_name =~ /\A[A-Za-z_-][A-Za-z0-9_:-]*\z/) {
@@ -1043,7 +1060,7 @@ sub _print_attrs ($$$$) {
 
     if ($attr_name eq 'class') {
       push @{$node_info->{classes} ||= []},
-          grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $attr->value;
+          grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $value;
     } else {
       if ($node_info->{attrs}->{$attr_name}) {
         $self->{onerror}->(type => 'temma:duplicate attr',
@@ -1053,7 +1070,7 @@ sub _print_attrs ($$$$) {
         next;
       }
       $node_info->{attrs}->{$attr_name} = 1;
-      push @attr, ' ' . $attr_name . '="' . (htescape $attr->value) . '"';
+      push @attr, ' ' . $attr_name . '="' . (htescape $value) . '"';
     }
   }
   $fh->print (join '', @attr);
@@ -1263,7 +1280,12 @@ sub _print_msgid ($$$$$;%) {
   my $n = $self->eval_attr_value
       ($node, 'msgn', node_info => $process->{node_info});
 
-  my $locale = $self->{locale};
+  my $locale = $self->{locale} || do {
+    $self->{onerror}->(type => 'temma:no locale',
+                       node => $node,
+                       level => 'm');
+    undef;
+  };
   my $set = $node->get_attribute ('msgset');
   $locale = $locale->for_text_set ($set) if defined $set;
 

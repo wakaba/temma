@@ -1,12 +1,26 @@
 #data
 <p><t:barehtml msgid=hoge.fuga>
+#errors
+1;4;m;temma:no locale;;
 #output
 <!DOCTYPE html><html><body><p>hoge.fuga</p></body></html>
 
 #data
 <p><t:barehtml msgid="hoge&fuga<">
+#errors
+1;4;m;temma:no locale;;
 #output
 <!DOCTYPE html><html><body><p>hoge&amp;fuga&lt;</p></body></html>
+
+#data
+<t:barehtml msgid="foobar&baz<>">
+#locale
+sub html_as_components {
+  return;
+}
+#errors
+#output
+<!DOCTYPE html><html><body>foobar&amp;baz&lt;&gt;</body></html>
 
 #data
 <t:barehtml msgID=foo>

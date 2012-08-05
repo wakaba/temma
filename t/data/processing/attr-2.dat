@@ -1,0 +1,160 @@
+#data
+<img msgid:alt=hoge.fuga-abc>
+#errors
+1;6;m;temma:no locale;;
+#output
+<!DOCTYPE html><html><body><img alt="hoge.fuga-abc"></body></html>
+
+#data
+<img msgid:alt=hoge.fuga-abc>
+#locale
+sub plain_text {
+  return undef;
+}
+#output
+<!DOCTYPE html><html><body><img alt="hoge.fuga-abc"></body></html>
+
+#data
+<img msgid:alt=hoge.fuga-abc>
+#locale
+sub plain_text {
+  return '';
+}
+#output
+<!DOCTYPE html><html><body><img alt=""></body></html>
+
+#data
+<img msgid:alt=hoge.fuga-abc>
+#locale
+sub plain_text {
+  return '0';
+}
+#output
+<!DOCTYPE html><html><body><img alt="0"></body></html>
+
+#data
+<img msgid:alt=hoge.fuga-abc>
+#locale
+sub plain_text {
+  return "ab \x{5000} ";
+}
+#output escaped
+<!DOCTYPE html><html><body><img alt="ab \u5000 "></body></html>
+
+#data
+<img msgid:alt=hoge.fuga-abc>
+#locale
+sub plain_text {
+  return "\x0A\x09\x0D\x00";
+}
+#output escaped
+<!DOCTYPE html><html><body><img alt="\u000A\u0009\u000D\u0000"></body></html>
+
+#data
+<img msgid:alt=hoge.fuga-abc>
+#locale
+sub plain_text {
+  return "\x22\x5C&<p>";
+}
+#output
+<!DOCTYPE html><html><body><img alt="&quot;\&amp;&lt;p&gt;"></body></html>
+
+#data
+<img msgid:alt=hoge.fuga-abc t:parse>
+  <t:attr name="'alt'" value=31>
+</img>
+#locale
+sub plain_text {
+  return 'HOGE';
+}
+#errors
+2;3;m;temma:duplicate attr;alt;
+#output
+<!DOCTYPE html><html><body><img alt="HOGE"></body></html>
+
+#data
+<img alt=hoge.fuga-abc t:parse>
+  <t:attr name="'msgid:alt'" value=31>
+</img>
+#locale
+sub plain_text {
+  return 'HOGE';
+}
+#errors
+#output
+<!DOCTYPE html><html><body><img alt="hoge.fuga-abc" msgid:alt="31"></body></html>
+
+#data
+<img msgid:xml:lang=hoge.fuga-abc t:parse>
+  <t:attr name="'xml:lang'" value=21>
+</img>
+#locale
+sub plain_text {
+  return "\x22\x5C&<p>";
+}
+#errors
+2;3;m;temma:duplicate attr;xml:lang;
+#output
+<!DOCTYPE html><html><body><img xml:lang="&quot;\&amp;&lt;p&gt;"></body></html>
+
+#data
+<html msgid:title="hoge fuga">
+#locale
+sub plain_text {
+  return "\x22\x5C&<p>";
+}
+#output
+<!DOCTYPE html><html title="&quot;\&amp;&lt;p&gt;"></html>
+
+#data
+<p>
+  <t:attr name="'msgid:title'" value="'hoge fuga'">
+#locale
+sub plain_text {
+  die;
+}
+#output
+<!DOCTYPE html><html><body><p msgid:title="hoge fuga"></p></body></html>
+
+#data
+<p msgid:>abc
+#output
+<!DOCTYPE html><html><body><p msgid:="">abc</p></body></html>
+
+#data
+<p msgid:0="hoge fuga">
+#locale
+sub plain_text {
+  return $_[1] . '-' . defined $_[2];
+}
+#errors
+1;4;m;temma:name not serializable;0;
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p msgid:class="hoe">
+#locale
+sub plain_text {
+  return $_[1] . ' ' . $_[1];
+}
+#output
+<!DOCTYPE html><html><body><p class="hoe hoe"></p></body></html>
+
+#data
+<p msgid:class="hoe"><t:class name="124">
+#locale
+sub plain_text {
+  return $_[1] . ' ' . $_[1];
+}
+#output
+<!DOCTYPE html><html><body><p class="hoe hoe 124"></p></body></html>
+
+#data
+<p msgid:class="hoe" class=hoe>
+#locale
+sub plain_text {
+  return $_[1];
+}
+#output
+<!DOCTYPE html><html><body><p class="hoe hoe"></p></body></html>

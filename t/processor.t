@@ -121,6 +121,7 @@ sub _processed : Tests {
     element-1.dat
     element-2.dat
     attr-1.dat
+    attr-2.dat
     comment-1.dat
     text-1.dat
     text-2.dat
