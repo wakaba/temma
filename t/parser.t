@@ -11,6 +11,11 @@ use Message::DOM::DOMImplementation;
 use Whatpm::HTML::Dumper;
 use base qw(Test::Class);
 
+$Whatpm::HTML::Dumper::NamespaceMapping
+    ->{q<http://suika.fam.cx/www/markup/temma>} = 'temma';
+$Whatpm::HTML::Dumper::NamespaceMapping
+    ->{q<http://suika.fam.cx/www/markup/temma/macro>} = 'temmacro';
+
 my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('parsing');
 
 sub _parsed_tree : Tests {
