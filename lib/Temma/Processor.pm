@@ -937,8 +937,6 @@ sub __process ($$) {
             grep { $_->node_type == ELEMENT_NODE or
                    $_->node_type == DOCUMENT_TYPE_NODE }
             @{$node->child_nodes->to_a};
-
-        # XXX second element? text children?
       } else {
         die "Unknown node type |$nt|";
       }

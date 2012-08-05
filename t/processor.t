@@ -10,6 +10,7 @@ use Temma::Parser;
 use Temma::Processor;
 use Message::DOM::DOMImplementation;
 use Whatpm::HTML::Dumper;
+use Temma::Defs;
 use Test::X1;
 use Encode;
 
@@ -320,6 +321,74 @@ test {
     } $c;
   });
 } n => 1, name => 'args optional';
+
+test {
+  my $c = shift;
+  my $text = q{
+    <html t:params="$hoge">
+    <p><t:text value="$hoge || 2">
+  };
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+
+  my $parser = Temma::Parser->new;
+  $parser->parse_char_string ($text => $doc);
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_document ($doc => $file, args => {
+    hoge => undef,
+  }, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<!DOCTYPE html><html><body><p>2</p></body></html>};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'args undef';
+
+test {
+  my $c = shift;
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+  $doc->strict_error_checking (0);
+  $doc->append_child ($doc->create_element_ns (HTML_NS, 'hoge'));
+  $doc->append_child ($doc->create_element_ns (HTML_NS, 'fuga'));
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_document ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<hoge></hoge><fuga></fuga>};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'multiple root elements';
+
+test {
+  my $c = shift;
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+  $doc->strict_error_checking (0);
+  $doc->append_child ($doc->create_element_ns (HTML_NS, 'hoge'));
+  $doc->manakai_append_text ("ab c");
+  $doc->append_child ($doc->create_element_ns (HTML_NS, 'fuga'));
+  $doc->manakai_append_text ("xz  ");
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_document ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<hoge></hoge><fuga></fuga>};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'text node children of document node';
 
 run_tests;
 
