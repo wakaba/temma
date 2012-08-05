@@ -17,6 +17,43 @@ my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('processing');
 
 test {
   my $c = shift;
+  my $text = q{
+    <t:my as=$cv>
+    <t:call x="
+      use AnyEvent;
+      $cv = AE::cv;
+      my $old_time = time;
+      my $timer; $timer = AE::timer 1, 0, sub {
+        undef $timer;
+        $cv->send (time - $old_time);
+      };
+    ">
+    <p>Before wait</p>
+    <t:wait cv=$cv as=$sleep>
+    <p>After wait (delta = <t:text value=$sleep> seconds)
+  };
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+
+  my $parser = Temma::Parser->new;
+  $parser->parse_char_string ($text => $doc);
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>', \(my $result = '');
+  $pro->process_document ($doc => $file, ondone => sub {
+    test {
+      like $result, qr{^<!DOCTYPE html><html><body><p>Before wait</p>
+    
+    <p>After wait \(delta = [1-9][0-9]* seconds\)</p></body></html>$};
+      done $c;
+    } $c;
+  });
+  like $result, qr{^<!DOCTYPE html><html><body><p>Before wait</p>$};
+} n => 2, name => 'process_document ondone';
+
+test {
+  my $c = shift;
   my $dom = Message::DOM::DOMImplementation->new;
 
   for_each_test $_->stringify, {

@@ -79,13 +79,14 @@ my $TemmaContextNode = sub ($) {
   return $node;
 }; # $TemmaContextNode
 
-sub process_document ($$$) {
-  my ($self, $doc => $fh) = @_;
+sub process_document ($$$;%) {
+  my ($self, $doc => $fh, %args) = @_;
 
   $self->{processes} = [];
+  $self->{doc} = $doc; ## Hold ref to Document to not destory until done
   push @{$self->{processes}},
       {type => 'node', node => $doc, node_info => {allow_children => 1}},
-      {type => 'end'};
+      {type => 'end', ondone => $args{ondone}};
 
   $self->_process ($fh);
 } # process_document
@@ -666,8 +667,31 @@ sub __process ($$) {
                                  level => 'm',
                                  node => $node->get_attribute_node ('cv'));
             } else {
+              my $as = $node->get_attribute ('as');
+              $as =~ s/^\$// if defined $as;
+              if (not defined $as) {
+                #
+              } elsif (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or $as eq '_') {
+                $self->{onerror}->(type => 'temma:variable name',
+                                   node => $node->get_attribute_node ('as') || $node,
+                                   level => 'm');
+                undef $as;
+              }
+
+              unless (my $af = $fh->autoflush) {
+                $fh->autoflush (1);
+                $fh->print ('');
+                $fh->autoflush ($af);
+              }
+
               eval {
                 $value->cb (sub {
+                  if ($as) {
+                    $process->{node_info}->{binds}
+                        = {%{$process->{node_info}->{binds} || {}},
+                           $as => [[$_[0]->recv], 0]};
+                  }
+
                   unshift @{$self->{processes}},
                       {type => 'eval_attr_value',
                        node => $node, attr_name => 'cb',
@@ -967,6 +991,9 @@ sub __process ($$) {
                               node_info => $process->{node_info});
     } elsif ($process->{type} eq 'end') {
       next if $self->_close_start_tag ($process, $fh);
+      if ($process->{ondone}) {
+        $process->{ondone}->($self);
+      }
     } elsif ($process->{type} eq 'barehtml') {
       if ($process->{node_info}->{rawtext}) {
         $self->{onerror}->(type => 'element not allowed:rawtext',

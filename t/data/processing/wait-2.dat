@@ -1,0 +1,35 @@
+#data
+<p>aa<t:wait cv=" Test::Temma::CV->new (sent_value => 12) " as=$hoge>bb<t:text value=$hoge>x
+#output
+<!DOCTYPE html><html><body><p>aabb12x</p></body></html>
+
+#data
+<p>aa<t:wait cv=" Test::Temma::CV->new (sent_value => 12) " as=hoge>bb<t:text value=$hoge>x
+#output
+<!DOCTYPE html><html><body><p>aabb12x</p></body></html>
+
+#data
+<p>aa<t:wait cv=" Test::Temma::CV->new (sent_value => 12) " as=$_>bb<t:text value=$_>x
+#errors
+1;61;m;temma:variable name;;
+1;77;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body><p>aabbx</p></body></html>
+
+#data
+<p>aa<t:wait cv=" Test::Temma::CV->new (sent_value => 12) " as=$1>bb
+#errors
+1;61;m;temma:variable name;;
+#output
+<!DOCTYPE html><html><body><p>aabb</p></body></html>
+
+#data
+<div>
+<p>aa<t:wait cv=" Test::Temma::CV->new (sent_value => 12) " as=$hoge>bb<t:text value=$hoge>x
+</div>
+<p><t:text value="$hoge">y
+#errors escaped
+4;12;m;temma:perl exception;Global symbol "$hoge" requires explicit package name at html>body>p>t:text[value] (at /index.html.tm line 4 column 12) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><div><p>aabb12x</p></div>
+<p></p></body></html>
