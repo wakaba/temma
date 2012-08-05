@@ -103,7 +103,11 @@ sub process_fragment ($$$;%) {
     my $sp = {preserve => 'preserve', trim => 'trim'}->{$body->get_attribute_ns (TEMMA_NS, 'space') || ''}
         || {preserve => 'preserve', trim => 'trim'}->{$body->parent_node->get_attribute_ns (TEMMA_NS, 'space') || ''}
         || '';
-    my $node_info = {allow_children => 1, preserve_space => $sp eq 'preserve'};
+    my $binds = {};
+    my $node_info = {allow_children => 1,
+                     preserve_space => $sp eq 'preserve',
+                     binds => $binds};
+    $self->_get_params ($doc->document_element, bind_args => $binds);
 
     unshift @{$self->{processes}},
         map { {type => 'node', node => $_, node_info => $node_info} } 
@@ -898,18 +902,9 @@ sub __process ($$) {
                 $node_info->{rawtext} = 1;
                 $node_info->{rawtext_value} = \(my $v = '');
               } elsif ($node_info->{lnn} eq 'html') {
-                my $params = $self->_get_params ($node_info->{node});
-                my $binds = $node_info->{binds} ||= {};
-                my $vars = $self->{args} ||= {};
-                for my $param (@{$params}) {
-                  if (not $param->[1] and not exists $vars->{$param->[0]}) {
-                    $self->{onerror}->(type => 'temma:no param',
-                                       value => $param->[0],
-                                       node => $node_info->{node}->get_attribute_node_ns (TEMMA_NS, 'params'),
-                                       level => 'm');
-                  }
-                  $binds->{$param->[0]} = [$vars, $param->[0]];
-                }
+                $self->_get_params
+                    ($node_info->{node},
+                     bind_args => $node_info->{binds} ||= {});
               }
             }
 
@@ -1269,8 +1264,8 @@ sub eval_attr_value ($$$;%) {
   return $evaled;
 } # eval_attr_value
 
-sub _get_params ($$) {
-  my ($self, $node) = @_;
+sub _get_params ($$;%) {
+  my ($self, $node, %args) = @_;
   my $params = $node->get_attribute_ns (TEMMA_NS, 'params');
   my $param_found = {};
   $params = defined $params
@@ -1301,6 +1296,20 @@ sub _get_params ($$) {
            }
          } split /[\x09\x0A\x0C\x0D\x20]+/, $params]
       : [];
+
+  if (my $binds = $args{bind_args}) {
+    my $vars = $self->{args} ||= {};
+    for my $param (@{$params}) {
+      if (not $param->[1] and not exists $vars->{$param->[0]}) {
+        $self->{onerror}->(type => 'temma:no param',
+                           value => $param->[0],
+                           node => $node->get_attribute_node_ns (TEMMA_NS, 'params'),
+                           level => 'm');
+      }
+      $binds->{$param->[0]} = [$vars, $param->[0]];
+    }
+  }
+
   return $params;
 } # _get_params
 

@@ -512,6 +512,31 @@ test {
   });
 } n => 1, name => 'process_fragment t:space=preserve root';
 
+test {
+  my $c = shift;
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+  $doc->manakai_is_html (1);
+  $doc->inner_html (q{<!DOCTYPE html><body>ax});
+  $doc->document_element->set_attribute_ns (TEMMA_NS, 't:params' => '$aa');
+  my $text = $doc->create_element_ns (TEMMA_NS, 't:text');
+  $text->set_attribute (value => '$aa');
+  $doc->body->append_child ($text);
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_fragment ($doc => $file, args => {
+    aa => "120 21",
+  }, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{ax120 21};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'process_fragment t:params';
+
 run_tests;
 
 =head1 LICENSE
