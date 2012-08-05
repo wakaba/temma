@@ -1,0 +1,27 @@
+#data
+<html msgid:foo=bar>
+<hoge msgid:foobar=abc />
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   temsgid foo="bar"
+|   "
+"
+|   <body>
+|     <hoge>
+|       temsgid foobar="abc"
+
+#data
+<html pl:foo=bar>
+<hoge pl:foobar=abc />
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   templ foo="bar"
+|   "
+"
+|   <body>
+|     <hoge>
+|       templ foobar="abc"

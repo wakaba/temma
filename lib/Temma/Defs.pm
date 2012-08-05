@@ -7,7 +7,8 @@ use Whatpm::HTML::ParserData;
 use Exporter::Lite;
 
 our @EXPORT = qw(
-  HTML_NS MML_NS SVG_NS TEMMA_NS TEMMA_MACRO_NS XML_NS XMLNS_NS XLINK_NS
+  HTML_NS MML_NS SVG_NS XML_NS XMLNS_NS XLINK_NS
+  TEMMA_NS TEMMA_MACRO_NS TEMMA_MSGID_NS TEMMA_PERL_NS
 );
 
 sub HTML_NS (); *HTML_NS = \&Whatpm::HTML::ParserData::HTML_NS;
@@ -18,6 +19,15 @@ sub XMLNS_NS (); *XMLNS_NS = \&Whatpm::HTML::ParserData::XMLNS_NS;
 sub XLINK_NS (); *XLINK_NS = \&Whatpm::HTML::ParserData::XLINK_NS;
 sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 sub TEMMA_MACRO_NS () { q<http://suika.fam.cx/www/markup/temma/macro> }
+sub TEMMA_MSGID_NS () { q<http://suika.fam.cx/www/markup/temma/msgid> }
+sub TEMMA_PERL_NS () { q<http://suika.fam.cx/www/markup/temma/perl> }
+
+our $NamespacePrefixToURL = {
+  t => TEMMA_NS,
+  m => TEMMA_MACRO_NS,
+  msgid => TEMMA_MSGID_NS,
+  pl => TEMMA_PERL_NS,
+}; # $NamespacePrefixToURL
 
 my @transparentvoid = qw(
   t:attr t:class t:wait t:call t:my

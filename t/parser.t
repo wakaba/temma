@@ -15,6 +15,10 @@ $Whatpm::HTML::Dumper::NamespaceMapping
     ->{q<http://suika.fam.cx/www/markup/temma>} = 'temma';
 $Whatpm::HTML::Dumper::NamespaceMapping
     ->{q<http://suika.fam.cx/www/markup/temma/macro>} = 'temmacro';
+$Whatpm::HTML::Dumper::NamespaceMapping
+    ->{q<http://suika.fam.cx/www/markup/temma/msgid>} = 'temsgid';
+$Whatpm::HTML::Dumper::NamespaceMapping
+    ->{q<http://suika.fam.cx/www/markup/temma/perl>} = 'templ';
 
 my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('parsing');
 
@@ -62,6 +66,7 @@ sub _parsed_tree : Tests {
     svg-1.dat
     mml-1.dat
     temma-attr-1.dat
+    temma-attr-2.dat
     temma-node-1.dat
     temma-node-2.dat
     temma-flow-1.dat

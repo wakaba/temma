@@ -202,16 +202,18 @@ sub _construct_tree ($) {
           my $attrs = $self->{t}->{attributes};
           for my $attr_name (keys %{$attrs}) {
             my $attr_t = $attrs->{$attr_name};
-            if (not $attr_name =~ /^t:/ and not $allow_non_temma) {
+            if (not $attr_name =~ /^(?:t|m|msgid|pl):/ and
+                not $allow_non_temma) {
               $self->{parse_error}->(type => 'temma:html non temma attr',
                                      text => $attr_name,
                                      token => $self->{t},
                                      level => $self->{level}->{must});
               next;
             }
-            my $attr = $attr_name =~ s/^t://
+            my $attr = $attr_name =~ s/^(t|m|msgid|pl)://
                 ? $self->{document}->create_attribute_ns
-                    (TEMMA_NS, ['t', $attr_name])
+                    ($Temma::Defs::NamespacePrefixToURL->{$1},
+                     [$1, $attr_name])
                 : $self->{document}->create_attribute_ns
                     (undef, [undef, $attr_name]);
             if ($el->has_attribute_ns ($attr->namespace_uri, $attr->manakai_local_name)) {
@@ -350,12 +352,10 @@ sub _construct_tree ($) {
             ->{$attr_name};
         if ($nsfix) {
           $attr = $self->{document}->create_attribute_ns (@$nsfix);
-        } elsif ($attr_name =~ s/^t:(?=.)//s) {
+        } elsif ($attr_name =~ s/^(t|m|msgid|pl):(?=.)//s) {
           $attr = $self->{document}->create_attribute_ns
-              (TEMMA_NS, ['t', $attr_name]);
-        } elsif ($attr_name =~ s/^m:(?=.)//s) {
-          $attr = $self->{document}->create_attribute_ns
-              (TEMMA_MACRO_NS, ['m', $attr_name]);
+              ($Temma::Defs::NamespacePrefixToURL->{$1},
+               [$1, $attr_name]);
         } else {
           $attr = $self->{document}->create_attribute_ns
               (undef, [undef, $attr_fixup->{$attr_name} || $attr_name]);
