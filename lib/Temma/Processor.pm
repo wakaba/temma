@@ -823,11 +823,12 @@ sub __process ($$) {
                fields => $process->{node_info}->{fields},
                macro_depth => $process->{node_info}->{macro_depth}};
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
-          $self->_print_attrs ($attrs => $fh, $node_info);
 
           if ($node_info->{ns} eq HTML_NS and
               $Whatpm::HTML::ParserData::AllVoidElements->{$node_info->{lnn}}) {
             unshift @{$self->{processes}}, {type => 'end'};
+
+            $self->_print_attrs ($attrs => $fh, $node_info);
 
             unshift @{$self->{processes}},
                 map { {type => 'node', node => $_, node_info => $node_info} } 
@@ -854,6 +855,8 @@ sub __process ($$) {
             unshift @{$self->{processes}},
                 {type => 'end tag', node_info => $node_info};
             
+            $self->_print_attrs ($attrs => $fh, $node_info);
+
             unshift @{$self->{processes}},
                 map { {type => 'node', node => $_, node_info => $node_info} } 
                 grep { $_->node_type == ELEMENT_NODE or
@@ -1043,6 +1046,13 @@ sub _print_attrs ($$$$) {
       $value = $locale && $locale->plain_text ($msgid);
       $value = $msgid if not defined $value;
       $attr_name = $attr->manakai_local_name;
+    } elsif ($attr_ns eq TEMMA_PERL_NS) {
+      $value = $self->eval_attr_value
+          ($attr->owner_element, $attr->node_name,
+           attr_node => $attr,
+           node_info => $node_info);
+      next unless defined $value;
+      $attr_name = $attr->manakai_local_name;
     } elsif ($attr_ns eq TEMMA_NS) {
       next;
     } else {
@@ -1115,7 +1125,8 @@ sub _before_non_space ($$;%) {
 sub eval_attr_value ($$$;%) {
   my ($self, $node, $name, %args) = @_;
   
-  my $attr_node = $node->get_attribute_node_ns ($args{nsurl}, $name) or do {
+  my $attr_node = $args{attr_node} ||
+      $node->get_attribute_node_ns ($args{nsurl}, $name) or do {
     if ($args{required}) {
       $self->{onerror}->(type => 'attribute missing',
                          text => ($args{nsurl} && $args{nsurl} eq TEMMA_MACRO_NS ? 'm:' . $name : $name),

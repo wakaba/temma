@@ -1,0 +1,87 @@
+#data
+<a pl:href=" 'http://' . 'hoge/' ">fuga</a>
+#output
+<!DOCTYPE html><html><body><a href="http://hoge/">fuga</a></body></html>
+
+#data
+<a pl:href=" '' ">fuga</a>
+#output
+<!DOCTYPE html><html><body><a href="">fuga</a></body></html>
+
+#data
+<a pl:href=" undef ">fuga</a>
+#output
+<!DOCTYPE html><html><body><a>fuga</a></body></html>
+
+#data
+<a pl:href=" undef "><t:attr name="'href'" value=12>fuga</a>
+#output
+<!DOCTYPE html><html><body><a href="12">fuga</a></body></html>
+
+#data
+<a pl:href=" 0 ">fuga</a>
+#output
+<!DOCTYPE html><html><body><a href="0">fuga</a></body></html>
+
+#data
+<a pl:href=" qq{\x{4000}&<>&quot;} ">fuga</a>
+#output escaped
+<!DOCTYPE html><html><body><a href="\u4000&amp;&lt;&gt;&quot;">fuga</a></body></html>
+
+#data
+<p><a pl:href=die>hoge</a>
+#errors escaped
+1;7;m;temma:perl exception;Died at html>body>p>a[pl:href] (at /index.html.tm line 1 column 7) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><p><a></a></p></body></html>
+
+#data
+<p><img pl:href=die>hoge
+#errors escaped
+1;9;m;temma:perl exception;Died at html>body>p>img[pl:href] (at /index.html.tm line 1 column 9) line 1.\u000A;
+#output
+<!DOCTYPE html><html><body><p><img></p></body></html>
+
+#data
+<html pl:href=die>hoge
+#errors escaped
+1;7;m;temma:perl exception;Died at html[pl:href] (at /index.html.tm line 1 column 7) line 1.\u000A;
+#output
+<!DOCTYPE html><html></html>
+
+#data
+<math pl:definitionurl = 133 />
+#output
+<!DOCTYPE html><html><body><math definitionURL="133"></math></body></html>
+
+#data
+<svg msgid:viewbox=hoge.fuga />
+#locale
+sub plain_text {
+  my $s = $_[1];
+  $s =~ s/\./ /g;
+  return $s;
+}
+#output
+<!DOCTYPE html><html><body><svg viewBox="hoge fuga"></svg></body></html>
+
+#data
+<p pl:class="'hoge'" msgid:class=hoge class=hoge>
+#errors
+1;22;m;temma:no locale;;
+#output
+<!DOCTYPE html><html><body><p class="hoge hoge hoge"></p></body></html>
+
+#data
+<p pl:title=123><t:attr name="'title'" value=21>a
+#errors
+1;17;m;temma:duplicate attr;title;
+#output
+<!DOCTYPE html><html><body><p title="123">a</p></body></html>
+
+#data
+<html pl:title=123><t:attr name="'title'" value=21>a
+#errors
+1;20;m;temma:duplicate attr;title;
+#output
+<!DOCTYPE html><html title="123"><body>a</body></html>

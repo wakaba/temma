@@ -353,6 +353,8 @@ sub _construct_tree ($) {
         if ($nsfix) {
           $attr = $self->{document}->create_attribute_ns (@$nsfix);
         } elsif ($attr_name =~ s/^(t|m|msgid|pl):(?=.)//s) {
+          $attr_name = $attr_fixup->{$attr_name} || $attr_name
+              if $1 eq 'msgid' or $1 eq 'pl';
           $attr = $self->{document}->create_attribute_ns
               ($Temma::Defs::NamespacePrefixToURL->{$1},
                [$1, $attr_name]);

@@ -25,3 +25,89 @@
 |   <body>
 |     <hoge>
 |       templ foobar="abc"
+
+#data
+<p msgid:definitionurl=hoge 
+/><math msgid:definitionurl=hoge 
+/><svg msgid:definitionurl=hoge />
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       temsgid definitionurl="hoge"
+|     <math math>
+|       temsgid definitionURL="hoge"
+|     <svg svg>
+|       temsgid definitionurl="hoge"
+
+#data
+<p t:definitionurl=foo m:definitionurl=hoge>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       temma definitionurl="foo"
+|       temmacro definitionurl="hoge"
+
+#data
+<p pl:definitionurl=hoge 
+/><math pl:definitionurl=hoge 
+/><svg pl:definitionurl=hoge />
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       templ definitionurl="hoge"
+|     <math math>
+|       templ definitionURL="hoge"
+|     <svg svg>
+|       templ definitionurl="hoge"
+
+#data
+<p msgid:viewbox=hoge 
+/><math msgid:viewbox=hoge 
+/><svg msgid:viewbox=hoge />
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       temsgid viewbox="hoge"
+|     <math math>
+|       temsgid viewbox="hoge"
+|     <svg svg>
+|       temsgid viewBox="hoge"
+
+#data
+<p t:viewbox=foo m:viewbox=hoge>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       temma viewbox="foo"
+|       temmacro viewbox="hoge"
+
+#data
+<p pl:viewbox=hoge 
+/><math pl:viewbox=hoge 
+/><svg pl:viewbox=hoge />
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       templ viewbox="hoge"
+|     <math math>
+|       templ viewbox="hoge"
+|     <svg svg>
+|       templ viewBox="hoge"
