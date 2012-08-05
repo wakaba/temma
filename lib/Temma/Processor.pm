@@ -92,6 +92,32 @@ sub process_document ($$$;%) {
   $self->_process ($fh);
 } # process_document
 
+sub process_fragment ($$$;%) {
+  my ($self, $doc => $fh, %args) = @_;
+
+  $self->{processes} = [];
+  $self->{args} = $args{args} || {};
+  $self->{doc} = $doc; ## Hold ref to Document to not destory until done
+
+  if (my $body = $doc->body) {
+    my $sp = {preserve => 'preserve', trim => 'trim'}->{$body->get_attribute_ns (TEMMA_NS, 'space') || ''}
+        || {preserve => 'preserve', trim => 'trim'}->{$body->parent_node->get_attribute_ns (TEMMA_NS, 'space') || ''}
+        || '';
+    my $node_info = {allow_children => 1, preserve_space => $sp eq 'preserve'};
+
+    unshift @{$self->{processes}},
+        map { {type => 'node', node => $_, node_info => $node_info} } 
+        grep { $_->node_type == ELEMENT_NODE or
+               $_->node_type == TEXT_NODE }
+        @{$body->child_nodes->to_a};
+  }
+
+  push @{$self->{processes}},
+      {type => 'end', ondone => $args{ondone}};
+
+  $self->_process ($fh);
+} # process_fragment
+
 sub _process ($$) {
   my ($self, $fh) = @_;
   A: {
@@ -932,8 +958,7 @@ sub __process ($$) {
       } elsif ($nt == DOCUMENT_NODE) {
         my $node_info = {allow_children => 1};
         unshift @{$self->{processes}},
-            map { {type => 'node', node => $_,
-                   node_info => $node_info} } 
+            map { {type => 'node', node => $_, node_info => $node_info} } 
             grep { $_->node_type == ELEMENT_NODE or
                    $_->node_type == DOCUMENT_TYPE_NODE }
             @{$node->child_nodes->to_a};

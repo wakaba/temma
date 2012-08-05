@@ -390,6 +390,128 @@ test {
   });
 } n => 1, name => 'text node children of document node';
 
+test {
+  my $c = shift;
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+  $doc->manakai_is_html (1);
+  $doc->inner_html (q{<!DOCTYPE html><link><meta><p>abc<p>xyz</P>foo});
+  $doc->strict_error_checking (0);
+  $doc->append_child ($doc->create_element_ns (HTML_NS, 'hoge'));
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_fragment ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<p>abc</p><p>xyz</p>foo};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'process_fragment';
+
+test {
+  my $c = shift;
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+  $doc->strict_error_checking (0);
+  $doc->append_child ($doc->create_element_ns (HTML_NS, 'hoge'));
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_fragment ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'process_fragment no body';
+
+test {
+  my $c = shift;
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+  $doc->manakai_is_html (1);
+  $doc->inner_html (q{<!DOCTYPE html><link><meta><p>abc<p>xyz</P>foo});
+  my $attr = $doc->create_element_ns (TEMMA_NS, 't:attr');
+  $attr->set_attribute (name => '"hoge"');
+  $attr->set_attribute (value => 12);
+  $doc->body->insert_before ($attr, $doc->body->first_child);
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_fragment ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<p>abc</p><p>xyz</p>foo};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'process_fragment t:attr';
+
+test {
+  my $c = shift;
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+  $doc->manakai_is_html (1);
+  $doc->inner_html (q{<!DOCTYPE html><body>  <p>abc<p>xyz</P>foo   });
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_fragment ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<p>abc</p><p>xyz</p>foo};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'process_fragment space';
+
+test {
+  my $c = shift;
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+  $doc->manakai_is_html (1);
+  $doc->inner_html (q{<!DOCTYPE html><body>  <p>abc<p>xyz</P>foo   });
+  $doc->body->set_attribute_ns (TEMMA_NS, 't:space' => 'preserve');
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_fragment ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{  <p>abc</p><p>xyz</p>foo   };
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'process_fragment t:space=preserve';
+
+test {
+  my $c = shift;
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+  $doc->manakai_is_html (1);
+  $doc->inner_html (q{<!DOCTYPE html><body>  <p>abc<p>xyz</P>foo   });
+  $doc->document_element->set_attribute_ns (TEMMA_NS, 't:space' => 'preserve');
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_fragment ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{  <p>abc</p><p>xyz</p>foo   };
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'process_fragment t:space=preserve root';
+
 run_tests;
 
 =head1 LICENSE
