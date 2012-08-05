@@ -54,7 +54,7 @@
   <m:macro1 m:hoge=10*20 m:fuga="'abcde'"/>
 </section>
 #errors
-1;1;m;temma:duplicate param;hoge;
+1;22;m;temma:duplicate param;hoge;
 #output
 <!DOCTYPE html><html><head></head><body><section><p class="hoge">200</p><p class="fuga">abcde</p></section></body></html>
 
@@ -67,7 +67,7 @@
   <m:macro1 m:fuga="'abcde'"/>
 </section>
 #errors
-1;1;m;temma:duplicate param;hoge;
+1;22;m;temma:duplicate param;hoge;
 2;25;w;temma:undef;;
 6;3;m;attribute missing;;m:hoge
 #output
@@ -82,7 +82,7 @@
   <m:macro1 m:fuga="'abcde'"/>
 </section>
 #errors
-1;1;m;temma:duplicate param;hoge;
+1;22;m;temma:duplicate param;hoge;
 2;25;w;temma:undef;;
 #output
 <!DOCTYPE html><html><head></head><body><section><p class="hoge"></p><p class="fuga">abcde</p></section></body></html>

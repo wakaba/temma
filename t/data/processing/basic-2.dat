@@ -1,0 +1,35 @@
+#data
+<html t:params=$hoge>
+<t:text value=$hoge>a
+#errors
+1;7;m;temma:no param;hoge;
+2;9;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body>a</body></html>
+
+#data
+<html t:params=$hoge?>
+<t:text value=$hoge>a
+#errors
+2;9;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body>a</body></html>
+
+#data
+<html t:params="$hoge? $fuga">
+<t:text value=$hoge>a
+#errors
+1;7;m;temma:no param;fuga;
+2;9;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body>a</body></html>
+
+#data
+<html t:params="$hoge? $fuga? $hoge">
+<t:text value=$hoge>a<t:text value=$fuga>
+#errors
+1;7;m;temma:duplicate param;hoge;
+2;9;w;temma:undef;;
+2;30;w;temma:undef;;
+#output
+<!DOCTYPE html><html><body>a</body></html>

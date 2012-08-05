@@ -155,6 +155,7 @@ test {
         [sort { $a cmp $b } @{$test->{errors}->[0] or []}];
   } for map { $test_data_d->file ($_) } qw(
     basic-1.dat
+    basic-2.dat
     element-1.dat
     element-2.dat
     attr-1.dat
@@ -262,6 +263,63 @@ test {
   like $error[-1]->{value}, qr{not/found/file};
   done $c;
 } n => 3, name => 'include';
+
+test {
+  my $c = shift;
+  my $text = q{
+    <html t:params=$hoge>
+    <p><t:text value=$hoge>
+  };
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+
+  my $parser = Temma::Parser->new;
+  $parser->parse_char_string ($text => $doc);
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_document ($doc => $file, args => {
+    hoge => "hoge fuga\x{45000}",
+  }, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<!DOCTYPE html><html><body><p>hoge fuga\x{45000}</p></body></html>};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'args required';
+
+test {
+  my $c = shift;
+  my $text = q{
+    <html t:params="$hoge $fuga?">
+    <body>
+    <t:if x=$fuga>
+      <p>oops!
+    <t:else>
+      <p><t:text value="$hoge->{21}">
+    </t:if>
+  };
+
+  my $dom = Message::DOM::DOMImplementation->new;
+  my $doc = $dom->create_document;
+
+  my $parser = Temma::Parser->new;
+  $parser->parse_char_string ($text => $doc);
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_document ($doc => $file, args => {
+    hoge => {21 => "hoge fuga\x{45000}"},
+  }, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<!DOCTYPE html><html><body><p>hoge fuga\x{45000}</p></body></html>};
+      done $c;
+    } $c;
+  });
+} n => 1, name => 'args optional';
 
 run_tests;
 

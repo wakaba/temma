@@ -83,6 +83,7 @@ sub process_document ($$$;%) {
   my ($self, $doc => $fh, %args) = @_;
 
   $self->{processes} = [];
+  $self->{args} = $args{args} || {};
   $self->{doc} = $doc; ## Hold ref to Document to not destory until done
   push @{$self->{processes}},
       {type => 'node', node => $doc, node_info => {allow_children => 1}},
@@ -839,13 +840,17 @@ sub __process ($$) {
 
         $self->_before_non_space ($process => $fh);
 
+        my $node_info = {node => $node, attrs => {},
+                         binds => $process->{node_info}->{binds},
+                         fields => $process->{node_info}->{fields},
+                         macro_depth => $process->{node_info}->{macro_depth}};
+
         if ($ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
           $fh->print ('<' . $ln);
-          my $node_info = $self->{current_tag} =
-              {node => $node, ns => $ns, ln => $ln, lnn => $ln, attrs => {},
-               binds => $process->{node_info}->{binds},
-               fields => $process->{node_info}->{fields},
-               macro_depth => $process->{node_info}->{macro_depth}};
+          $self->{current_tag} = $node_info;
+          $node_info->{ns} = $ns;
+          $node_info->{ln} = $ln;
+          $node_info->{lnn} = $ln;
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
 
           if ($node_info->{ns} eq HTML_NS and
@@ -861,11 +866,25 @@ sub __process ($$) {
                 @{$node_info->{node}->child_nodes->to_a};
           } else {
             $node_info->{allow_children} = 1;
-            if ($node_info->{ns} eq HTML_NS and
-                ($node_info->{lnn} eq 'script' or
-                 $node_info->{lnn} eq 'style')) {
-              $node_info->{rawtext} = 1;
-              $node_info->{rawtext_value} = \(my $v = '');
+            if ($node_info->{ns} eq HTML_NS) {
+              if ($node_info->{lnn} eq 'script' or
+                  $node_info->{lnn} eq 'style') {
+                $node_info->{rawtext} = 1;
+                $node_info->{rawtext_value} = \(my $v = '');
+              } elsif ($node_info->{lnn} eq 'html') {
+                my $params = $self->_get_params ($node_info->{node});
+                my $binds = $node_info->{binds} ||= {};
+                my $vars = $self->{args} ||= {};
+                for my $param (@{$params}) {
+                  if (not $param->[1] and not exists $vars->{$param->[0]}) {
+                    $self->{onerror}->(type => 'temma:no param',
+                                       value => $param->[0],
+                                       node => $node_info->{node}->get_attribute_node_ns (TEMMA_NS, 'params'),
+                                       level => 'm');
+                  }
+                  $binds->{$param->[0]} = [$vars, $param->[0]];
+                }
+              }
             }
 
             if ((($Temma::Defs::PreserveWhiteSpace->{$node_info->{ns}}->{$node_info->{ln}} or
@@ -897,12 +916,9 @@ sub __process ($$) {
                              value => $ln,
                              level => 'm');
 
-          my $node_info = {allow_children => 1,
-                           binds => $process->{node_info}->{binds},
-                           fields => $process->{node_info}->{fields}};
+          $node_info->{allow_children} = 1;
           unshift @{$self->{processes}},
-              map { {type => 'node', node => $_,
-                     node_info => $node_info} } 
+              map { {type => 'node', node => $_, node_info => $node_info} } 
               grep { $_->node_type == ELEMENT_NODE or
                      $_->node_type == TEXT_NODE }
               @{$node->child_nodes->to_a};
@@ -1186,7 +1202,11 @@ sub eval_attr_value ($$$;%) {
   if (keys %$_) {
     $value = "return do {\n$value\n};";
     for my $var (keys %$_) {
-      $value = qq{for my \$$var (\$_->{$var}->[0]->[$_->{$var}->[1]]) {\n$value\n}\n};
+      if (ref $_->{$var}->[0] eq 'HASH') {
+        $value = qq{for my \$$var (\$_->{$var}->[0]->{$_->{$var}->[1]}) {\n$value\n}\n};
+      } else {
+        $value = qq{for my \$$var (\$_->{$var}->[0]->[$_->{$var}->[1]]) {\n$value\n}\n};
+      }
     }
     $value = qq{#line 1 "vars for $location"\n} . $value;
   }
@@ -1235,7 +1255,7 @@ sub _get_params ($$) {
            if ($param_found->{$_->[0]}) {
              $self->{onerror}->(type => 'temma:duplicate param',
                                 value => $_->[0],
-                                node => $node,
+                                node => $node->get_attribute_node_ns (TEMMA_NS, 'params'),
                                 level => 'm');
              0;
            } else {
