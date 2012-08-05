@@ -1,4 +1,3 @@
-package test::Temma::Processor;
 use strict;
 use warnings;
 no warnings 'redefine';
@@ -11,12 +10,13 @@ use Temma::Parser;
 use Temma::Processor;
 use Message::DOM::DOMImplementation;
 use Whatpm::HTML::Dumper;
-use base qw(Test::Class);
+use Test::X1;
 use Encode;
 
 my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('processing');
 
-sub _processed : Tests {
+test {
+  my $c = shift;
   my $dom = Message::DOM::DOMImplementation->new;
 
   for_each_test $_->stringify, {
@@ -129,6 +129,7 @@ sub _processed : Tests {
     space-1.dat
     eval-1.dat
     wait-1.dat
+    wait-2.dat
     if-1.dat
     call-1.dat
     for-1.dat
@@ -150,7 +151,8 @@ sub _processed : Tests {
     include-4.dat
     include-5.dat
   );
-} # _processed
+  $c->done;
+};
 
 {
   package Test::Temma::CV;
@@ -158,7 +160,8 @@ sub _processed : Tests {
   our @Instance;
   
   sub new ($) {
-    my $self = bless {}, $_[0];
+    my $class = shift;
+    my $self = bless {@_}, $class;
     push @Instance, $self;
     return $self;
   } # new
@@ -171,7 +174,7 @@ sub _processed : Tests {
   } # cb
 
   sub send ($;$) {
-    $_[0]->{sent_value} = $_[1];
+    $_[0]->{sent_value} = $_[1] if exists $_[1];
     $_[0]->{cb}->($_[0]);
   } # send
 
@@ -180,7 +183,8 @@ sub _processed : Tests {
   } # recv
 }
 
-sub _include_1 : Test(1) {
+test {
+  my $c = shift;
   my $parser = Temma::Parser->new;
   my $f = $test_data_d->file ('doc-include-1.html.tm');
   my $doc = Message::DOM::DOMImplementation->new->create_document;
@@ -195,9 +199,11 @@ sub _include_1 : Test(1) {
 
   is $output, '<!DOCTYPE html><html><body><p>foo</p><div><p>abc</p><p>xyz</p></div>
 <p>bar</p></body></html>';
-} # _include_1
+  done $c;
+} n => 1, name => 'include';
 
-sub _include_3 : Test(3) {
+test {
+  my $c = shift;
   my $parser = Temma::Parser->new;
   my $f = $test_data_d->file ('doc-include-3.html.tm');
   my $doc = Message::DOM::DOMImplementation->new->create_document;
@@ -217,9 +223,16 @@ sub _include_3 : Test(3) {
   is $output, '<!DOCTYPE html><html><body><p>foo</p><div';
   is $error[-1]->{type}, 'temma:include error';
   like $error[-1]->{value}, qr{not/found/file};
-} # _include_3
+  done $c;
+} n => 3, name => 'include';
 
-__PACKAGE__->runtests;
+run_tests;
 
-1;
+=head1 LICENSE
 
+Copyright 2012 Wakaba <w@suika.fam.cx>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

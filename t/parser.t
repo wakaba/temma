@@ -1,4 +1,3 @@
-package test::Temma::Parser;
 use strict;
 use warnings;
 use Path::Class;
@@ -9,7 +8,7 @@ use Test::HTCT::Parser;
 use Temma::Parser;
 use Message::DOM::DOMImplementation;
 use Whatpm::HTML::Dumper;
-use base qw(Test::Class);
+use Test::X1;
 
 $Whatpm::HTML::Dumper::NamespaceMapping
     ->{q<http://suika.fam.cx/www/markup/temma>} = 'temma';
@@ -22,7 +21,8 @@ $Whatpm::HTML::Dumper::NamespaceMapping
 
 my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('parsing');
 
-sub _parsed_tree : Tests {
+test {
+  my $c = shift;
   my $dom = Message::DOM::DOMImplementation->new;
 
   for_each_test $_->stringify, {
@@ -74,9 +74,11 @@ sub _parsed_tree : Tests {
     temma-inclusion-2.dat
     temma-macro-1.dat
   );
-} # _parsed_tree
+  done $c;
+};
 
-sub _parse_f : Test(3) {
+test {
+  my $c = shift;
   my $parser = Temma::Parser->new;
   my $f = $test_data_d->file ('doc-1.html.tm');
   my $doc = Message::DOM::DOMImplementation->new->create_document;
@@ -94,11 +96,10 @@ sub _parse_f : Test(3) {
   my $f2 = $doc->get_user_data ('manakai_source_f');
   isa_ok $f2, 'Path::Class::File';
   is $f2->stringify, $f->stringify;
-} # _parse_f
+  done $c;
+} name => 'parse_f', n => 3;
 
-__PACKAGE__->runtests;
-
-1;
+run_tests;
 
 =head1 LICENSE
 

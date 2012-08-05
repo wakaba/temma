@@ -13,3 +13,6 @@
 [submodule "modules/testdataparser"]
 	path = modules/testdataparser
 	url = git://github.com/wakaba/testdataparser.git
+[submodule "modules/test-x1"]
+	path = modules/test-x1
+	url = git://github.com/wakaba/perl-test-x1
