@@ -267,16 +267,20 @@ sub __process ($$) {
           } elsif ($ln eq 'element') {
             next if $self->_close_start_tag ($process, $fh);
 
-            $ln = $self->eval_attr_value ($node, 'name',
-                                          node_info => $process->{node_info});
-            $ln = '' unless defined $ln;
-            $ln =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
-            $ns = $node->$TemmaContextNode->manakai_get_child_namespace_uri ($ln);
-            if ($ns eq SVG_NS) {
-              $ln = $Whatpm::HTML::ParserData::SVGElementNameFixup->{$ln} || $ln;
+            $ln = $self->eval_attr_value
+                ($node, 'name', required => 'm',
+                 node_info => $process->{node_info});
+            if (defined $ln) {
+              $ln =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
+              $ns = $node->$TemmaContextNode->manakai_get_child_namespace_uri ($ln);
+              if ($ns eq SVG_NS) {
+                $ln = $Whatpm::HTML::ParserData::SVGElementNameFixup->{$ln} || $ln;
+              }
             }
           } elsif ($ln eq 'attr' or $ln eq 'class') {
             if ($self->{current_tag}) {
+              next if $self->{current_tag}->{ln} eq '';
+
               my $attr_name = $ln eq 'class' ? 'class' :
                   $self->eval_attr_value ($node, 'name',
                                           node_info => $process->{node_info});
@@ -875,7 +879,7 @@ sub __process ($$) {
                          fields => $process->{node_info}->{fields},
                          macro_depth => $process->{node_info}->{macro_depth}};
 
-        if ($ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
+        if (defined $ln and $ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
           $fh->print ('<' . $ln);
           $self->{current_tag} = $node_info;
           $node_info->{ns} = $ns;
@@ -908,10 +912,11 @@ sub __process ($$) {
               }
             }
 
-            if ((($Temma::Defs::PreserveWhiteSpace->{$node_info->{ns}}->{$node_info->{ln}} or
+            my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+            if ($sp eq 'preserve' or
+                (($Temma::Defs::PreserveWhiteSpace->{$node_info->{ns}}->{$node_info->{ln}} or
                   $process->{node_info}->{preserve_space}) and
-                 not (($node->get_attribute_ns (TEMMA_NS, 'space') || '') eq 'trim')) or
-                ($node->get_attribute_ns (TEMMA_NS, 'space') || '') eq 'preserve') {
+                 not ($sp eq 'trim'))) {
               $node_info->{preserve_space} = 1; # for descendants
               $node_info->{has_non_space} = 1; # for children
             }
@@ -928,16 +933,28 @@ sub __process ($$) {
                 @{$node_info->{node}->child_nodes->to_a};
           }
         } else {
-          ## The element is not in the temma namespace and its local
-          ## name is not serializable.  The element is ignored but its
-          ## content is processed.
+          if (defined $ln) {
+            ## The element is not in the temma namespace and its local
+            ## name is not serializable.  The element is ignored but
+            ## its content is processed.
 
-          $self->{onerror}->(type => 'temma:name not serializable',
-                             node => $node,
-                             value => $ln,
-                             level => 'm');
+            $self->{onerror}->(type => 'temma:name not serializable',
+                               node => $node,
+                               value => $ln,
+                               level => 'm');
+          }
 
           $node_info->{allow_children} = 1;
+          my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+          if ($sp eq 'preserve' or
+              ($process->{node_info}->{preserve_space} and
+               not $sp eq 'trim')) {
+            $node_info->{preserve_space} = 1; # for descendants
+            $node_info->{has_non_space} = 1; # for children
+          }
+          $self->{current_tag} = {ln => '', lnn => ''};
+
+          unshift @{$self->{processes}}, {type => 'end'};
           unshift @{$self->{processes}},
               map { {type => 'node', node => $_, node_info => $node_info} } 
               grep { $_->node_type == ELEMENT_NODE or
@@ -1150,6 +1167,7 @@ sub _print_attrs ($$$$) {
 sub _close_start_tag ($$$) {
   my ($self, $current_process, $fh) = @_;
   return 0 unless my $node_info = delete $self->{current_tag};
+  return 0 if $node_info->{ln} eq '';
   
   if (@{$node_info->{classes} or []}) {
     $fh->print (q< class=">);

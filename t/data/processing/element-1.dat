@@ -137,7 +137,6 @@ hoge<t:element name="''">x</t:element>y
 #data
 hoge<t:element name=" undef ">x</t:element>y
 #errors escaped
-1;5;m;temma:name not serializable;;
 #output
 <!DOCTYPE html><html><body>hogexy</body></html>
 
@@ -176,14 +175,13 @@ foo<t:element name="'t:hoge'">aa</t:element>bar
 #data
 foo<t:element name=undef>hoge</t:element>
 #errors
-1;4;m;temma:name not serializable;;
 #output
 <!DOCTYPE html><html><body>foohoge</body></html>
 
 #data
 foo<t:element>hoge</t:element>
 #errors
-1;4;m;temma:name not serializable;;
+1;4;m;attribute missing;;name
 #output
 <!DOCTYPE html><html><body>foohoge</body></html>
 
@@ -191,3 +189,47 @@ foo<t:element>hoge</t:element>
 foo<t:element name=' "hoge" . (defined wantarray ? 1 : 0) . (wantarray ? 1 : 0) '/>
 #output
 <!DOCTYPE html><html><body>foo<hoge10></hoge10></body></html>
+
+#data
+hoge<t:element name=undef>  fuga  </t:element>aa
+#output
+<!DOCTYPE html><html><body>hogefugaaa</body></html>
+
+#data
+<pre>hoge<t:element name=undef>  fuga  </t:element>aa</pre>
+#output
+<!DOCTYPE html><html><body><pre>
+hoge  fuga  aa</pre></body></html>
+
+#data
+hoge<t:element name=undef t:space=preserve>  fuga  </t:element>aa
+#output
+<!DOCTYPE html><html><body>hoge  fuga  aa</body></html>
+
+#data
+<pre>hoge<t:element name=undef t:space=trim>  fuga  </t:element>aa</pre>
+#output
+<!DOCTYPE html><html><body><pre>
+hogefugaaa</pre></body></html>
+
+#data
+<p>
+  <t:element name=undef>
+    <t:attr name="'hoge'" value=21>
+  </t:element>
+  <t:attr name="'fuga'" value=12>
+#errors
+5;3;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><p></p></body></html>
+
+#data
+<p>
+  <t:element name=undef>
+    <t:attr name="'hoge'" value=21>a
+  </t:element>
+  <t:attr name="'fuga'" value=12>
+#errors
+5;3;m;temma:start tag already closed;;
+#output
+<!DOCTYPE html><html><body><p>a</p></body></html>
