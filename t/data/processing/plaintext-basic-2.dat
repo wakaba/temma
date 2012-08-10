@@ -1,0 +1,41 @@
+#data
+hoge<p>fuga</p>aa
+#errors
+1;5;m;temma:child not allowed;;
+#output
+hogeaa
+
+#data
+hoge<t:element name="'p'">fuga</t:element>abc
+#errors
+1;5;m;temma:child not allowed;;
+#output
+hogeabc
+
+#data
+hoge<t:element name="undef">fuga</t:element>abc
+#errors
+1;5;m;temma:child not allowed;;
+#output
+hogeabc
+
+#data
+ff<t:comment>aaaM</t:comment>aa
+#errors
+1;3;m;temma:comment not allowed;;
+#output
+ffaa
+
+#data html
+<body><t:attr name="'ac'" value=4>xya</body>
+#errors
+1;7;m;temma:start tag already closed;;
+#output
+xya
+
+#data html
+<body><t:class name="'ac'">xya</body>
+#errors
+1;7;m;temma:start tag already closed;;
+#output
+xya

@@ -156,9 +156,9 @@ sub _construct_tree ($) {
       }
 
       while ($self->{t}->{data} =~ s/\x00/\x{FFFD}/) {
-        $self->{parse_error}->(level => $self->{level}->{must},
-                               type => 'NULL',
-                               token => $self->{t});
+        #$self->{parse_error}->(level => $self->{level}->{must},
+        #                       type => 'NULL',
+        #                       token => $self->{t});
       }
       $self->{open_elements}->[-1]->[0]->manakai_append_text
           ($self->{t}->{data});

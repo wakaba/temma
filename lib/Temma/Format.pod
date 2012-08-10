@@ -1,0 +1,146 @@
+
+
+
+XXX
+
+=head2 Temma node elements
+
+=over 4
+
+=item <t:element name="{expr}">
+
+XXX
+
+If the C<name> attribute is evaluated to the C<undef> value, then no
+element is created from the C<t:element> element, although its content
+is processed as if it were content of a normal element.  That is, the
+content elements and texts are output as usual, possibly white-space
+trimmed.  Any C<t:attr> or C<t:class> child elements at the beginning
+of the children list of the C<t:element> is ignored.
+
+Example.
+
+  <p>
+    <t:element name=" defined $obj->url ? 'a' : undef ">
+      <t:attr name="'href'" value=" $obj->url ">
+      <t:text value=" $obj->label ">
+    </t:element>
+
+This tempalte fragment generates a paragraph whose content is the
+label of the given object.  The label is linked to the URL of the
+object, if any, using the C<a> element.  Otherwise, the label is
+directly contained in the C<p> element.  Note that the C<t:attr>
+element is ignored if the C<t:element> element generates no element.
+Also note that white space characters before and after C<t:text>
+element are ignored even when the C<t:element> element generates no
+element.
+
+=item <t:barehtml value="{expr}">
+
+The C<t:barehtml> element is replaced by bare HTML fragment returned
+by its C<value> attribute.
+
+The value of the C<value> attribute, which is a required attribute,
+must be a valid Perl code fragment, returning a character string.  The
+returned string is expected to be an HTML fragment, valid in the
+context of the C<t:barehtml> element.
+
+This element is a void element, i.e. end tag is not allowed in
+general.  This element can be used anywhere in the document, I<except>
+within: C<html>, C<head>, and rawtext elements.
+
+It is not encouraged to use this element in general, as the rules to
+construct HTML node structure of the document should be described in
+Temma template documents and should not be in Perl logic, to prevent
+from embedding vulnerability within your Perl code carelessly and to
+separate concerns for the ease of later edits.  Neverthless this
+element is provided such that something already formatted in HTML,
+e.g. Markdown-converted HTML fragment or HTML document fragment from
+external data source, can be integrated with rest of template.
+
+Currently, the returned HTML fragment is inserted to the result
+document as is, without any parsing.  This behavior is subject to
+future change and applications should not rely on the current
+behavior.
+
+This element cannot be used within rawtext element such as C<script>
+and C<style>.
+
+=back
+
+=head2 Temma flow-control elements
+
+=over 4
+
+=item <t:wait cv="{expr}" [as="{var-name}"]>
+
+The C<t:wait> element waits for the specified condition being met.  It
+suspends the temma template processing until the callback function is
+invoked.
+
+This element is a void element, i.e. end tag is not allowed in
+general.  This element can be used anywhere in the document.
+
+The value of the C<cv> attribute, which is a required attribute, must
+be a valid Perl code fragment, returning an object.  The returned
+object is expected to be an L<AnyEvent> condvar object (i.e. an
+L<AnyEvent::CondVar> instance).  The object at least has the C<cb>
+method, which takes an argument, which expects a code reference.  The
+method should not throw any exception.  The method is expected to
+invoke the code reference received as the argument when (and only
+when) the temma processor should resume the template processing
+(exactly once).  The callback might or might not be invoked
+synchronously within the C<cb> function.  Temma will not specify a
+function that intentionally throw an exception as the argument to the
+C<cb> method.
+
+The C<t:wait> element can have the C<as> attribute, whose value must
+be a valid Perl variable name.  If specified, the lexical variable
+with the name is bound to the value returned by the C<recv> method of
+the condvar object.  The callback function specified as the argument
+to the C<cb> method is expected to be invoked with an argument, which
+is expected to be an object with the C<recv> method defined.  The
+method is expected to return a value, which is the value bound to the
+variable.
+
+Example:
+
+  <t:my as=$cv>
+  <t:call x="
+    use AnyEvent;
+    $cv = AE::cv;
+    my $old_time = time;
+    my $timer; $timer = AE::timer 2, 0, sub {
+      undef $timer;
+      $cv->send (time - $old_time);
+    };
+  ">
+  <p>Before wait</p>
+  <t:wait cv=$cv as=$sleep>
+  <p>After wait (delta = <t:text value=$sleep> seconds)</p>
+
+This template fragment outputs the "Before wait" paragraph, then wait
+2 seconds (or more), then outputs the "After wait" paragraph.
+
+=back
+
+=head2 Temma variable elements and attributes
+
+A B<variable name> is XXX.
+
+=over 4
+
+=item t:params="$var1 $var2 $optvar1? $optvar2?"
+
+The C<t:params> attribute can be used to declare formal parameters of
+the template or macro.  The attribute can be used on the C<html>
+element or on the C<t:macro> element.
+
+The attribute, if specified, must have a value consist of zero or more
+variable names separated by white space characters.  A variable name
+may be followed by a question mark (C<?>), denoting the parameter is
+optional.  No duplicate variable names within an attribute is allowed.
+
+XXX variable assignments
+
+=back

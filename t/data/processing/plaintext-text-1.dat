@@ -1,0 +1,21 @@
+#data
+hoge<t:text value=123>aaa
+#output
+hoge123aaa
+
+#data
+hoge<t:text value="chr 0x4650">
+#output escaped
+hoge\u4650
+
+#data
+hoge<t:text value='"<Q&A>"'>
+#output
+hoge<Q&A>
+
+#data
+hoge<t:barehtml value=31>a
+#errors
+1;5;m;element not allowed:rawtext;;
+#output
+hogea

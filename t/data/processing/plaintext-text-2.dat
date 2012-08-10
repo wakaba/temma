@@ -1,0 +1,27 @@
+#data
+hoge<t:text msgid=aab.ccc>ss
+#errors
+1;5;m;temma:no locale;;
+#output
+hogeaab.cccss
+
+#data
+hoge<t:text msgid=aab.ccc>ss
+#locale
+sub plain_text_as_components {
+  return [{type => 'text', value => "ab &\ncd"}];
+}
+#output
+hogeab &
+cdss
+
+#data
+hoge<t:barehtml msgid=aab.ccc>ss
+#locale
+sub html_as_components {
+  return [{type => 'html', value => "ab &\ncd"}];
+}
+#errors
+1;5;m;element not allowed:rawtext;;
+#output
+hogess

@@ -1,0 +1,19 @@
+#data
+hoge<t:call x=die>fuga
+#errors escaped
+1;13;m;temma:perl exception;Died at html>body>t:call[x] (at /index.txt.tm line 1 column 13) line 1.\u000A;
+#output
+hoge
+
+#data
+hoge<t:try><t:call x=die><t:catch>xx</t:try>fuga
+#errors escaped
+#output
+hogexxfuga
+
+#data
+hoge<t:try><p><t:call x=die></p>a<t:catch>xx</t:try>fuga
+#errors escaped
+1;12;m;temma:child not allowed;;
+#output
+hogeafuga

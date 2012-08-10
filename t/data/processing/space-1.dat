@@ -233,3 +233,13 @@ abc
 <p>  <img/>  fuga</p>
 #output
 <!DOCTYPE html><html><body><p><img>  fuga</p></body></html>
+
+#data
+<body t:space=preserve>   abc  </body>
+#output
+<!DOCTYPE html><html><body>   abc  </body></html>
+
+#data
+<body t:space=preserve>   <!---->abc<!---->   </body>
+#output
+<!DOCTYPE html><html><body>   abc   </body></html>

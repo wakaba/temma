@@ -50,7 +50,7 @@ test {
     eq_or_diff $actual, $test->{document}->[0];
 
     eq_or_diff [sort { $a cmp $b } @error],
-        [sort { $a cmp $b } @{$test->{errors}->[0]}];
+        [sort { $a cmp $b } @{$test->{errors}->[0] or []}];
   } for map { $test_data_d->file ($_) } qw(
     cdata-1.dat
     cdata-2.dat

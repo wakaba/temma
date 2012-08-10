@@ -1,0 +1,86 @@
+#data
+#output
+
+#data
+hoge
+#output
+hoge
+
+#data
+<p>foo
+#errors
+1;1;m;temma:child not allowed;;
+#output
+
+#data
+abc<p>foo</P>xyz
+#errors
+1;4;m;temma:child not allowed;;
+#output
+abcxyz
+
+#data
+hoge
+<!---->
+fuga
+#output
+| hoge
+| 
+| fuga
+
+#data html
+<!DOCTYPE html>
+<html lang=en>
+<title>hoge
+fuga</title>
+<body>abc
+def
+</body>
+xyz
+#output
+| abc
+| def
+| 
+| xyz
+
+#data html
+<body>   abc  </body>
+#output
+   abc  
+
+#data html
+<body>   <!---->abc<!---->   </body>
+#output
+   abc   
+
+#data html
+<body t:space=trim>   abc  </body>
+#output
+abc
+
+#data html
+<body t:space=trim>   <!---->abc<!---->   </body>
+#output
+abc
+
+#data
+"Q&A" &lt;>
+#output
+"Q&A" <>
+
+#data escaped
+&#x4e00;\u0000&#xd;
+#errors
+1;9;m;NULL;;
+1;13;m;invalid character reference;;U+000D
+#output escaped
+\u4E00\uFFFD\u000D
+
+#data
+hoge<script>
+  <p>
+</script>fuga
+#errors
+1;5;m;temma:child not allowed;;
+#output
+hogefuga

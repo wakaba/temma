@@ -1,0 +1,76 @@
+XXX
+
+=head1 METHODS
+
+XXX
+
+=over 4
+
+=item $p->process_document ($doc => $fh, ...)
+
+XXX
+
+Options:
+
+=over 4
+
+XXX
+
+=item args => {name => value, NAME => VALUE, ...}
+
+Template-specific arguments, given as name-value pairs.  If the
+C<args> option is specified, its value must be a hash reference.
+Specified values can be accessed from the template by declaring
+parameter using the C<t:params=""> attribute of the root C<html>
+element of the template.  The name of the name-value pair is used to
+determine the variable name to bound the value.
+
+Example.  If there is a template looks like:
+
+  <!DOCTYPE html>
+  <html t:params="$foo $bar">
+  ...
+  <p><t:text value=$foo>
+  <p><t:text value="$bar || 2">
+
+... and the method is invoked with C<args> option:
+
+  $p->process_document ($doc => $fh, args => {
+    foo => "Hello",
+    bar => 3,
+    baz => "abc",
+  });
+
+... then the first paragraph will contain a string "Hello" and the
+next paragraph will contain a string "3".  Use of variable C<$baz> is
+not allowed within the template since it is not listed in the
+C<t:params=""> attribute; The C<baz> argument is not accessible from
+the template.
+
+=back
+
+=item $p->process_fragment ($doc => $fh, NAME => VALUE, ...)
+
+Process a fragment template document and write the result into the
+specified object.
+
+XXX
+
+Unlike the C<process_document> method, which processes the entire
+document, this method only process the content of the C<body> element
+(i.e. the element returned by C<< $doc->body >> method, if any.  This
+method would be useful for generation of HTML fragments for the
+consumption by Ajax or like.  Any node outside of the C<body> element
+is ignored, except for any C<t:params=""> attribute of the root
+C<html> element, which defines formal parameters available within the
+document template.  (Note that this attribute is the only exception;
+Any C<t:my> or C<t:macro> element outside of the C<body> element is
+completely ignored.)
+
+Additional options can be specified as name-value pairs.  Any
+name-value pair for C<process_document> method is also applicable to
+this method.
+
+=back
+
+XXX

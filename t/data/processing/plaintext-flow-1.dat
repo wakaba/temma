@@ -1,0 +1,36 @@
+#data
+<t:if x=1>
+  hoge
+<t:else>
+  fuga
+</t:if>
+abc
+#output
+| 
+|   hoge
+| 
+| abc
+
+#data
+<t:for x=[1,2] as=hoge>
+<t:text value=$hoge>
+</t:for>
+#output
+| 
+| 1
+| 
+| 2
+| 
+
+#data
+| * <t:if x=2>hoge</t:if>
+| 
+| <t:for x=[1..3] as=x><t:text value=$x>
+| </t:for>
+#output
+| * hoge
+| 
+| 1
+| 2
+| 3
+| 

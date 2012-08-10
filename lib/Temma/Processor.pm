@@ -86,7 +86,8 @@ sub process_document ($$$;%) {
   $self->{args} = $args{args} || {};
   $self->{doc} = $doc; ## Hold ref to Document to not destory until done
   push @{$self->{processes}},
-      {type => 'node', node => $doc, node_info => {allow_children => 1}},
+      {type => 'node', node => $doc,
+       node_info => {allow_children => 1}},
       {type => 'end', ondone => $args{ondone}};
 
   $self->_process ($fh);
@@ -102,11 +103,12 @@ sub process_fragment ($$$;%) {
   if (my $body = $doc->body) {
     my $sp = {preserve => 'preserve', trim => 'trim'}->{$body->get_attribute_ns (TEMMA_NS, 'space') || ''}
         || {preserve => 'preserve', trim => 'trim'}->{$body->parent_node->get_attribute_ns (TEMMA_NS, 'space') || ''}
-        || '';
+        || ($args{plain_text} ? 'preserve' : '');
     my $binds = {};
     my $node_info = {allow_children => 1,
                      preserve_space => $sp eq 'preserve',
-                     binds => $binds};
+                     binds => $binds,
+                     plaintext => $args{plain_text}};
     $self->_get_params ($doc->document_element, bind_args => $binds);
 
     unshift @{$self->{processes}},
@@ -121,6 +123,11 @@ sub process_fragment ($$$;%) {
 
   $self->_process ($fh);
 } # process_fragment
+
+sub process_plain_text ($$$;%) {
+  my $self = shift;
+  $self->process_fragment (@_, plain_text => 1);
+} # process_plain_text
 
 sub _process ($$) {
   my ($self, $fh) = @_;
@@ -193,7 +200,8 @@ sub __process ($$) {
         if ($data =~ /[^\x09\x0A\x0C\x0D\x20]/) {
           ## Non white-space node
           next if $self->_close_start_tag ($process, $fh);
-          unless ($process->{node_info}->{has_non_space}) {
+          if (not $process->{node_info}->{has_non_space} and 
+              not $process->{node_info}->{preserve_space}) {
             $data =~ s/^[\x09\x0A\x0C\x0D\x20]+//;
             $process->{node_info}->{has_non_space} = 1;
           }
@@ -201,6 +209,8 @@ sub __process ($$) {
           ## White space only Text node
           if ($process->{node_info}->{preserve_space}) {
             next if $self->_close_start_tag ($process, $fh);
+          } elsif (not $process->{node_info}->{has_non_space}) {
+            next;
           }
           if ($self->{current_tag}) {
             ## Ignore white space characters between t:attr elements.
@@ -235,6 +245,8 @@ sub __process ($$) {
 
         if ($process->{node_info}->{rawtext}) {
           ${$process->{node_info}->{rawtext_value}} .= $data;
+        } elsif ($process->{node_info}->{plaintext}) {
+          $fh->print ($data);
         } else {
           $fh->print (htescape $data);
         }
@@ -259,6 +271,8 @@ sub __process ($$) {
             if (defined $value) {
               if ($process->{node_info}->{rawtext}) {
                 ${$process->{node_info}->{rawtext_value}} .= $value;
+              } elsif ($process->{node_info}->{plaintext}) {
+                $fh->print ($value);
               } else {
                 $fh->print (htescape $value);
               }
@@ -334,7 +348,8 @@ sub __process ($$) {
           } elsif ($ln eq 'comment') {
             next if $self->_close_start_tag ($process, $fh);
 
-            if ($process->{node_info}->{rawtext}) {
+            if ($process->{node_info}->{rawtext} or
+                $process->{node_info}->{plaintext}) {
               $self->{onerror}->(type => 'temma:comment not allowed',
                                  node => $node,
                                  level => 'm');
@@ -789,7 +804,8 @@ sub __process ($$) {
                 ($node, 'value', disallow_undef => 'w', required => 'm',
                  node_info => $process->{node_info});
             if (defined $value) {
-              if ($process->{node_info}->{rawtext}) {
+              if ($process->{node_info}->{rawtext} or
+                  $process->{node_info}->{plaintext}) {
                 $self->{onerror}->(type => 'element not allowed:rawtext',
                                    node => $node,
                                    level => 'm');
@@ -862,7 +878,8 @@ sub __process ($$) {
         } # $ns
 
         if (not $process->{node_info}->{allow_children} or
-            $process->{node_info}->{rawtext}) {
+            $process->{node_info}->{rawtext} or
+            $process->{node_info}->{plaintext}) {
           unless ($process->{node_info}->{children_not_allowed_error}) {
             $self->{onerror}->(type => 'temma:child not allowed',
                                node => $node,
@@ -1012,6 +1029,8 @@ sub __process ($$) {
     } elsif ($process->{type} eq 'text') {
       if ($process->{node_info}->{rawtext}) {
         ${$process->{node_info}->{rawtext_value}} .= $process->{value};
+      } elsif ($process->{node_info}->{plaintext}) {
+        $fh->print ($process->{value});
       } else {
         $fh->print (htescape $process->{value});
       }
@@ -1046,7 +1065,8 @@ sub __process ($$) {
         $process->{ondone}->($self);
       }
     } elsif ($process->{type} eq 'barehtml') {
-      if ($process->{node_info}->{rawtext}) {
+      if ($process->{node_info}->{rawtext} or
+          $process->{node_info}->{plaintext}) {
         $self->{onerror}->(type => 'element not allowed:rawtext',
                            node => $process->{node},
                            level => 'm');
@@ -1192,6 +1212,8 @@ sub _before_non_space ($$;%) {
       if ($process->{node_info}->{rawtext}) {
         ${$process->{node_info}->{rawtext_value}}
             .= $process->{node_info}->{trailing_space};
+      } elsif ($process->{node_info}->{plaintext}) {
+        $fh->print ($process->{node_info}->{trailing_space});
       } else {
         $fh->print (htescape $process->{node_info}->{trailing_space});
       }
@@ -1403,11 +1425,16 @@ sub _print_msgid ($$$$$;%) {
   my $texts = $locale && $locale->$method ($msgid, defined $n ? (0+$n) : ());
 
   if ($texts and ref $texts eq 'ARRAY') {
-    if (@$texts == 1 and
-        $texts->[0]->{type} eq 'text' and
-        not $process->{node_info}->{rawtext}) {
-      $fh->print (htescape $texts->[0]->{value});
-      return;
+    if (@$texts == 1 and $texts->[0]->{type} eq 'text') {
+      if ($process->{node_info}->{rawtext}) {
+        #
+      } elsif ($process->{node_info}->{plaintext}) {
+        $fh->print ($texts->[0]->{value});
+        return;
+      } else {
+        $fh->print (htescape $texts->[0]->{value});
+        return;
+      }
     }
 
     my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';

@@ -405,3 +405,24 @@ abc&AMPaxx
 | <!DOCTYPE html>
 | <html>
 |   <head>
+
+#data escaped
+\u0000
+#errors
+1;1;m;NULL;;
+#document escaped
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "\uFFFD"
+
+#data escaped
+<p>\u0000
+#errors
+1;4;m;NULL;;
+#document escaped
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       "\uFFFD"

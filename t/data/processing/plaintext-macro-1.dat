@@ -1,0 +1,8 @@
+#data
+<t:macro name=abc>hoge
+fuga</t:macrO>
+aa<m:abc/>bb
+#output
+| 
+| aahoge
+| fugabb
