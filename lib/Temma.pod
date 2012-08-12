@@ -1,0 +1,99 @@
+=head1 NAME
+
+Temma - An HTML template processor
+
+=head1 DESCRIPTION
+
+Temma is a template processing engine for genearating HTML or plain
+text documents.  It converts a template document written in Temma
+markup language, with zero or more parameters, into an HTML document,
+HTML fragment, or plain text.
+
+=head1 MODULES AND DOCUMENTS
+
+L<Temma::Language> - A documentation for the Temma markup language.
+
+L<Temma::Parser> - A parser to convert a textual representation of
+Temma template document into its DOM representation.
+
+L<Temma::Processor> - A processor to convert the DOM representation of
+a Temma template document into result HTML/plain text document.
+
+=head1 DESIGN GOALS
+
+=head2 Requirements
+
+=over 4
+
+=item Syntax-awareness.
+
+The processor must understand the document format (e.g. HTML) such
+that it can encode data appropriately as required by the context.  In
+other words, it can't require authors to HTML-escape all text
+fragments to embed into the document.  The processor must support at
+least HTML and plain text formats.
+
+=item Streamability.
+
+It must be possible for the processor to generate the output
+incrementally.
+
+=item Author-friendliness.
+
+The format should not force authors to learn stupid custom language to
+access data from outside of the template.  It may embed Perl code for
+that purpose.
+
+=item Easyness-to-write.
+
+The format should not be so verbose.  Authoring of documents in the
+format should be as easy as HTML, and must be much more easy than XML.
+
+=item Error tolerance.
+
+The processing must be error tolerant.  A small error should not abort
+the entire process.  Error handling must be explicitly performed such
+that authors can predict what will happen if something unexpected has
+occurred.
+
+=back
+
+It is not required for the processor to always generate conforming
+HTML document.  It's template author's (or, in fact, application's)
+responsibility to ensure the result document being conforming.  (It
+does not mean it should be more easy for authors to generate
+non-conforming documents than to generate conforming documents.)
+
+=head2 Design restrictions
+
+=over 4
+
+=item Reusability of HTML/XML tokenizer.
+
+Don't introduce custom syntax at tokenization stage.
+
+=item DOM compatibility.
+
+A document must be fully representable as a DOM tree.  Note that the
+document format don't have to be able to represent any possible DOM
+tree.
+
+=item No parser-level script execution.
+
+No Perl (or any other programming language) code should be executed
+until the DOM tree is completely constructed by the parser.
+
+=back
+
+=head1 AUTHOR
+
+Wakaba <w@suika.fam.cx>.
+
+=head1 LICENSE
+
+Copyright 2012 Wakaba <w@suika.fam.cx>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
