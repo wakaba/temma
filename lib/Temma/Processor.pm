@@ -61,6 +61,12 @@ sub htescape ($) {
   return $s;
 } # htescape
 
+sub _ascii_lc ($) {
+  my $s = $_[0];
+  $s =~ tr/A-Z/a-z/ if defined $s; ## ASCII case-insensitive.
+  return $s;
+} # _ascii_lc
+
 my $TemmaContextNode = sub ($) {
   my $node = $_[0];
   while (1) {
@@ -101,8 +107,8 @@ sub process_fragment ($$$;%) {
   $self->{doc} = $doc; ## Hold ref to Document to not destory until done
 
   if (my $body = $doc->body) {
-    my $sp = {preserve => 'preserve', trim => 'trim'}->{$body->get_attribute_ns (TEMMA_NS, 'space') || ''}
-        || {preserve => 'preserve', trim => 'trim'}->{$body->parent_node->get_attribute_ns (TEMMA_NS, 'space') || ''}
+    my $sp = {preserve => 'preserve', trim => 'trim'}->{_ascii_lc $body->get_attribute_ns (TEMMA_NS, 'space') || ''}
+        || {preserve => 'preserve', trim => 'trim'}->{_ascii_lc $body->parent_node->get_attribute_ns (TEMMA_NS, 'space') || ''}
         || ($args{plain_text} ? 'preserve' : '');
     my $binds = {};
     my $node_info = {allow_children => 1,
@@ -428,7 +434,7 @@ sub __process ($$) {
             }
             next unless $cond_node;
 
-            my $sp = $cond_node->get_attribute_ns (TEMMA_NS, 'space') || '';
+            my $sp = _ascii_lc $cond_node->get_attribute_ns (TEMMA_NS, 'space') || '';
             $self->_schedule_nodes (\@node, $process->{node_info}, $sp);
             next;
           } elsif ($ln eq 'for') {
@@ -493,8 +499,8 @@ sub __process ($$) {
                    nodes => $nodes,
                    sep_nodes => $sep_nodes,
                    node_info => $process->{node_info},
-                   space => $node->get_attribute_ns (TEMMA_NS, 'space') || '',
-                   sep_space => $sep_node ? $sep_node->get_attribute_ns (TEMMA_NS, 'space') || '' : undef,
+                   space => _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '',
+                   sep_space => $sep_node ? _ascii_lc $sep_node->get_attribute_ns (TEMMA_NS, 'space') || '' : undef,
                    items => $items,
                    index => 0,
                    bound_to => $as,
@@ -527,7 +533,7 @@ sub __process ($$) {
                 push @$catches,
                     {nodes => [],
                      package => $node->get_attribute ('package'),
-                     sp => $node->get_attribute_ns (TEMMA_NS, 'space') || '',
+                     sp => _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '',
                      bound_to => $as,
                      node_info => $process->{node_info}};
               } elsif (@$catches) {
@@ -537,7 +543,7 @@ sub __process ($$) {
               } 
             }
 
-            my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+            my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
             $self->_schedule_nodes
                 ($nodes, $process->{node_info}, $sp, catches => $catches);
             next;
@@ -628,7 +634,7 @@ sub __process ($$) {
             my $included_f = file ($path);
             $included_f = $included_f->absolute ($base_f->dir) if $base_f;
 
-            my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+            my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
             my ($fields, $has_field) = $self->_process_fields
                 ($node, $sp, $process);
 
@@ -846,7 +852,7 @@ sub __process ($$) {
             next;
           }
 
-          my $sp = $macro->{node}->get_attribute_ns (TEMMA_NS, 'space') || '';
+          my $sp = _ascii_lc $macro->{node}->get_attribute_ns (TEMMA_NS, 'space') || '';
           my ($fields, $has_field) = $self->_process_fields
               ($node, $sp, $process);
 
@@ -929,7 +935,7 @@ sub __process ($$) {
               }
             }
 
-            my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+            my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
             if ($sp eq 'preserve' or
                 (($Temma::Defs::PreserveWhiteSpace->{$node_info->{ns}}->{$node_info->{ln}} or
                   $process->{node_info}->{preserve_space}) and
@@ -962,7 +968,7 @@ sub __process ($$) {
           }
 
           $node_info->{allow_children} = 1;
-          my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+          my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
           if ($sp eq 'preserve' or
               ($process->{node_info}->{preserve_space} and
                not $sp eq 'trim')) {
@@ -1373,7 +1379,7 @@ sub _process_fields ($$$$) {
       next;
     }
 
-    my $_sp = $_->get_attribute_ns (TEMMA_NS, 'space') || '';
+    my $_sp = _ascii_lc $_->get_attribute_ns (TEMMA_NS, 'space') || '';
     my $sp = {preserve => 'preserve', trim => 'trim'}->{$_sp}
         || {preserve => 'preserve', trim => 'trim'}->{$sp}
         || ($process->{node_info}->{preserve_space} ? 'preserve' : 'trim');
@@ -1437,7 +1443,7 @@ sub _print_msgid ($$$$$;%) {
       }
     }
 
-    my $sp = $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+    my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
     my ($fields, $has_field) = $self->_process_fields ($node, $sp, $process);
     
     for (reverse @$texts) {

@@ -243,3 +243,14 @@ abc
 <body t:space=preserve>   <!---->abc<!---->   </body>
 #output
 <!DOCTYPE html><html><body>   abc   </body></html>
+
+#data
+<p T:SPACE=PRESERVE>  hoge  </p>
+#output
+<!DOCTYPE html><html><body><p>  hoge  </p></body></html>
+
+#data
+<pre T:SPACE=TRIM>  hoge  </pre>
+#output
+<!DOCTYPE html><html><body><pre>
+hoge</pre></body></html>
