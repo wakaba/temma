@@ -43,7 +43,7 @@ DOM of the source (template) document into result document.
  +---------------------+    +- body - p - t:text
            |
            | Process
-b           v
+           v
  +---------------------+  #document
  | DOM of              |   +- html
  | result document     |    +- head - title - #text
@@ -179,7 +179,7 @@ C<Q &amp; A>.
 
   <script>var a = 'Q &amp; A';</script>
 
-=head2 Attribute C<t:parse="">
+=head2 Attribute t:parse=""
 
 Any element may have C<t:parse=""> boolean attribute to override
 element-dependent special content parsing behavior.  If the attribute
@@ -266,6 +266,17 @@ Example.
       <t:text value=" $foo * 4 "><!-- 200 -->
   </div>
   <t:text value=" $foo * 5 "><!-- Syntax error -->
+
+=head2 <t:call x="{expr}">
+
+The C<t:call> element can be used to invoke a Perl code fragment
+without using its result.  The element may be used anywhere in the
+C<html> element (or its descendant).  The C<t:call> element is a void
+element, i.e. it has no end tag by default.
+
+The C<x> attribute is a Perl expression attribute.  The C<x> attribute
+is required.  The Perl expression is evaluated when the element is
+processed.  Otherwise the element does nothing.
 
 =head1 Generating nodes in result document
 
@@ -436,7 +447,7 @@ Example.
 
 The C<t:comment> element generates a comment node in the result
 document.  This element can be used anywhere in the C<html> element
-(and its descendant).
+(or its descendant).
 
 Any real comment node in the source document is ignored, i.e. not
 appers in the result document.  Real comment syntax is expected to be
@@ -564,50 +575,209 @@ Example.
 White space characters before and after C<t:attr> elements are
 ignored.
 
+=head1 Conditional and repetition processing
 
+Following elements can be used to control how and when a chunk of
+nodes are processed.
 
+=head2 <t:if x="{expr}">{content}(<t:elsif x="{expr}">{content})*[<t:else>{content}]</t:if>
 
+The C<t:if> element specifies that its content should be conditionally
+processed.  The element may be used anywhere in the C<html> element
+(or its descendant).
 
-=head1 Temma template processing flow elements
+The C<t:if> element can contain zero or more nodes that would be
+allowed if the C<t:if> element were replaced by them, which are
+referred to as the C<t:if> clause nodes.  Then, they can be followed
+by zero or more sequence of C<t:elsif> elements immediately followed
+by zero or more nodes that would be allowed if the C<t:if> element
+were replaced by them, which are referred to as the C<t:elsif> clause
+nodes.  Finally, there can be the C<t:else> element followed by zero
+or more nodes that would be allowed if the C<t:if> element were
+replaced by them, which are referred to as C<t:else> clause nodes.
 
-=head2 <t:if x="{expr}">{content}<t:elsif x="{expr}">{content}<t:else>{content}</t:if>
+If the condition specified by the C<t:if> element is met, the C<t:if>
+clause nodes are processed.  Otherwise, if the condition specified by
+a C<t:elsif> element is met, the corresponding C<t:elsif> clause nodes
+are processed.  If there are multiple C<t:elsif> elements, the first
+matching element's sibling nodes are processed.  If none of C<t:if>
+and C<t:elsif> elements' conditions is met, and if there is the
+C<t:else> element child, the C<t:else> clause nodes are processed.
+The C<t:space> attribute of C<t:if>, C<t:elsif>, and C<t:else>
+elements apply to their corresponding clause nodes.
 
-XXX
+The C<t:if> element and the C<t:elsif> element must have the C<x>
+attribute.  The C<x> attribute is a Perl code expression attribute.
+It represents the condition for the element.
+
+The C<t:elsif> element and the C<t:else> element are void elements,
+i.e. they have no end tag by default.
+
+Example.
+
+  <p>
+    <t:if x="$foo > 100">
+      100+
+    <t:elsif x="$foo > 50">
+      <strong><t:text value=$foo></strong>
+    <t:else>
+      <t:text value=$foo>
+    </t:if>
 
 =head2 <t:for as="{varname}" x="{expr}">{content}</t:for>
 
-XXX
+The C<t:for> element specifies that the content should be processed
+multiple times.  The element may be used anywhere in the document
+element (or its descendant).
+
+The C<x> attribute must be specified.  The attribute is a Perl
+expression attribute.  The expression must return a value, which can
+be evaluated as if it were an array reference (i.e. a plain or tied
+array reference, a blessed array reference, or an object whose C<@{}>
+operation is overloaded).  The content of the C<t:for> element is
+processed with each item in the array, in same order.
+
+The C<as> attribute specifies the name of the lexical variable to
+which the array item for the current iteration is bound during the
+processing of the content.  The syntax of the attribute value is same
+as the C<as> attribute of the C<t:my> element.
+
+The content of the C<t:for> element must be nodes that would be
+allowed if the C<t:if> element were replaced by them (but may be
+followed by C<t:sep> element as described below).
+
+Example.
+
+  <ul>
+    <t:for as = $v x = "[1, 5, 10]">
+      <li><t:text value="$v * 2">
+    </t:for>
+  </ul>
+
+... generates:
+
+  <ul><li>2</li><li>10</li><li>20</li></ul>
+
+The C<t:sep> element can be used as a child of the C<t:for> element.
+If there is the element, nodes following the element is used as
+separator between iterations of the C<t:for> element processing.  The
+C<t:sep> element is a void element, i.e. it has no end tag by default.
+The C<t:space> attribute of the C<t:sep> element applies to nodes
+following the element.  Nodes following the C<t:sep> element must be
+nodes that would be allowed if the C<t:if> element were replaced by
+them.
+
+Example.
+
+  <p>
+    <t:for as=$x x="[1..5]">
+      <t:text value=$x>
+    <t:sep>
+      <t:text value="', '">
+    </t:for>
+
+... generates:
+
+  <p>1, 2, 3, 4, 5</p>
+
+The C<t:next> element and the C<t:last> element can be inserted as
+child or descendant of the C<t:for> element (before the C<t:sep>
+element).  Like the Perl statements with same name, these elements
+stop the processing of the current iteration and jump to the next
+iteration or exit the processing of the C<t:for> loop.  The C<t:for>
+element can be named by the C<name> attribute.  The attribute, if
+specified, must have a non-empty string.  Elements C<t:next> and
+C<t:last> can have the C<for> attribute to identify the C<t:for> block
+by its name.  The C<for> attribute value must be the non-empty string
+identifying a C<t:for> block in scope.  The C<t:next> element and the
+C<t:last> element are void elements, i.e. they have no end tag by
+default.
+
+Example.
+
+  <div>
+    <t:for as=$v x="[1..10]">
+      <t:text value=$v><t:if x="$v > 5"><t:last></t:if>
+    </t:for>
+  </div>
+
+... generates:
+
+  <div>123456</div>
+
+=head2 <t:try>{content}(<t:catch [package="{package}"]>{content})*</t:try>
+
+The C<t:try> element and the C<t:catch> element can be used to catch
+exceptions.  The element may be used anywhere in the C<html> element
+(or its descendant).
+
+The C<t:try> element can contain nodes that would be allowed if the
+C<t:try> element were replaced by them.  These nodes are processed
+first.  The C<t:space> attribute is applied to them.  These nodes can
+be followed by one or more sequence of the C<t:catch> element and zero
+or more nodes.  Those nodes, again, must be nodes that would be
+allowed if the C<t:try> element were replaced by them.  The C<t:catch>
+element is a void element, i.e. it has no end tag by default.  The
+C<t:space> attribute of the C<t:catch> element is applied to the nodes
+following that element (but not by another C<t:catch> element).
+
+If the C<t:try> element's first nodes are processed, and an exception
+is thrown by the process, the C<t:catch> clauses are tested (in tree
+order) to find an applicable one.  If there is one, that clause is
+then processed.  Otherwise, the exception is rethrown.  The C<t:catch>
+clauses match to an exception if no C<package> attribute is specified
+to the element or the C<package> attribute is specified and the
+exception object is an instance of the package identified by the
+C<package> attribute value.
+
+In Perl, an exception can be thrown by invoking the C<die> statement.
+At the time of writing, only evaluaton of Perl expression attributes
+can cause an exception thrown in the Temma language.
+
+The C<t:catch> element may have the C<as> attribute.  The C<as>
+attribute specifies the name of the lexical variable to which the
+exception is bound during the processing of the clause.  The syntax of
+the attribute value is same as the C<as> attribute of the C<t:my>
+element.
+
+Example.
+
+  <p>
+    <t:try>
+      <t:call x=" die (My::Exception->new) ">
+    <t:catch as=$x package="My::Exception">
+      My::Exception!
+    </t:try>
 
 =head2 <t:wait cv="{expr}" [as="{varname}"]>
 
 The C<t:wait> element waits for the specified condition being met.  It
 suspends the temma template processing until the callback function is
-invoked.
+invoked.  The element may be used anywhere in the C<html> element (or
+its descendant).  The C<t:wait> element is a void element, i.e. it has
+no end tag by default.
 
-This element is a void element, i.e. end tag is not allowed in
-general.  This element can be used anywhere in the document.
-
-The value of the C<cv> attribute, which is a required attribute, must
-be a valid Perl code fragment, returning an object.  The returned
-object is expected to be an L<AnyEvent> condvar object (i.e. an
-L<AnyEvent::CondVar> instance).  The object at least has the C<cb>
-method, which takes an argument, which expects a code reference.  The
-method should not throw any exception.  The method is expected to
-invoke the code reference received as the argument when (and only
-when) the temma processor should resume the template processing
-(exactly once).  The callback might or might not be invoked
+The C<cv> attribute of the C<t:wait> element is a Perl expression
+attribute.  The C<cv> attribute is required.  It must return an
+object.  The returned object is expected to be an L<AnyEvent> condvar
+object (i.e. an L<AnyEvent::CondVar> instance).  The object at least
+has the C<cb> method, which takes an argument, which expects a code
+reference.  The method should not throw any exception.  The method is
+expected to invoke the code reference received as the argument when
+(and only when) the temma processor should resume the template
+processing (exactly once).  The callback might or might not be invoked
 synchronously within the C<cb> function.  Temma will not specify a
 function that intentionally throw an exception as the argument to the
 C<cb> method.
 
-The C<t:wait> element can have the C<as> attribute, whose value must
-be a valid Perl variable name.  If specified, the lexical variable
-with the name is bound to the value returned by the C<recv> method of
-the condvar object.  The callback function specified as the argument
-to the C<cb> method is expected to be invoked with an argument, which
-is expected to be an object with the C<recv> method defined.  The
-method is expected to return a value, which is the value bound to the
-variable.
+The C<as> attribute specifies the name of the lexical variable to
+which the value returned by the C<recv> method of the condvar object
+is bound during the processing of the clause.  The syntax of the
+attribute value is same as the C<as> attribute of the C<t:my> element.
+The callback function specified as the argument to the C<cb> method is
+expected to be invoked with an argument, which is expected to be an
+object with the C<recv> method defined.  The method is expected to
+return a value, which is the value bound to the variable.
 
 Example:
 
@@ -625,12 +795,14 @@ Example:
   <t:wait cv=$cv as=$sleep>
   <p>After wait (delta = <t:text value=$sleep> seconds)</p>
 
-This template fragment outputs the "Before wait" paragraph, then wait
-2 seconds (or more), then outputs the "After wait" paragraph.
+This template generates the "Before wait" paragraph, then wait 2
+seconds (or more), then generates the "After wait" paragraph.
 
-=head1 Temma variable elements and attributes
+=head1 Macro and inclusions
 
-A B<variable name> is XXX.
+XXX
+
+
 
 =over 4
 
