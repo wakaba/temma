@@ -56,6 +56,14 @@ the entire process.  Error handling must be explicitly performed such
 that authors can predict what will happen if something unexpected has
 occurred.
 
+=item Internationalization.
+
+The format should be well-integrated with internationalization
+framework.  In particular, it should provide convinience way(s) to
+reference texts in text catalog for the currently-selected language.
+However, it must not force the application to use any specific
+internationalization framework.
+
 =back
 
 It is not required for the processor to always generate conforming
