@@ -1,6 +1,6 @@
 #data
-<html msgid:foo=bar>
-<hoge msgid:foobar=abc />
+<html msg:foo=bar>
+<hoge msg:foobar=abc />
 #errors
 #document
 | <!DOCTYPE html>
@@ -27,9 +27,9 @@
 |       templ foobar="abc"
 
 #data
-<p msgid:definitionurl=hoge 
-/><math msgid:definitionurl=hoge 
-/><svg msgid:definitionurl=hoge />
+<p msg:definitionurl=hoge 
+/><math msg:definitionurl=hoge 
+/><svg msg:definitionurl=hoge />
 #errors
 #document
 | <!DOCTYPE html>
@@ -70,9 +70,9 @@
 |       templ definitionurl="hoge"
 
 #data
-<p msgid:viewbox=hoge 
-/><math msgid:viewbox=hoge 
-/><svg msgid:viewbox=hoge />
+<p msg:viewbox=hoge 
+/><math msg:viewbox=hoge 
+/><svg msg:viewbox=hoge />
 #errors
 #document
 | <!DOCTYPE html>

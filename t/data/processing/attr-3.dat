@@ -55,7 +55,7 @@
 <!DOCTYPE html><html><body><math definitionURL="133"></math></body></html>
 
 #data
-<svg msgid:viewbox=hoge.fuga />
+<svg msg:viewbox=hoge.fuga />
 #locale
 sub plain_text {
   my $s = $_[1];
@@ -66,7 +66,7 @@ sub plain_text {
 <!DOCTYPE html><html><body><svg viewBox="hoge fuga"></svg></body></html>
 
 #data
-<p pl:class="'hoge'" msgid:class=hoge class=hoge>
+<p pl:class="'hoge'" msg:class=hoge class=hoge>
 #errors
 1;22;m;temma:no locale;;
 #output

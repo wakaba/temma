@@ -202,7 +202,7 @@ sub _construct_tree ($) {
           my $attrs = $self->{t}->{attributes};
           for my $attr_name (keys %{$attrs}) {
             my $attr_t = $attrs->{$attr_name};
-            if (not $attr_name =~ /^(?:t|m|msgid|pl):/ and
+            if (not $attr_name =~ /^(?:t|m|msg|pl):/ and
                 not $allow_non_temma) {
               $self->{parse_error}->(type => 'temma:html non temma attr',
                                      text => $attr_name,
@@ -210,7 +210,7 @@ sub _construct_tree ($) {
                                      level => $self->{level}->{must});
               next;
             }
-            my $attr = $attr_name =~ s/^(t|m|msgid|pl)://
+            my $attr = $attr_name =~ s/^(t|m|msg|pl)://
                 ? $self->{document}->create_attribute_ns
                     ($Temma::Defs::NamespacePrefixToURL->{$1},
                      [$1, $attr_name])
@@ -352,9 +352,9 @@ sub _construct_tree ($) {
             ->{$attr_name};
         if ($nsfix) {
           $attr = $self->{document}->create_attribute_ns (@$nsfix);
-        } elsif ($attr_name =~ s/^(t|m|msgid|pl):(?=.)//s) {
+        } elsif ($attr_name =~ s/^(t|m|msg|pl):(?=.)//s) {
           $attr_name = $attr_fixup->{$attr_name} || $attr_name
-              if $1 eq 'msgid' or $1 eq 'pl';
+              if $1 eq 'msg' or $1 eq 'pl';
           $attr = $self->{document}->create_attribute_ns
               ($Temma::Defs::NamespacePrefixToURL->{$1},
                [$1, $attr_name]);

@@ -15,7 +15,7 @@ $Whatpm::HTML::Dumper::NamespaceMapping
 $Whatpm::HTML::Dumper::NamespaceMapping
     ->{q<http://suika.fam.cx/www/markup/temma/macro>} = 'temmacro';
 $Whatpm::HTML::Dumper::NamespaceMapping
-    ->{q<http://suika.fam.cx/www/markup/temma/msgid>} = 'temsgid';
+    ->{q<http://suika.fam.cx/www/markup/temma/msg>} = 'temsgid';
 $Whatpm::HTML::Dumper::NamespaceMapping
     ->{q<http://suika.fam.cx/www/markup/temma/perl>} = 'templ';
 

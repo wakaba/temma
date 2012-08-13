@@ -19,13 +19,13 @@ sub XMLNS_NS (); *XMLNS_NS = \&Whatpm::HTML::ParserData::XMLNS_NS;
 sub XLINK_NS (); *XLINK_NS = \&Whatpm::HTML::ParserData::XLINK_NS;
 sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 sub TEMMA_MACRO_NS () { q<http://suika.fam.cx/www/markup/temma/macro> }
-sub TEMMA_MSGID_NS () { q<http://suika.fam.cx/www/markup/temma/msgid> }
+sub TEMMA_MSGID_NS () { q<http://suika.fam.cx/www/markup/temma/msg> }
 sub TEMMA_PERL_NS () { q<http://suika.fam.cx/www/markup/temma/perl> }
 
 our $NamespacePrefixToURL = {
   t => TEMMA_NS,
   m => TEMMA_MACRO_NS,
-  msgid => TEMMA_MSGID_NS,
+  msg => TEMMA_MSGID_NS,
   pl => TEMMA_PERL_NS,
 }; # $NamespacePrefixToURL
 
