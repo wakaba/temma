@@ -128,6 +128,15 @@ namespace prefixes:
   msg:    Temma text message namespace
   pl:     Temma Perl code namespace
 
+The tag name of the end tag can be omitted if the tag closes the most
+recently opened element and if the element is not one of C<title>,
+C<textarea>, C<style>, and C<script>.
+
+Example: Following lines are equivalent:
+
+  <p>abc<span>xx</></>
+  <p>abc<span>xx</span></p>
+
 =head1 Processing of element content
 
 The content of a source element is processed in document order.  A
@@ -224,8 +233,12 @@ C<our> statement:
   <t:call x="our $hoge = 124">
   <t:text value="our $hoge">
 
-However, the C<t:my> element described in the next subsection is more
-recommended way to share variables among Perl expression attributes.
+However, the C<t:my> element as described in the next subsection is
+the preferred way to share variables among multiple Perl expression
+attributes.  Values set to C<our> variables will not be destroyed
+until the entire script exits, while lexical variables declared by the
+C<t:my> element will be destroyed once the processing goes outside of
+the scope.
 
 Most of Perl expression attributes are expected to return a value.  If
 the code explicitly return a value by the C<return> statement, it is
@@ -842,6 +855,10 @@ Example.
       <p>Fuga
     </div>
   </t:macro>
+
+Please note that macro is I<not> a closure.  In particular, elements
+in the macro cannot access lexical variables declared outside of the
+C<t:macro> element.
 
 =head2 <m:{name} {args}>{fields}</m:{name}>
 

@@ -9,6 +9,18 @@ use Whatpm::HTML::Tokenizer;
 use Temma::Defs;
 push our @ISA, qw(Whatpm::HTML::Tokenizer);
 
+my $Actions = [];
+$Actions->[CLOSE_TAG_OPEN_STATE]->[0x003E] = {
+  name => 'end tag open > xml',
+  state => DATA_STATE,
+  ct => {
+    type => END_TAG_TOKEN,
+    delta => 2,
+  },
+  emit => '',
+};
+__PACKAGE__->complete_action_def ($Actions);
+
 sub parse_char_string ($$$;$$) {
   #my ($self, $string, $document, $onerror, $get_wrapper) = @_;
   my $self = ref $_[0] ? $_[0] : $_[0]->new;
@@ -45,6 +57,7 @@ sub parse_char_string ($$$;$$) {
   $self->{enable_cdata_section} = 1;
 
   $self->_initialize_tokenizer;
+  $self->{action_set} = $Actions;
   $self->_initialize_tree_constructor;
   $self->{t} = $self->_get_next_token;
   $self->_construct_tree;
@@ -420,7 +433,17 @@ sub _construct_tree ($) {
       $tag_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
       delete $self->{ignore_first_newline};
 
-      if ($tag_name eq 'html' or $tag_name eq 'body') {
+      if ($tag_name eq '') {
+        if ($self->{open_elements}->[-1]->[1] eq 'html' or
+            $self->{open_elements}->[-1]->[1] eq 'body') {
+          $self->{parse_error}->(level => $self->{level}->{must},
+                                 type => 'unmatched end tag',
+                                 text => $self->{t}->{tag_name},
+                                 token => $self->{t});
+        } else {
+          pop @{$self->{open_elements}};
+        }
+      } elsif ($tag_name eq 'html' or $tag_name eq 'body') {
         #
       } elsif ($tag_name eq 'sarcasm') {
         my $sarcasm = $self->{document}->create_element_ns

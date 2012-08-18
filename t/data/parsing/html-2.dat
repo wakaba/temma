@@ -1,0 +1,48 @@
+#data
+hoge</>ab
+#errors
+1;8;m;unmatched end tag;;
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "hogeab"
+
+#data
+<title></><link></title><meta>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <title>
+|       "</><link>"
+|     <meta>
+
+#data
+<m:hoge>abc</><link></></><meta>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temmacro hoge>
+|       <temma field>
+|         "abc"
+|       <temma field>
+|         <link>
+|     <meta>
+
+#data
+ho<p>fu<s>bb</></>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "ho"
+|     <p>
+|       "fu"
+|       <s>
+|         "bb"
+|     "a"

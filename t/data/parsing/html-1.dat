@@ -127,14 +127,14 @@ abc</foo>bbb
 #data
 a<p>aa</>bbb
 #errors
-1;7;m;empty end tag;;
 #document
 | <!DOCTYPE html>
 | <html>
 |   <body>
 |     "a"
 |     <p>
-|       "aabbb"
+|       "aa"
+|     "bbb"
 
 #data
 aaaa,</body>abc

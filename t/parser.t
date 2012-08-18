@@ -56,6 +56,7 @@ test {
     cdata-2.dat
     rcdata-1.dat
     html-1.dat
+    html-2.dat
     html-meta-1.dat
     html-void-1.dat
     html-flow-1.dat
