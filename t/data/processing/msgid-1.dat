@@ -408,14 +408,14 @@ sub plain_text_as_components {
 <!DOCTYPE html><html><head></head><body><p><b>FOOBAR = hoge<i>fuga</i></b></p></body></html>
 
 #data
-<msg:hoge msgn=12 />
+<msg:hoge n=12 />
 #errors
 1;1;m;temma:no locale;;
 #output
 <!DOCTYPE html><html><body>hoge</body></html>
 
 #data
-<msg:hoge msgn=12 />
+<msg:hoge n=12 />
 #locale
 sub plain_text_n_as_components {
   return [{type => 'text', value => $_[1] . '[' . $_[2] . ']'}];
@@ -424,7 +424,7 @@ sub plain_text_n_as_components {
 <!DOCTYPE html><html><body>hoge[12]</body></html>
 
 #data
-<msg:hoge msgn=12 t:parse>
+<msg:hoge n=12 t:parse>
   fuga
 </></>
 #locale
@@ -436,7 +436,7 @@ sub plain_text_n_as_components {
 <!DOCTYPE html><html><body>hoge[12]fuga</body></html>
 
 #data
-<msg:hoge msgn=12*20 t:parse>
+<msg:hoge n=12*20 t:parse>
   fuga
 </></>
 #locale
@@ -448,7 +448,7 @@ sub plain_text_n_as_components {
 <!DOCTYPE html><html><body>hoge[240]fuga</body></html>
 
 #data
-<msg:hoge msgn=undef t:parse>
+<msg:hoge n=undef t:parse>
   fuga
 </></>
 #locale
@@ -460,7 +460,7 @@ sub plain_text_as_components {
 <!DOCTYPE html><html><body>hoge[]fuga</body></html>
 
 #data
-<msg:hoge msgn=0 t:parse>
+<msg:hoge n=0 t:parse>
   fuga
 </></>
 #locale
@@ -472,7 +472,7 @@ sub plain_text_n_as_components {
 <!DOCTYPE html><html><body>hoge[0]fuga</body></html>
 
 #data
-<msg:hoge msgn="'abc'" t:parse>
+<msg:hoge n="'abc'" t:parse>
   fuga
 </></>
 #locale
@@ -484,14 +484,21 @@ sub plain_text_n_as_components {
 <!DOCTYPE html><html><body>hoge[0]fuga</body></html>
 
 #data
-<msg:hoge msgstr="&#x1240;xaa"/>hoge
+<msg:hoge alt="&#x1240;xaa"/>hoge
 #errors
 1;1;m;temma:no locale;;
 #output escaped
 <!DOCTYPE html><html><body>\u1240xaahoge</body></html>
 
 #data
-<msg:hoge msgset=fuga />
+<msg:hoge alt="&#x1240;xaa <p>" barehtml />hoge
+#errors
+1;1;m;temma:no locale;;
+#output escaped
+<!DOCTYPE html><html><body>\u1240xaa &lt;p&gt;hoge</body></html>
+
+#data
+<msg:hoge set=fuga />
 #locale
 sub for_text_set {
   $_[0]->{text_set} = $_[1];
@@ -572,7 +579,7 @@ sub html_as_components {
 <!DOCTYPE html><html><body>ab & <>&lt;>hoge&amp;</body></html>
 
 #data
-<msg:foo barehtml msgn=5>
+<msg:foo barehtml n=5>
   hoge&  <t:field>&lt;
 </></>
 #locale
@@ -586,7 +593,7 @@ sub html_n_as_components {
 <!DOCTYPE html><html><body>ab & <>5&lt;>hoge&amp;</body></html>
 
 #data
-<msg:foo barehtml msgn=6-1>
+<msg:foo barehtml n=6-1>
   hoge&  <t:field>&lt;
 </></>
 #locale
@@ -600,7 +607,7 @@ sub html_n_as_components {
 <!DOCTYPE html><html><body>ab & <>5&lt;>hoge&amp;</body></html>
 
 #data
-<msg:hoge msgset=fuga barehtml />
+<msg:hoge set=fuga barehtml />
 #locale
 sub for_text_set {
   $_[0]->{text_set} = $_[1];

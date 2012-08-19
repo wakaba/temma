@@ -264,7 +264,7 @@ sub __process ($$) {
           next if $self->_close_start_tag ($process, $fh);
           $self->_before_non_space ($process => $fh);
 
-          $self->_print_msgid ($node, $process => $ln => $fh, barehtml => $node->has_attribute ('barehtml'));
+          $self->_print_msgid ($node, $process => $ln => $fh);
           next;
         } elsif ($ns eq TEMMA_NS) {
           if ($ln eq 'text') {
@@ -1407,7 +1407,7 @@ sub _print_msgid ($$$$$;%) {
   my ($self, $node, $process => $msgid, $fh, %args) = @_;
 
   my $n = $self->eval_attr_value
-      ($node, 'msgn', node_info => $process->{node_info});
+      ($node, 'n', node_info => $process->{node_info});
 
   my $locale = $self->{locale} || do {
     $self->{onerror}->(type => 'temma:no locale',
@@ -1415,10 +1415,11 @@ sub _print_msgid ($$$$$;%) {
                        level => 'm');
     undef;
   };
-  my $set = $node->get_attribute ('msgset');
+  my $set = $node->get_attribute ('set');
   $locale = $locale->for_text_set ($set) if defined $set;
 
-  my $method = ($args{barehtml} ? 'html' : 'plain_text') .
+  my $barehtml = $node->has_attribute ('barehtml');
+  my $method = ($barehtml ? 'html' : 'plain_text') .
                (defined $n ? '_n' : '') .
                '_as_components';
   my $texts = $locale && $locale->$method ($msgid, defined $n ? (0+$n) : ());
@@ -1453,7 +1454,7 @@ sub _print_msgid ($$$$$;%) {
                 @{$def->{node}->child_nodes->to_a}],
                $process->{node_info}, $def->{sp});
         }
-      } elsif ($_->{type} eq 'html' and $args{barehtml}) {
+      } elsif ($_->{type} eq 'html' and $barehtml) {
         unshift @{$self->{processes}},
             {type => 'barehtml', value => $_->{value},
              node => $node, node_info => $process->{node_info}};
@@ -1465,7 +1466,7 @@ sub _print_msgid ($$$$$;%) {
       } # $_->{type}
     }
   } else {
-    my $msgstr = $node->get_attribute ('msgstr');
+    my $msgstr = $node->get_attribute ('alt');
     unshift @{$self->{processes}},
         {type => 'text',
          value => defined $msgstr ? $msgstr : $msgid,
