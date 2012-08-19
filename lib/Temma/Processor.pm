@@ -1440,6 +1440,8 @@ sub _print_msgid ($$$$$;%) {
     my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
     my ($fields, $has_field) = $self->_process_fields ($node, $sp, $process);
     
+    my $binds = {%{$process->{node_info}->{binds}}, 'n' => [[$n], 0]};
+
     for (reverse @$texts) {
       if ($_->{type} eq 'text') {
         unshift @{$self->{processes}},
@@ -1452,7 +1454,8 @@ sub _print_msgid ($$$$$;%) {
               ([grep { $_->node_type == ELEMENT_NODE or
                        $_->node_type == TEXT_NODE }
                 @{$def->{node}->child_nodes->to_a}],
-               $process->{node_info}, $def->{sp});
+               $process->{node_info}, $def->{sp},
+               binds => $binds);
         }
       } elsif ($_->{type} eq 'html' and $barehtml) {
         unshift @{$self->{processes}},

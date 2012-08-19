@@ -618,3 +618,52 @@ sub html_as_components {
 }
 #output
 <!DOCTYPE html><html><body>hoge of fuga</body></html>
+
+#data
+<msg:hoge n=12*3>
+  n = <t:text value=$n>
+</msg:>
+#locale
+sub plain_text_n_as_components {
+  return [
+    {type => 'text', value => 'Hoge('},
+    {type => 'text', value => $_[2]},
+    {type => 'text', value => '): '},
+    {type => 'field', name => 1},
+  ];
+}
+#output
+<!DOCTYPE html><html><body>Hoge(36): n = 36</body></html>
+
+#data
+<msg:hoge n=12*3>
+  <t:field name=ab>
+    n = <t:text value=$n>
+</msg:>
+#locale
+sub plain_text_n_as_components {
+  return [
+    {type => 'text', value => 'Hoge('},
+    {type => 'text', value => $_[2]},
+    {type => 'text', value => '): '},
+    {type => 'field', name => 'ab'},
+  ];
+}
+#output
+<!DOCTYPE html><html><body>Hoge(36): n = 36</body></html>
+
+#data
+<msg:hoge>
+  n = <t:text value="defined $n ? 1 : 0">
+</msg:hoge>
+#locale
+sub plain_text_as_components {
+  return [
+    {type => 'text', value => 'Hoge('},
+    {type => 'text', value => defined $_[2]},
+    {type => 'text', value => '): '},
+    {type => 'field', name => 1},
+  ];
+}
+#output
+<!DOCTYPE html><html><body>Hoge(): n = 0</body></html>

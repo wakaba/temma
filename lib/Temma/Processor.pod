@@ -1,3 +1,9 @@
+=head1 NAME
+
+Temma::Processor - A processor for the Temma template language
+
+=head1 SYNOPSIS
+
 XXX
 
 =head1 METHODS
@@ -73,4 +79,23 @@ this method.
 
 =back
 
+XXX Locale object
+
 XXX
+
+=head1 SEE ALSO
+
+L<Temma>, L<Temma::Language>.
+
+=head1 AUTHOR
+
+Wakaba <w@suika.fam.cx>.
+
+=head1 LICENSE
+
+Copyright 2012 Wakaba <w@suika.fam.cx>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

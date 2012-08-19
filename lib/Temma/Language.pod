@@ -786,25 +786,12 @@ no end tag by default.
 
 The C<cv> attribute of the C<t:wait> element is a Perl expression
 attribute.  The C<cv> attribute is required.  It must return an
-object.  The returned object is expected to be an L<AnyEvent> condvar
-object (i.e. an L<AnyEvent::CondVar> instance).  The object at least
-has the C<cb> method, which takes an argument, which expects a code
-reference.  The method should not throw any exception.  The method is
-expected to invoke the code reference received as the argument when
-(and only when) the temma processor should resume the template
-processing (exactly once).  The callback might or might not be invoked
-synchronously within the C<cb> function.  Temma will not specify a
-function that intentionally throw an exception as the argument to the
-C<cb> method.
+object.  The returned object is expected to be a condvar object.
 
 The C<as> attribute specifies the name of the lexical variable to
 which the value returned by the C<recv> method of the condvar object
 is bound during the processing of the clause.  The syntax of the
 attribute value is same as the C<as> attribute of the C<t:my> element.
-The callback function specified as the argument to the C<cb> method is
-expected to be invoked with an argument, which is expected to be an
-object with the C<recv> method defined.  The method is expected to
-return a value, which is the value bound to the variable.
 
 Example:
 
@@ -824,6 +811,24 @@ Example:
 
 This template generates the "Before wait" paragraph, then wait 2
 seconds (or more), then generates the "After wait" paragraph.
+
+=head2 The condvar object
+
+The C<t:wait> element expects the L<AnyEvent> condvar object, i.e. the
+instance of the L<AnyEvent::CondVar> class.  The object must at least
+have the C<cb> method, which takes an argument, which expects a code
+reference.  The method should not throw any exception.  The method is
+expected to invoke the code reference received as the argument when
+(and only when) the Temma processor should resume the template
+processing (exactly once).  The callback might or might not be invoked
+synchronously within the C<cb> function.
+
+The callback function specified as the argument to the C<cb> method is
+expected to be invoked with an argument, which is expected to be an
+object which has the C<recv> method.  The method is expected to return
+a value, which is the value bound to the variable.  Temma will not
+specify a function that intentionally throw an exception as the
+argument to the C<cb> method.
 
 =head1 Macros and inclusions
 
@@ -1046,4 +1051,164 @@ Example.
 
 =head1 Integration with text catalog
 
-XXX
+The Temma language has builtin support for integration with text
+message catalog, which enables internationalization of texts within
+template.
+
+The text messages in the text message cataglog is identified by the
+pair of the B<Message set> and the C<Message ID>.  The application
+which uses the text catalog feature must specify the B<locale object>
+for the template processing.  The locale object provides the access to
+the message catalog.
+
+The locale object is responsive to determine the language in use or to
+load the appropriate message catalog set.  How to specify the locale
+object for the processing, and the interface the locale object must
+implement, are described in the documentation for the
+L<Temma::Processor>.
+
+=head2 <msg:{msgid}>{fields}</msg:>
+
+The C<msg:{msgid}> element can be used to generate node(s) from the
+specified message ID and the text message catalog in use.
+
+The local name of the element specifies the message ID.  It can
+contain ASCII lowercase letters, ASCII digits, C<->, C<_>, and C<.>.
+The first character must be one of ASCII lowercase letters.
+
+Example:
+
+  <msg:myapp.title/>
+
+... generates a text node whose value is the text corresponding to the
+message ID C<myapp.title> in the default message set.
+
+Content of the element can be used to specify fields for the message.
+See previous subsections for details.  Any field is used as argument
+to the text message.
+
+The C<n> attribute is a Perl expression attribute.  If specified, the
+evaluated value must be a number.  The number is used to choose the
+variation of the text message (plural or singular for many Western
+languages; there could be more or no variant for other languages).  If
+the attribute is not specified, the number is not defined (which is
+different from 0, 1, or any other number).
+
+Example:
+
+  <msg:items_n n="$items->length">
+    <t:text value="$items->length">
+  </msg:>
+
+This fragment generates the text node whose value is the text
+corresponding to the message ID C<person_n> in the default message
+set, with the field named C<1> whose value is the C<t:text> element.
+Given the text for the ID is defined as C<an item> if C<n = 1> and
+C<%1 items> otherwise (where C<%1> indicates insertion of the field
+with name C<1>), the value is one of C<an item>, C<2 items>, C<3
+items>, ... depending on the value of the C<n> attribute, i.e. C<<
+$items->length >>.
+
+Within the fields for the C<msg:{msgid}> element, the lexical variable
+C<$n> can be used to refer to the evaluated value of the C<n>
+attribute value.  If there is no C<n> attribute, the variable is bound
+to the C<undef> value.
+
+Example: The previous example can be rewrite as:
+
+  <msg:items_n n="$items->length">
+    <t:text value=$n>
+  </msg:>
+
+The message set of the text message referred to by the element is the
+I<default message set>.  This can be overridden by specifying the
+C<set> attribute.  The value must be the name of a string identifying
+the message set accessible from the locale object.
+
+Example:
+
+  <msg:help.usage.p1 set="My::Blog"/>
+  <msg:help.usage.p1 set="My::Bookmark"/>
+
+... generates the text node representing a paragraph for the help
+contained in the C<My::Blog> and C<My::Bookmark> message set,
+representively.  Although these elements share the same message ID,
+since they belong to different message set, their corresponding texts
+can be different (depending on the locale object's implementation).
+
+The message ID should be the one defined in the message text catalog.
+However, if there is no text defined for the specified message ID, the
+C<msg:{msgid}> element still generates a text node.  The value of the
+text node is the value of the C<alt> attribute, if any.  If there is
+no C<alt> specified, the message ID itself is uesd as the value
+instead.  The C<alt> attribute is optional.  If specified, the value
+is expected to be the text corresponding to the message ID of the
+element in some language.  The C<alt> attribute value is intended to
+be the advisory information for template authors, as message ID is
+likely unreadable stupid string such that editing the template could
+be difficult without such guidance.  Additionally, the C<alt>
+attribute value would be useful for extracting initial message ID /
+text mapping table from templates in earlier stage of development.
+
+The C<barehtml> attribute is a boolean attribute.  Unless the
+attribute is specified, the text corresponding to the message ID is
+embedded as part of text nodes.  If the attribute is specified, and if
+the string (or part of strings) is marked as bare HTML fragment, then
+the string is handled as mixture of texts and HTML markup, like the
+value of the C<t:barehtml> element.  Similar to the C<t:barehtml>
+element, the C<barehtml> should also be avoided where possible.
+
+Example:
+
+  <p><msg:first barehtml />: ...</p>
+
+If the locale object for the processor provides HTML fragment C<<
+1<sup>st</sup> >> for the message ID C<first>, this template
+generates:
+
+  <p>1<sup>st</sup>: ...</p>
+
+=head2 Attribute msg:{name}="{msgid}"
+
+The C<msg:{name}> attribute, where {name} is the attribute local name,
+can be used to generate an attribute for the result element generated
+by the nearest ancestor source element generating an element.  It may
+be specified for an element which generates an element.  The attribute
+value is interpreted as a message ID in the default message set.
+
+Unlike the C<msg:{msgid}> element, the local name is interpreted as
+the name of the attribute.  The message ID is represented as the
+attribute value instead.  There is no syntax corresponding to C<n>,
+C<set>, C<alt>, and C<barehtml> attributes.  No argument (or field)
+can be specified for the attribute.
+
+As described in previous sections, duplicate attributes,
+i.e. attributes with same names, must not be generated by the
+C<msg:{name}> attribute.
+
+Example:
+
+  <h1><img src=sitename.png msg:alt=sitename></h1>
+
+The C<img> element in the result document has the C<alt> attribute
+whose value is the text message corresponding to the message ID
+C<sitename> in the default message set.
+
+=head1 SEE ALSO
+
+L<Temma>, L<Temma::Parser>, L<Temma::Processor>.
+
+HTML Living Standard <http://c.whatwg.org/>.
+
+=head1 AUTHOR
+
+Wakaba <w@suika.fam.cx>.
+
+=head1 LICENSE
+
+Copyright 2012 Wakaba <w@suika.fam.cx>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
