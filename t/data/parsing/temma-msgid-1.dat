@@ -1,0 +1,61 @@
+#data
+aa<msg:fuo_-.bar12/>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aa"
+|     <temsgid fuo_-.bar12>
+|     "bb"
+
+#data
+aa<msg:fuo_-.bar12>abc</msg:fuo_-.bar12>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aa"
+|     <temsgid fuo_-.bar12>
+|       <temma field>
+|         "abc"
+|     "bb"
+
+#data
+<msg:hoge/>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temsgid hoge>
+
+#data
+<title t:parse><msg:foo>abc</msg:foo></title>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <title>
+|       temma parse=""
+|       <temsgid foo>
+|         <temma field>
+|           "abc"
+
+#data
+<msg:oo.bar>ab<t:field>xx</t:field>b</></>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temsgid oo.bar>
+|       <temma field>
+|         "ab"
+|       <temma field>
+|         "xx"
+|       <temma field>
+|         "b"
+|     "a"

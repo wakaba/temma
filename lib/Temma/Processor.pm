@@ -260,7 +260,13 @@ sub __process ($$) {
         my $ns = $node->namespace_uri || '';
         my $ln = $node->manakai_local_name;
         my $attrs = [];
-        if ($ns eq TEMMA_NS) {
+        if ($ns eq TEMMA_MSGID_NS) {
+          next if $self->_close_start_tag ($process, $fh);
+          $self->_before_non_space ($process => $fh);
+
+          $self->_print_msgid ($node, $process => $ln => $fh, barehtml => $node->has_attribute ('barehtml'));
+          next;
+        } elsif ($ns eq TEMMA_NS) {
           if ($ln eq 'text') {
             next if $self->_close_start_tag ($process, $fh);
             $self->_before_non_space ($process => $fh);

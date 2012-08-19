@@ -82,6 +82,11 @@ our $AutoOpen = {
     '<text>' => 't:field',
     't:field' => '',
   },
+  '<msg>' => {
+    '<start>' => 't:field',
+    '<text>' => 't:field',
+    't:field' => '',
+  },
 }; # $AutoOpen
 
 our $AutoClose = {
@@ -183,7 +188,7 @@ our $CloseIfInScope = {
   't:elsif' => {'t:if' => 0},
   't:sep' => {'t:for' => 0},
   't:catch' => {'t:try' => 0},
-  't:field' => {'t:include' => 0, '<m>' => 0,
+  't:field' => {'t:include' => 0, '<m>' => 0, '<msg>' => 0,
                 't:text' => 0, 't:barehtml' => 0},
 }; # $CloseIfInScope
 

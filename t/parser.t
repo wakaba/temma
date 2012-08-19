@@ -74,6 +74,7 @@ test {
     temma-inclusion-1.dat
     temma-inclusion-2.dat
     temma-macro-1.dat
+    temma-msgid-1.dat
   );
   done $c;
 };

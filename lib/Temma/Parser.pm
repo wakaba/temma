@@ -153,6 +153,8 @@ sub _construct_tree ($) {
           my $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<text>'};
           $ao = $Temma::Defs::AutoOpen->{'<m>'}->{'<text>'}
               if not defined $ao and $self->{open_elements}->[-1]->[1] =~ /^m:/;
+          $ao = $Temma::Defs::AutoOpen->{'<msg>'}->{'<text>'}
+              if not defined $ao and $self->{open_elements}->[-1]->[1] =~ /^msg:/;
           if ($ao) {
             my $ln = $ao;
             my $el = $ln =~ s/^t://
@@ -273,10 +275,17 @@ sub _construct_tree ($) {
           $ao = $Temma::Defs::AutoOpen->{'<m>'}->{$tag_name}
               if not defined $ao and
                   $self->{open_elements}->[-1]->[1] =~ /^m:/;
+          $ao = $Temma::Defs::AutoOpen->{'<msg>'}->{$tag_name}
+              if not defined $ao and
+                  $self->{open_elements}->[-1]->[1] =~ /^msg:/;
           $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<m>'}
               if not defined $ao and $tag_name =~ /^m:/;
+          $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<msg>'}
+              if not defined $ao and $tag_name =~ /^msg:/;
           $ao = $Temma::Defs::AutoOpen->{'<m>'}->{'<start>'}
               if not defined $ao and $self->{open_elements}->[-1]->[1] =~ /^m:/;
+          $ao = $Temma::Defs::AutoOpen->{'<msg>'}->{'<start>'}
+              if not defined $ao and $self->{open_elements}->[-1]->[1] =~ /^msg:/;
           $ao = $Temma::Defs::AutoOpen->{$self->{open_elements}->[-1]->[1]}->{'<start>'}
               if not defined $ao;
           if ($ao) {
@@ -299,6 +308,7 @@ sub _construct_tree ($) {
           for (reverse @{$self->{open_elements}}) {
             my $diff = $cis->{$_->[1]};
             $diff = $cis->{'<m>'} if not defined $diff and $_->[1] =~ /^m:/;
+            $diff = $cis->{'<msg>'} if not defined $diff and $_->[1] =~ /^msg:/;
             if (defined $diff) {
               last if $diff < 0;
               my @closed = splice @{$self->{open_elements}},
@@ -323,12 +333,9 @@ sub _construct_tree ($) {
       my $local_name = $tag_name;
       my $attr_fixup = {};
 
-      if ($local_name =~ s/^t:(?=.)//s) {
-        $ns = TEMMA_NS;
-        $prefix = 't';
-      } elsif ($local_name =~ s/^m:(?=.)//s) {
-        $ns = TEMMA_MACRO_NS;
-        $prefix = 'm';
+      if ($local_name =~ s/^(t|m|msg|pl):(?=.)//s) {
+        $prefix = $1;
+        $ns = $Temma::Defs::NamespacePrefixToURL->{$prefix};
       } elsif ($local_name eq 'svg') {
         $ns = SVG_NS;
         $im = IM_SVG;
