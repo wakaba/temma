@@ -164,7 +164,6 @@ test {
     attr-3.dat
     comment-1.dat
     text-1.dat
-    text-2.dat
     space-1.dat
     eval-1.dat
     wait-1.dat
@@ -180,7 +179,6 @@ test {
     try-4.dat
     my-1.dat
     barehtml-1.dat
-    barehtml-2.dat
     macro-1.dat
     macro-2.dat
     macro-3.dat

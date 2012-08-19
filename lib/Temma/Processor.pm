@@ -270,12 +270,6 @@ sub __process ($$) {
           if ($ln eq 'text') {
             next if $self->_close_start_tag ($process, $fh);
             $self->_before_non_space ($process => $fh);
-
-            my $msgid = $node->get_attribute ('msgid');
-            if (defined $msgid) {
-              $self->_print_msgid ($node, $process => $msgid => $fh);
-              next;
-            } # $msgid
             
             my $value = $self->eval_attr_value
                 ($node, 'value', disallow_undef => 'w', required => 'm',
@@ -804,13 +798,6 @@ sub __process ($$) {
           } elsif ($ln eq 'barehtml') {
             next if $self->_close_start_tag ($process, $fh);
             $self->_before_non_space ($process => $fh);
-
-            my $msgid = $node->get_attribute ('msgid');
-            if (defined $msgid) {
-              $self->_print_msgid
-                  ($node, $process => $msgid => $fh, barehtml => 1);
-              next;
-            } # $msgid
             
             my $value = $self->eval_attr_value
                 ($node, 'value', disallow_undef => 'w', required => 'm',

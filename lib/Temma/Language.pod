@@ -457,11 +457,8 @@ in general.  The element can be placed as child or descendant of
 metadata content or the HTML C<body> element.  The C<t:text> element
 is a void element, i.e. it has no end tag by default.
 
-The element must have exactly one of C<value> and C<msgid> attributes.
-Use of the C<msgid> attribute is described in later section.
-
-The C<value> attribute is a Perl expression attribute.  The expression
-must return a string.
+The C<value> attribute is required.  The C<value> attribute is a Perl
+expression attribute.  The expression must return a string.
 
 As the element generates a text node, not just string used as element
 content in the HTML syntax, the returned string don't have to be
@@ -520,13 +517,10 @@ The element can be placed as child or descendant of metadata content
 or the HTML C<body> element.  The C<t:barehtml> element is a void element,
 i.e. it has no end tag by default.
 
-The element must have exactly one of C<value> and C<msgid> attributes.
-Use of the C<msgid> attribute is described in later section.
-
-The C<value> attribute is a Perl expression attribute.  The expression
-must return a string, which is expected to be an HTML fragment valid
-in the context of the position the fragment is inserted in the result
-document.
+The C<value> attribute is required.  The C<value> attribute is a Perl
+expression attribute.  The expression must return a string, which is
+expected to be an HTML fragment valid in the context of the position
+the fragment is inserted in the result document.
 
 This element should not be used, as the rules to construct the HTML
 node structure of the result document should be fully described by the

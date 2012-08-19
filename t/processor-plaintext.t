@@ -124,9 +124,9 @@ test {
     plaintext-basic-2.dat
     plaintext-flow-1.dat
     plaintext-text-1.dat
-    plaintext-text-2.dat
     plaintext-eval-1.dat
     plaintext-macro-1.dat
+    plaintext-msgid-1.dat
   );
   $c->done;
 };
