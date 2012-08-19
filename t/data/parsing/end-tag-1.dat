@@ -1,0 +1,80 @@
+#data
+ho<p>fuga</msg:>aa
+#errors
+1;17;m;unmatched end tag;;msg:
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "ho"
+|     <p>
+|       "fugaaa"
+
+#data
+aa<msg:aa.bb>aaaa</msg:>aaa
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aa"
+|     <temsgid aa.bb>
+|       <temma field>
+|         "aaaa"
+|     "aaa"
+
+#data
+aa<msg:aa.bb>aaaa</pl:>aaa
+#errors
+1;24;m;unmatched end tag;;pl:
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aa"
+|     <temsgid aa.bb>
+|       <temma field>
+|         "aaaaaaa"
+
+#data
+aa<m:ho.ge>aaaa</m:>x
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "aa"
+|     <temmacro ho.ge>
+|       <temma field>
+|         "aaaa"
+|     "x"
+
+#data
+a<msg:aa>b<span>c</msg:>d
+#errors
+1;25;m;not closed;;span
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "a"
+|     <temsgid aa>
+|       <temma field>
+|         "b"
+|         <span>
+|           "c"
+|     "d"
+
+#data
+ho<t:if>aa<p>a</t:>foo
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "ho"
+|     <temma if>
+|       "aa"
+|       <p>
+|         "a"
+|     "foo"

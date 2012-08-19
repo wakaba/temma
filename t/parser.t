@@ -55,6 +55,7 @@ test {
     cdata-1.dat
     cdata-2.dat
     rcdata-1.dat
+    end-tag-1.dat
     html-1.dat
     html-2.dat
     html-meta-1.dat

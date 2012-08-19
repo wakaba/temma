@@ -458,6 +458,34 @@ sub _construct_tree ($) {
         $self->{open_elements}->[-1]->[0]->append_child ($sarcasm);
       } elsif ($self->{open_elements}->[-1]->[1] eq $tag_name) {
         pop @{$self->{open_elements}};
+      } elsif ($tag_name =~ /\A(t|m|msg|pl):\z/) {
+        my $ns = $Temma::Defs::NamespacePrefixToURL->{$1};
+        
+        ## Has an element in scope
+        INSCOPE: {
+          for my $i (reverse 0..$#{$self->{open_elements}}) {
+            if (($self->{open_elements}->[$i]->[0]->namespace_uri || '') eq $ns) {
+              my @closed = splice @{$self->{open_elements}}, $i;
+              shift @closed;
+              @closed = grep {
+                not $Temma::Defs::EndTagOptional->{$_->[1]} or
+                $_->[2] == IM_SVG or $_->[2] == IM_MML
+              } reverse @closed;
+              if (@closed) {
+                $self->{parse_error}->(level => $self->{level}->{must},
+                                       type => 'not closed',
+                                       text => $closed[-1]->[1],
+                                       token => $self->{t});
+              }
+              last INSCOPE;
+            }
+          }
+
+          $self->{parse_error}->(level => $self->{level}->{must},
+                                 type => 'unmatched end tag',
+                                 text => $self->{t}->{tag_name},
+                                 token => $self->{t});
+        } # INSCOPE
       } else {
         ## Has an element in scope
         INSCOPE: {

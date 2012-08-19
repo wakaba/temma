@@ -137,6 +137,16 @@ Example: Following lines are equivalent:
   <p>abc<span>xx</></>
   <p>abc<span>xx</span></p>
 
+The local name part of the end tag can be omitted if the tag name has
+a namespace prefix.
+
+Example: Following lines are equivalent:
+
+  <msg:my.text-1><p>Value</msg:>
+  <msg:my.text-1><p>Value</msg:my.text-1>
+  <msg:my.text-1><p>Value</></t:></msg:>
+  <msg:my.text-1><t:field><p>Value</p></t:field></msg:my.text-1>
+
 =head1 Processing of element content
 
 The content of a source element is processed in document order.  A
