@@ -763,9 +763,9 @@ can cause an exception thrown in the Temma language.
 
 The C<t:catch> element may have the C<as> attribute.  The C<as>
 attribute specifies the name of the lexical variable to which the
-exception is bound during the processing of the clause.  The syntax of
-the attribute value is same as the C<as> attribute of the C<t:my>
-element.
+exception object is bound during the processing of the clause.  The
+syntax of the attribute value is same as the C<as> attribute of the
+C<t:my> element.  For the exception object, see the next subsection.
 
 Example.
 
@@ -775,6 +775,41 @@ Example.
     <t:catch as=$x package="My::Exception">
       My::Exception!
     </t:try>
+
+=head2 The exception object
+
+In the catch clause, the exception object is bound to the lexical
+variable whose name is specified by the C<as> attribute of the
+c<t:catch> element.  The exception element has following methods:
+
+=over 4
+
+=item $value = $x->value
+
+This method returns the value of the exception, i.e. the argument to
+the C<die> statement.  The value might or might not be an object.
+
+=item $bool = $x->isa_package ($package)
+
+This method returns whether the value of the exception is an instance
+of the pacakge specified as the argument or not.
+
+=item $string = '' . $x
+
+When stringified, the exception object returns the stringified value
+of the exception.
+
+=item $node = $x->source_node
+
+If the exception is thrown within a Perl expression attribute, this
+attribute returns the attribute node.
+
+=item $text = $x->source_text
+
+If the exception is thrown within a Perl expression attribute, this
+method returns the attribute value.
+
+=back
 
 =head2 <t:wait cv="{expr}" [as="{varname}"]>
 
