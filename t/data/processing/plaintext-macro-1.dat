@@ -6,3 +6,37 @@ aa<m:abc/>bb
 | 
 | aahoge
 | fugabb
+
+#data
+| <t:macro name=hoge>
+| 
+| fuga
+| 
+| </t:macro>
+| aa
+| <m:hoge/>
+| bb
+#output
+| 
+| aa
+| 
+| 
+| fuga
+| 
+| 
+| bb
+
+#data
+| <t:macro name=hoge t:space=trim>
+| 
+| fuga
+| 
+| </t:macro>
+| aa
+| <m:hoge/>
+| bb
+#output
+| 
+| aa
+| fuga
+| bb

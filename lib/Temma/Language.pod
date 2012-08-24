@@ -937,13 +937,8 @@ the included file.  See later subsections for details.
 If the C<t:include> element is the child of the C<html> element, the
 included file's content is parsed in the same way as a single source
 document.  Otherwise, the C<t:include> element is not the child of the
-C<html> element, the included file's content is parsed in the C<body>
-parsing mode.  In the C<body> parsing mode, the template is parsed as
-if there ere C<body> start tag before the first character of the
-template.  The template parsed in the C<body> parsing mode cannot
-contain C<body> start and end tags.  There may be the DOCTYPE at the
-beginning of the template.  After the DOCTYPE, if any, there may be
-the C<html> start tag with the C<t:params> attribute.
+C<html> element, the included file's content is parsed in the HTML
+fragment parsing mode.  See later section for its details.
 
 Example.
 
@@ -1228,6 +1223,39 @@ Example:
 The C<img> element in the result document has the C<alt> attribute
 whose value is the text message corresponding to the message ID
 C<sitename> in the default message set.
+
+=head1 HTML fragment parsing and output mode
+
+The language supports the HTML fragment parsing and output mode.  The
+mode can be used to generate the HTML document fragment that could be
+appropriate for C<innerHTML> setter, or to generate part of HTML
+document by referenced from the C<t:include> element of the source
+document.
+
+The Temma document that is parsed by the HTML fragment parsing mode
+can contain an optional DOCTYPE with name C<html>, followed by an
+optional C<html> start tag with the C<t:params> attribute, followed by
+zero or more nodes allowed in the HTML C<body> element.  Comment nodes
+and white space characters can be inserted anywhere.  The HTML C<head>
+element cannot be inserted within the document.  The C<body> element's
+start and end tag cannot appear in the document.
+
+=head1 Plaintext output mode
+
+The language also supports plain text output mode.  For the plain text
+output mode, following processing rules are applied:
+
+=over 4
+
+=item Anything outside of the C<body> element is ignored for the purpose of generation of the result document.
+
+=item The content of the C<body> element must not generate any element, attribute, or comment node.
+
+=item Text nodes are serialized as is, i.e. HTML escape is not performed.
+
+=item White space characters are preserved by default, i.e. C<t:space=preserve> is implied on the root element.
+
+=back
 
 =head1 SEE ALSO
 
