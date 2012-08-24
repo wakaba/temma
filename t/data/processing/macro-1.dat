@@ -120,3 +120,61 @@
 2;1;m;temma:macro already defined;hoge;
 #output
 <!DOCTYPE html><html><head></head><body><p>abc</p></body></html>
+
+#data
+<t:macro name=a>
+  abc<t:next>xyz
+</t:macro>
+<ul>
+  <t:for x=[1,2]>
+    <li><m:a/>b
+  </t:for>
+</ul>
+#errors
+2;6;m;temma:block not found;;
+2;6;m;temma:block not found;;
+#output
+<!DOCTYPE html><html><head></head><body><ul><li>abcb</li><li>abcb</li></ul></body></html>
+
+#data
+<t:macro name=a>
+  abc<t:last>xyz
+</t:macro>
+<ul>
+  <t:for x=[1,2]>
+    <li><m:a/>b
+  </t:for>
+</ul>
+#errors
+2;6;m;temma:block not found;;
+2;6;m;temma:block not found;;
+#output
+<!DOCTYPE html><html><head></head><body><ul><li>abcb</li><li>abcb</li></ul></body></html>
+
+#data
+<ul>
+  <t:for x=[1,2]>
+    <li><t:include path=hoge />b
+  </t:for>
+</ul>
+#data hoge
+  abc<t:next>xyz
+#errors
+/hoge;1;6;m;temma:block not found;;
+/hoge;1;6;m;temma:block not found;;
+#output
+<!DOCTYPE html><html><body><ul><li>abcb</li><li>abcb</li></ul></body></html>
+
+#data
+<ul>
+  <t:for x=[1,2]>
+    <li><t:include path=hoge />b
+  </t:for>
+</ul>
+#data hoge
+  abc<t:last>xyz
+#errors
+/hoge;1;6;m;temma:block not found;;
+/hoge;1;6;m;temma:block not found;;
+#output
+<!DOCTYPE html><html><body><ul><li>abcb</li><li>abcb</li></ul></body></html>

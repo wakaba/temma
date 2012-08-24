@@ -696,6 +696,7 @@ sub __process ($$) {
                         $process->{node_info}, 'trim',
                         binds => $binds,
                         fields => $fields,
+                        is_entity_boundary => 1,
                         macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1)
                            if $nodes;
                    $self->_process ($fh);
@@ -782,6 +783,7 @@ sub __process ($$) {
               } elsif ({
                 end => 1, 'end tag' => 1, 'end block' => 1,
               }->{$process->{type}}) {
+                last if $process->{is_entity_boundary};
                 push @close, $process;
               }
             }
@@ -868,6 +870,7 @@ sub __process ($$) {
                $process->{node_info}, $sp,
                binds => $binds,
                fields => $fields,
+               is_entity_boundary => 1,
                macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1);
 
           next;
@@ -1100,7 +1103,8 @@ sub _schedule_nodes ($$$$;%) {
       {type => 'end block', node_info => $node_info,
        parent_node_info => $parent_node_info,
        block_name => $args{block_name},
-       catches => $args{catches}};
+       catches => $args{catches},
+       is_entity_boundary => $args{is_entity_boundary}};
   unshift @{$self->{processes}},
       map { {type => 'node', node => $_, node_info => $node_info} } @$nodes;
 } # _schedule_nodes
