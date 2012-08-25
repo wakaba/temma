@@ -1,6 +1,19 @@
 =head1 NAME
 
-Temma - An HTML template processor
+Temma - An HTML + Perl template processor
+
+=head1 SYNOPSIS
+
+  <!DOCTYPE html>
+  <html lang=en t:params="$app">
+  <title t:parse><t:text value=" $app->title ">
+  
+  <h1><t:text value=" $app->title "></h1>
+  <ul>
+    <t:for as=$item x=" $app->items ">
+      <li><a pl:href=" $item->url "><t:text value=" $item->title "></a>
+    </t:for>
+  </ul>
 
 =head1 DESCRIPTION
 
@@ -92,6 +105,20 @@ No Perl (or any other programming language) code should be executed
 until the DOM tree is completely constructed by the parser.
 
 =back
+
+=head1 DEPENDENCY
+
+Temma requires Perl 5.8 or later.  In addition, it is built on top of
+manakai, which requires perl-charclass modules.  They are registered
+as submodules of the Git repository.
+
+=head1 DEVELOPMENT
+
+Latest version of Temma implementation is available in the Git
+repository: <https://github.com/wakaba/temma> or
+<http://suika.fam.cx/gate/git/wi/web/temma.git/tree>.
+
+Tests are run at Temma CI <http://travis-ci.org/wakaba/temma>.
 
 =head1 AUTHOR
 
