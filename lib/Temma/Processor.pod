@@ -4,23 +4,91 @@ Temma::Processor - A processor for the Temma template language
 
 =head1 SYNOPSIS
 
-XXX
+  use Temma::Processor;
+  
+  $processor = Temma::Processor->new;
+  $processor->locale ($locale);
+  
+  $processor->process_document ($doc => $fh);
+  $processor->process_fragment ($doc => $fh);
+  $processor->process_plain_text ($doc => $fh);
+
+=head1 DESCRIPTION
+
+The C<Temma::Processor> module is an implementation of Temma
+Processor.  It processes the source template document and obtains the
+serialized representation of the result (or transformed) document.
+
+For more information on the Temma template language, see
+L<Temma::Language>.
 
 =head1 METHODS
 
-XXX
+Following methods are available to instantiate the processor object
+and initialize the object:
 
 =over 4
 
-=item $p->process_document ($doc => $fh, ...)
+=item $processor = Temma::Processor->new
 
-XXX
+Create a new instance of the Temma processor.
 
-Options:
+=item $processor->onerror ($code)
+
+=item $code = $processor->onerror
+
+Get or set the error handler.  The default error handler used if no
+error handler is specified is to warn the description of the error.
+
+For more information on error handler, see L<Whatpm::Error>
+<https://github.com/wakaba/manakai/blob/master/lib/Whatpm/Errors.pod>.
+
+=item $processor->locale ($locale)
+
+=item $locale = $processor->locale
+
+Get or set the locale object.  See later section for the requirements
+of the locale object.
+
+=back
+
+Then, one of following methods can be used to process the document:
 
 =over 4
 
-XXX
+=item $process->process_document ($doc => $fh, %option)
+
+Process the source template document and print the serialized form of
+the result document to the handle object.  The source document is
+parsed and processed as an HTML document.
+
+=item $process->process_fragment ($doc => $fh, %option)
+
+Process the source template document and print the serialized form of
+the result document fragment to the handle object.  The source
+document is parsed and processed as an HTML document fragment.
+
+=item $process->process_fragment ($doc => $fh, %option)
+
+Process the source template document and print the result plain text
+document to the handle object.  The source document is parsed and
+processed as a plain text document.
+
+=back
+
+The first argument to these methods must be the Document object
+(i.e. an instance of L<Message::DOM::Document>), representing the
+source template document.
+
+The second argument to these methods must be the handle object to
+which the result document is printed.  The object must have the
+C<print> method, whose argument is written to the underlying file.
+The method might be invoked with the empty string to notify
+buffer-flushing oppotunity.
+
+These methods accept following options:
+
+=over 4
 
 =item args => {name => value, NAME => VALUE, ...}
 
@@ -53,35 +121,80 @@ not allowed within the template since it is not listed in the
 C<t:params=""> attribute; The C<baz> argument is not accessible from
 the template.
 
-=back
+=item ondone => CODE
 
-=item $p->process_fragment ($doc => $fh, NAME => VALUE, ...)
+The code reference invoked after the processing is done.  If the code
+reference is specified, it is invoked just after the processing has
+been done, with the processor object as the first (or zeroth)
+argument.  The code reference is not expected to throw any exception.
 
-Process a fragment template document and write the result into the
-specified object.
+Example.  If you prefer AnyEvent condvar:
 
-XXX
-
-Unlike the C<process_document> method, which processes the entire
-document, this method only process the content of the C<body> element
-(i.e. the element returned by C<< $doc->body >> method, if any.  This
-method would be useful for generation of HTML fragments for the
-consumption by Ajax or like.  Any node outside of the C<body> element
-is ignored, except for any C<t:params=""> attribute of the root
-C<html> element, which defines formal parameters available within the
-document template.  (Note that this attribute is the only exception;
-Any C<t:my> or C<t:macro> element outside of the C<body> element is
-completely ignored.)
-
-Additional options can be specified as name-value pairs.  Any
-name-value pair for C<process_document> method is also applicable to
-this method.
+  use AnyEvent;
+  
+  $cv = AE::cv;
+  $processor->process_document ($doc => $fh, ondone => sub {
+    $cv->send;
+  });
 
 =back
 
-XXX Locale object
+For more information on the template processing, see
+L<Temma::Language>.
 
-XXX
+=head1 LOCALE OBJECT
+
+The locale object used by the template processing can be specified by
+the C<locale> object of the processor object.  The locale object must
+implement the interface described in this section.
+
+The locale object is expected to expose the set of text message
+identified by message IDs (aka message catalog).  How to determine the
+language or other locale characteristics in use depends on the
+implementation of the locale object and outside of the scope of these
+requirements.
+
+The C<for_text_set> method switches the message set in use.  The
+locale object specified to the C<locale> method is expected to select
+the default message set.  The C<for_text_set> method of the locale
+object is expected to return another locale object which is selecting
+the message set specified by the argument.  If the specified value
+does not identify a message set supported by the locale object, the
+method must return an "empty" locale object, i.e. a locale object with
+no message available.
+
+The C<plain_text> method is expected to return the plain text
+representation of the text message corresponding to the message ID
+given as the argument.  The method may return the C<undef> value if no
+text message is available for the message ID.
+
+The C<plain_text_as_components> and C<html_as_components> methods are
+expected to return the plain text or HTML representation of the text
+message corresponding to the message ID given as the argument,
+respectively.  The C<plain_text_n_as_components> and
+C<html_n_as_components> methods are expected to return plain text or
+HTML representation of the text message corresponding to the message
+ID and number given as the argument, respectively.  These two methods
+are expected to return appropriate form of the message depending on
+the number, e.g. singular or plural form.
+
+These four methods are expected to return the "components" data
+structure representing the text message.  The return value must be the
+value that can be evaluated as an array reference.  The array must
+contain zero or more hash references.  Such a hash reference must have
+the C<type> value.  If the C<type> value is C<text>, there must be the
+C<value> value, which represents the plain text value for the
+component.  If the C<type> value is C<html>, there must be the
+C<value> value, which represents the HTML value for the component.  If
+the C<type> value is C<field>, there must be the C<name> value, which
+represents the name of the field (or parameter) for the component.
+The C<field> component represents the argument identified by the field
+name.  The entire components represent the concatenation of values
+represented by each component.  No other C<type> is allowed at the
+moment.  The C<html> type is not allowed for
+C<plain_text_as_components> and C<plain_text_n_as_components> methods.
+These four method may return the C<undef> value if no text message is
+available for the message ID.
 
 =head1 SEE ALSO
 

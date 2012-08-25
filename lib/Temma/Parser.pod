@@ -4,11 +4,58 @@ Temma::Parser - A parser for Temma template language
 
 =head1 SYNOPSIS
 
-XXX
+  use Temma::Parser;
+  
+  $parser = Temma::Parser->new;
+  $parser->parse_char_string ($text => $doc);
+  $parser->parse_f ($path_class_file => $doc);
 
 =head1 DESCRIPTION
 
-XXX
+The C<Temma::Parser> is a parser of Temma markup language.
+
+=head1 METHODS
+
+=over 4
+
+=item $parser = Temma::Parser->new
+
+Create a new instance of the Temma parser.
+
+=item $parser->onerror ($code)
+
+=item $code = $parser->onerror
+
+Get or set the error handler.  The default error handler used if no
+error handler is specified is to warn the description of the error.
+
+For more information on error handler, see L<Whatpm::Error>
+<https://github.com/wakaba/manakai/blob/master/lib/Whatpm/Errors.pod>.
+
+=item $parser->parse_char_string ($text => $doc)
+
+Parse the text string and construct a C<Document> object (i.e. an
+instance of the L<Message::DOM::Document>).
+
+The first argument must be the source template document, represented
+as a (possibly utf8-flagged) string of characters.
+
+The second argument must be the C<Document> object.  Any child node is
+replaced by the parsed document's child nodes.
+
+=item $parser->parse_f ($f => $doc)
+
+Parse the content of the file, decoded as UTF-8 text, and construct a
+C<Document> object (i.e. an instance of the
+L<Message::DOM::Document>).
+
+The first argument must be the C<Path::Class::File> object for the
+file.
+
+The second argument must be the C<Document> object.  Any child node is
+replaced by the parsed document's child nodes.
+
+=back
 
 =head1 SEE ALSO
 
