@@ -31,6 +31,8 @@ error handler is specified is to warn the description of the error.
 
 For more information on error handler, see L<Whatpm::Error>
 <https://github.com/wakaba/manakai/blob/master/lib/Whatpm/Errors.pod>.
+For list of error types, see
+<http://suika.fam.cx/gate/2007/html/error-description#temma>.
 
 =item $parser->parse_char_string ($text => $doc)
 
