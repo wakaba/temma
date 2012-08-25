@@ -91,7 +91,7 @@
 <p><m:210>aa</m:210>
 #errors
 1;1;m;temma:bad macro name;;
-2;4;m;temma:macro not defined;;
+2;4;m;temma:macro not defined;210;
 #output
 <!DOCTYPE html><html><head></head><body><p></p></body></html>
 

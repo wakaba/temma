@@ -836,6 +836,7 @@ sub __process ($$) {
           unless ($macro) {
             $self->{onerror}->(type => 'temma:macro not defined',
                                level => 'm',
+                               value => $ln,
                                node => $node);
             next;
           }
