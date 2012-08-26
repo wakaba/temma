@@ -85,8 +85,8 @@ source template document.
 The second argument to these methods must be the handle object to
 which the result document is printed.  The object must have the
 C<print> method, whose argument is written to the underlying file.
-The method might be invoked with the empty string to notify
-buffer-flushing oppotunity.
+The argument is a character string.  The method might be invoked with
+the empty string to notify buffer-flushing oppotunity.
 
 These methods accept following options:
 
