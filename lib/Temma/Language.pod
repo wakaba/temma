@@ -1257,6 +1257,28 @@ output mode, following processing rules are applied:
 
 =back
 
+=head1 POSSIBLE FUTURE EXTENSIONS
+
+Following additional features are considered but not incorporated at
+the time of writing as more research for their use cases is necessary
+before designing and implementing those features.
+
+=over 4
+
+=item Stack trace access in t:catch
+
+=item Rethrow in t:catch
+
+=item Variable assignment of nodes
+
+=item Post-processing filter
+
+=item Simplified syntax for literal string
+
+Something like: <t:attr name=:alt value=:hoge>
+
+=back
+
 =head1 SEE ALSO
 
 L<Temma>, L<Temma::Parser>, L<Temma::Processor>.
