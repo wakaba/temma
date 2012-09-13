@@ -8,8 +8,8 @@ use Temma::Processor;
 
 our $Locale;
 
-sub process_html ($$$$) {
-  #my ($class, $input => $fh, $cb) = @_;
+sub process_html ($$$$$) {
+  #my ($class, $input, $args => $fh, $cb) = @_;
   my $dom = Message::DOM::DOMImplementation->new;
   my $doc = $dom->create_document;
   my $parser = Temma::Parser->new;
@@ -20,11 +20,11 @@ sub process_html ($$$$) {
   }
   my $processor = Temma::Processor->new;
   $processor->locale ($Locale);
-  $processor->process_document ($doc => $_[2], ondone => $_[3]);
+  $processor->process_document ($doc => $_[3], ondone => $_[4], args => $_[2]);
 } # process_html
 
-sub process_html_fragment ($$$$) {
-  #my ($class, $input => $fh, $cb) = @_;
+sub process_html_fragment ($$$$$) {
+  #my ($class, $input, $args => $fh, $cb) = @_;
   my $dom = Message::DOM::DOMImplementation->new;
   my $doc = $dom->create_document;
   my $parser = Temma::Parser->new;
@@ -35,11 +35,11 @@ sub process_html_fragment ($$$$) {
   }
   my $processor = Temma::Processor->new;
   $processor->locale ($Locale);
-  $processor->process_fragment ($doc => $_[2], ondone => $_[3]);
+  $processor->process_fragment ($doc => $_[3], ondone => $_[4], args => $_[2]);
 } # process_html_fragment
 
-sub process_plain_text ($$$$) {
-  #my ($class, $input => $fh, $cb) = @_;
+sub process_plain_text ($$$$$) {
+  #my ($class, $input, $args => $fh, $cb) = @_;
   my $dom = Message::DOM::DOMImplementation->new;
   my $doc = $dom->create_document;
   my $parser = Temma::Parser->new;
@@ -50,7 +50,7 @@ sub process_plain_text ($$$$) {
   }
   my $processor = Temma::Processor->new;
   $processor->locale ($Locale);
-  $processor->process_plain_text ($doc => $_[2], ondone => $_[3]);
+  $processor->process_plain_text ($doc => $_[3], ondone => $_[4], args => $_[2]);
 } # process_plain_text
 
 1;

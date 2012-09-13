@@ -19,7 +19,7 @@ Temma - An HTML + Perl template processor
   use Path::Class;
   $f = file ("template.html.tm");
   binmode $fh, ':utf8';
-  Temma->process_document ($f => $fh);
+  Temma->process_document ($f, {} => $fh);
 
 =head1 DESCRIPTION
 
@@ -48,7 +48,7 @@ and processor.
 
 =over 4
 
-=item Temma->process_html ($input => $fh, $cb)
+=item Temma->process_html ($input, $args => $fh, $cb)
 
 Parse the input as Temma template source document for a complete HTML
 document and write the result document to the file handle.
@@ -58,10 +58,13 @@ source document or the L<Path::Class::File> object representing the
 file in which the source document is contained.  If the file is
 specified, its content must be a UTF-8 encoded Temma source document.
 
-The second argument must be the object which has the C<print> method
+The second argument must be the hash reference containing arguments to
+the template represented as zero or more name-value pairs.
+
+The third argument must be the object which has the C<print> method
 that receives the character string to be written.
 
-The third argument must be the code reference, which is invoked when
+The four argument must be the code reference, which is invoked when
 the parsing and processing has been done.  The code reference is not
 expected to throw any exception.
 
@@ -80,18 +83,18 @@ Examples:
   open my $fh, '>', 'path/to/output.html' or die $!;
   binmode $fh, ':utf8';
   my $input_f = file ('path/to/input.html.tm');
-  Temma->process_html ($input_f, $fh, sub {
+  Temma->process_html ($input_f, {}, $fh, sub {
     $cv->send;
   });
 
-=item Temma->process_html_fragment ($input => $fh, $cb)
+=item Temma->process_html_fragment ($input, $args => $fh, $cb)
 
 Parse the input as Temma template source document for an HTML fragment
 and write the result document to the file handle.
 
 For arguments, see description for the C<process_html> method.
 
-=item Temma->process_plain_text ($input => $fh, $cb)
+=item Temma->process_plain_text ($input, $args => $fh, $cb)
 
 Parse the input as Temma template source document for a plain text
 document and write the result document to the file handle.

@@ -36,7 +36,7 @@ test {
   my $output = '';
   my $fh = bless \$output, 'test::fh';
 
-  Temma->process_html ($input => $fh, sub {
+  Temma->process_html ($input, {} => $fh, sub {
     test {
       is $output, qq{<!DOCTYPE html><html><head><link></head><body>123\x{4e00}&lt; &amp;</body></html>};
       done $c;
@@ -52,7 +52,7 @@ test {
   my $fh = bless \$output, 'test::fh';
   my $f = create_file $input;
 
-  Temma->process_html ($f => $fh, sub {
+  Temma->process_html ($f, {} => $fh, sub {
     test {
       is $output, qq{<!DOCTYPE html><html><head><link></head><body>123\x{4e00}&lt;&amp;</body></html>};
       done $c;
@@ -67,7 +67,7 @@ test {
   my $output = '';
   my $fh = bless \$output, 'test::fh';
 
-  Temma->process_html_fragment ($input => $fh, sub {
+  Temma->process_html_fragment ($input, {} => $fh, sub {
     test {
       is $output, qq{123\x{4e00}&lt;&amp;};
       done $c;
@@ -83,7 +83,7 @@ test {
   my $fh = bless \$output, 'test::fh';
   my $f = create_file $input;
 
-  Temma->process_html_fragment ($f => $fh, sub {
+  Temma->process_html_fragment ($f, {} => $fh, sub {
     test {
       is $output, qq{123\x{4e00}&lt;&amp;};
       done $c;
@@ -98,7 +98,7 @@ test {
   my $output = '';
   my $fh = bless \$output, 'test::fh';
 
-  Temma->process_plain_text ($input => $fh, sub {
+  Temma->process_plain_text ($input, {} => $fh, sub {
     test {
       is $output, qq{123\x{4e00}<&};
       done $c;
@@ -114,7 +114,7 @@ test {
   my $fh = bless \$output, 'test::fh';
   my $f = create_file $input;
 
-  Temma->process_plain_text ($f => $fh, sub {
+  Temma->process_plain_text ($f, {} => $fh, sub {
     test {
       is $output, qq{123\x{4e00}<&};
       done $c;
