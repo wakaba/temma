@@ -1246,9 +1246,7 @@ sub eval_attr_value ($$$;%) {
   my $get_node_location; $get_node_location = sub {
     my $node = $_[0] or return '';
     return '' unless $node->node_type == ELEMENT_NODE;
-    my $cached = $NodeLocationCache->{$node};
-    return $cached if defined $cached;
-    return $NodeLocationCache->{$node} = $get_node_location->($node->parent_node) . $node->node_name . '>';
+    return $NodeLocationCache->{$node} ||= $get_node_location->($node->parent_node) . $node->node_name . '>';
   }; # $get_node_location
   my $location = $get_node_location->($node->parent_node) . $node->node_name . '[' . $name . ']';
   my $f = $node->owner_document->get_user_data ('manakai_source_f');
