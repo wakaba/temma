@@ -1227,6 +1227,8 @@ sub _before_non_space ($$;%) {
   $process->{node_info}->{has_non_space} = 1 unless $args{transparent};
 } # _before_non_space
 
+our $NodeLocationCache = {};
+
 sub eval_attr_value ($$$;%) {
   my ($self, $node, $name, %args) = @_;
   
@@ -1241,13 +1243,14 @@ sub eval_attr_value ($$$;%) {
     return undef;
   };
 
-  my $location = $node->node_name . '[' . $name . ']';
-  my $parent = $node->parent_node;
-  while ($parent) {
-    $location = $parent->node_name . '>' . $location
-        if $parent->node_type == ELEMENT_NODE;
-    $parent = $parent->parent_node;
-  }
+  my $get_node_location; $get_node_location = sub {
+    my $node = $_[0] or return '';
+    return '' unless $node->node_type == ELEMENT_NODE;
+    my $cached = $NodeLocationCache->{$node};
+    return $cached if defined $cached;
+    return $NodeLocationCache->{$node} = $get_node_location->($node->parent_node) . $node->node_name . '>';
+  }; # $get_node_location
+  my $location = $get_node_location->($node->parent_node) . $node->node_name . '[' . $name . ']';
   my $f = $node->owner_document->get_user_data ('manakai_source_f');
   my $line = $attr_node->get_user_data ('manakai_source_line')
       || $node->get_user_data ('manakai_source_line');
