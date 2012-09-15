@@ -37,7 +37,7 @@ deps: local-submodules pmb-install
 PROVE = prove
 PERL_ENV = PATH="$(abspath ./local/perl-$(PERL_VERSION)/pm/bin):$(PERL_PATH):$(PATH)" PERL5LIB="$(shell cat config/perl/libs.txt)"
 
-test: test-deps
+test: test-deps test-main
 
 test-deps: deps
 
