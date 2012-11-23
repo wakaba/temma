@@ -89,6 +89,7 @@ sub process_document ($$$;%) {
   my ($self, $doc => $fh, %args) = @_;
 
   $self->{processes} = [];
+  $self->{location_cache} = {};
   $self->{args} = $args{args} || {};
   $self->{doc} = $doc; ## Hold ref to Document to not destory until done
   push @{$self->{processes}},
@@ -1244,13 +1245,24 @@ sub eval_attr_value ($$$;%) {
     return undef;
   };
 
-  my $location = $node->node_name . '[' . $name . ']';
-  my $parent = $node->parent_node;
+  my $parent = $node;
+  my $locations = $self->{location_cache};
+  my @descendant;
   while ($parent) {
-    $location = $parent->node_name . '>' . $location
-        if $parent->node_type == ELEMENT_NODE;
-    $parent = $parent->parent_node;
+    if ($locations->{$parent}) {
+      unshift @{$locations->{$_}}, @{$locations->{$parent}} for @descendant;
+      last;
+    } else {
+      if ($parent->node_type == ELEMENT_NODE) {
+        my $nn = $parent->node_name;
+        unshift @{$locations->{$_}}, $nn for @descendant;
+        $locations->{$parent} = [$nn];
+        push @descendant, $parent;
+      }
+      $parent = $parent->parent_node;
+    }
   }
+  my $location = (join '>', @{$locations->{$node}}) . '[' . $name . ']';
   my $line = $attr_node->get_user_data ('manakai_source_line')
       || $node->get_user_data ('manakai_source_line');
   my $column = $attr_node->get_user_data ('manakai_source_column')
