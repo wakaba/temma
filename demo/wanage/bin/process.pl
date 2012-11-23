@@ -24,12 +24,21 @@ use Temma;
 {
   package App::Web::Printer;
   
-  sub new_from_http ($) {
-    return bless {http => $_[1]}, $_[0];
+  sub new_from_http ($$) {
+    return bless {http => $_[1], s => []}, $_[0];
   } # new_from_http
   
-  sub print ($) {
-    $_[0]->{http}->send_response_body_as_text ($_[1]);
+  sub print ($$) {
+    if (1) {
+      if (length $_[1]) {
+        push @{$_[0]->{s}}, $_[1];
+      } else {
+        $_[0]->{http}->send_response_body_as_text (join '', @{$_[0]->{s}});
+        $_[0]->{s} = [];
+      }
+    } else {
+      $_[0]->{http}->send_response_body_as_text ($_[1]);
+    }
   } # print
 }
 
