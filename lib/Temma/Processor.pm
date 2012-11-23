@@ -249,7 +249,9 @@ sub __process ($$) {
           }
         }
 
-        if ($process->{node_info}->{rawtext}) {
+        if (not length $data) {
+          #
+        } elsif ($process->{node_info}->{rawtext}) {
           ${$process->{node_info}->{rawtext_value}} .= $data;
         } elsif ($process->{node_info}->{plaintext}) {
           $fh->print ($data);
@@ -1064,6 +1066,7 @@ sub __process ($$) {
                               node_info => $process->{node_info});
     } elsif ($process->{type} eq 'end') {
       next if $self->_close_start_tag ($process, $fh);
+      $fh->print ('');
       if ($process->{ondone}) {
         $process->{ondone}->($self);
       }
@@ -1185,7 +1188,7 @@ sub _print_attrs ($$$$) {
       push @attr, ' ' . $attr_name . '="' . (htescape $value) . '"';
     }
   }
-  $fh->print (join '', @attr);
+  $fh->print (join '', @attr) if @attr;
 } # _print_attrs
 
 sub _close_start_tag ($$$) {
