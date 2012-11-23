@@ -101,8 +101,9 @@ test {
   my $f2 = $doc->get_user_data ('manakai_source_f');
   isa_ok $f2, 'Path::Class::File';
   is $f2->stringify, $f->stringify;
+  is $doc->get_user_data ('manakai_source_file_name'), $f2->stringify;
   done $c;
-} name => 'parse_f', n => 3;
+} name => 'parse_f', n => 4;
 
 run_tests;
 

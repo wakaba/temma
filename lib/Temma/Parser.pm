@@ -74,6 +74,7 @@ sub parse_f ($$$;$) {
       (Encode::decode ('utf-8', scalar $f->slurp), # or die
        $doc, $onerror);
   $doc->set_user_data (manakai_source_f => $f);
+  $doc->set_user_data (manakai_source_file_name => $f->stringify);
   return $doc;
 } # parse_f
 

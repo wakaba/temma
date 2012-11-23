@@ -1248,14 +1248,14 @@ sub eval_attr_value ($$$;%) {
         if $parent->node_type == ELEMENT_NODE;
     $parent = $parent->parent_node;
   }
-  my $f = $node->owner_document->get_user_data ('manakai_source_f');
   my $line = $attr_node->get_user_data ('manakai_source_line')
       || $node->get_user_data ('manakai_source_line');
   my $column = $attr_node->get_user_data ('manakai_source_column')
       || $node->get_user_data ('manakai_source_column');
   if (defined $line and defined $column) {
+    my $fn = $node->owner_document->get_user_data ('manakai_source_file_name');
     $location .= sprintf ' (at %sline %d column %d)',
-        $f ? $f . ' ' : '', $line || 0, $column || 0;
+        defined $fn ? $fn . ' ' : '', $line || 0, $column || 0;
   }
   $location =~ s/[\x00-\x1F\x22]+/ /g;
   my $value = qq<local \$_;\n#line 1 "$location"\n> . $attr_node->value . q<;>;
