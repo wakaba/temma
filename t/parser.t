@@ -3,6 +3,7 @@ use warnings;
 use Path::Class;
 use lib file (__FILE__)->dir->parent->subdir ('lib')->stringify;
 use lib glob file (__FILE__)->dir->parent->subdir ('modules', '*', 'lib')->stringify;
+use lib glob file (__FILE__)->dir->parent->subdir ('t_deps', 'modules', '*', 'lib')->stringify;
 use Test::More;
 use Test::Differences;
 use Test::HTCT::Parser;

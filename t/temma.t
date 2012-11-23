@@ -8,10 +8,11 @@ BEGIN {
   }
 }
 use warnings;
+use Path::Class;
+use lib glob file (__FILE__)->dir->parent->subdir ('t_deps', 'modules', '*', 'lib')->stringify;
 use Test::X1;
 use Test::More;
 use Temma;
-use Path::Class;
 use File::Temp qw(tempfile);
 
 {
