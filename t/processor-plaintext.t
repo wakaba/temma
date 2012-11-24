@@ -84,6 +84,7 @@ test {
         $self->onerror->(@_, f => $f);
       });
       $doc->set_user_data (manakai_source_f => $f);
+      $doc->set_user_data (manakai_source_file_name => $f->stringify);
   
       $args{onparsed}->($doc);
     }; # process_include
@@ -94,6 +95,7 @@ test {
         unless ($data->[1]->[-1] || '') eq 'html';
     $parser->parse_char_string ($data->[0] => $doc, $onerror);
     $doc->set_user_data (manakai_source_f => file ($initial_file_name));
+    $doc->set_user_data (manakai_source_file_name => $initial_file_name);
 
     my $output = '';
     open my $fh, '>', \$output;
