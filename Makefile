@@ -22,7 +22,7 @@ pmbp-install: pmbp-upgrade
 
 PROVE = ./prove
 
-test: test-deps
+test: test-deps test-main
 
 test-deps: deps
 
