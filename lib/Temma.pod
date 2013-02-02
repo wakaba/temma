@@ -187,8 +187,32 @@ until the DOM tree is completely constructed by the parser.
 =head1 DEPENDENCY
 
 Temma requires Perl 5.8 or later.  In addition, it is built on top of
-manakai, which requires perl-charclass modules.  They are registered
-as submodules of the Git repository.
+following packages, which are registered as submodules of the Temma
+repository:
+
+=over 4
+
+=item charclass
+
+<https://github.com/wakaba/perl-charclass>
+
+=item web-encodings
+
+<https://github.com/manakai/perl-web-encodings>
+
+=item web-dom
+
+<https://github.com/manakai/perl-web-dom>
+
+=item web-markup
+
+<https://github.com/manakai/perl-web-markup>
+
+=item web-url
+
+<https://github.com/manakai/perl-web-url>
+
+=back
 
 =head1 DEVELOPMENT
 
@@ -200,11 +224,11 @@ Tests are run at Temma CI <http://travis-ci.org/wakaba/temma>.
 
 =head1 AUTHOR
 
-Wakaba <w@suika.fam.cx>.
+Wakaba <wakaba@suikawiki.org>.
 
 =head1 LICENSE
 
-Copyright 2012 Wakaba <w@suika.fam.cx>.
+Copyright 2012-2013 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
