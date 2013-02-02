@@ -10,8 +10,8 @@ use Test::Differences;
 use Test::HTCT::Parser;
 use Temma::Parser;
 use Temma::Processor;
-use Message::DOM::DOMImplementation;
-use Whatpm::HTML::Dumper;
+use Web::DOM::Implementation;
+use Web::HTML::Dumper;
 use Temma::Defs;
 use Test::X1;
 use Encode;
@@ -36,7 +36,7 @@ test {
     <p>After wait (delta = <t:text value=$sleep> seconds)
   };
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
 
   my $parser = Temma::Parser->new;
@@ -57,7 +57,7 @@ test {
 
 test {
   my $c = shift;
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
 
   for_each_test $_->stringify, {
     data => {is_prefixed => 1, multiple => 1},
@@ -229,7 +229,7 @@ test {
   my $c = shift;
   my $parser = Temma::Parser->new;
   my $f = $test_data_d->file ('doc-include-1.html.tm');
-  my $doc = Message::DOM::DOMImplementation->new->create_document;
+  my $doc = Web::DOM::Implementation->new->create_document;
   $parser->parse_f ($f => $doc);
 
   my $output = '';
@@ -248,7 +248,7 @@ test {
   my $c = shift;
   my $parser = Temma::Parser->new;
   my $f = $test_data_d->file ('doc-include-3.html.tm');
-  my $doc = Message::DOM::DOMImplementation->new->create_document;
+  my $doc = Web::DOM::Implementation->new->create_document;
   $parser->parse_f ($f => $doc);
 
   my $output = '';
@@ -275,7 +275,7 @@ test {
     <p><t:text value=$hoge>
   };
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
 
   my $parser = Temma::Parser->new;
@@ -306,7 +306,7 @@ test {
     </t:if>
   };
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
 
   my $parser = Temma::Parser->new;
@@ -332,7 +332,7 @@ test {
     <p><t:text value="$hoge || 2">
   };
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
 
   my $parser = Temma::Parser->new;
@@ -354,9 +354,9 @@ test {
 test {
   my $c = shift;
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
-  $doc->strict_error_checking (0);
+  $doc->dom_config->{manakai_strict_document_children} = -0;
   $doc->append_child ($doc->create_element_ns (HTML_NS, 'hoge'));
   $doc->append_child ($doc->create_element_ns (HTML_NS, 'fuga'));
 
@@ -374,9 +374,9 @@ test {
 test {
   my $c = shift;
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
-  $doc->strict_error_checking (0);
+  $doc->dom_config->{manakai_strict_document_children} = -0;
   $doc->append_child ($doc->create_element_ns (HTML_NS, 'hoge'));
   $doc->manakai_append_text ("ab c");
   $doc->append_child ($doc->create_element_ns (HTML_NS, 'fuga'));
@@ -396,11 +396,11 @@ test {
 test {
   my $c = shift;
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
   $doc->manakai_is_html (1);
   $doc->inner_html (q{<!DOCTYPE html><link><meta><p>abc<p>xyz</P>foo});
-  $doc->strict_error_checking (0);
+  $doc->dom_config->{manakai_strict_document_children} = -0;
   $doc->append_child ($doc->create_element_ns (HTML_NS, 'hoge'));
 
   my $pro = Temma::Processor->new;
@@ -417,7 +417,7 @@ test {
 test {
   my $c = shift;
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
   $doc->strict_error_checking (0);
   $doc->append_child ($doc->create_element_ns (HTML_NS, 'hoge'));
@@ -436,7 +436,7 @@ test {
 test {
   my $c = shift;
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
   $doc->manakai_is_html (1);
   $doc->inner_html (q{<!DOCTYPE html><link><meta><p>abc<p>xyz</P>foo});
@@ -459,7 +459,7 @@ test {
 test {
   my $c = shift;
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
   $doc->manakai_is_html (1);
   $doc->inner_html (q{<!DOCTYPE html><body>  <p>abc<p>xyz</P>foo   });
@@ -478,7 +478,7 @@ test {
 test {
   my $c = shift;
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
   $doc->manakai_is_html (1);
   $doc->inner_html (q{<!DOCTYPE html><body>  <p>abc<p>xyz</P>foo   });
@@ -498,7 +498,7 @@ test {
 test {
   my $c = shift;
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
   $doc->manakai_is_html (1);
   $doc->inner_html (q{<!DOCTYPE html><body>  <p>abc<p>xyz</P>foo   });
@@ -518,7 +518,7 @@ test {
 test {
   my $c = shift;
 
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
   my $doc = $dom->create_document;
   $doc->manakai_is_html (1);
   $doc->inner_html (q{<!DOCTYPE html><body>ax});

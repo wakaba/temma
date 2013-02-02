@@ -8,24 +8,24 @@ use Test::More;
 use Test::Differences;
 use Test::HTCT::Parser;
 use Temma::Parser;
-use Message::DOM::DOMImplementation;
-use Whatpm::HTML::Dumper;
+use Web::DOM::Implementation;
+use Web::HTML::Dumper;
 use Test::X1;
 
-$Whatpm::HTML::Dumper::NamespaceMapping
+$Web::HTML::Dumper::NamespaceMapping
     ->{q<http://suika.fam.cx/www/markup/temma>} = 'temma';
-$Whatpm::HTML::Dumper::NamespaceMapping
+$Web::HTML::Dumper::NamespaceMapping
     ->{q<http://suika.fam.cx/www/markup/temma/macro>} = 'temmacro';
-$Whatpm::HTML::Dumper::NamespaceMapping
+$Web::HTML::Dumper::NamespaceMapping
     ->{q<http://suika.fam.cx/www/markup/temma/msg>} = 'temsgid';
-$Whatpm::HTML::Dumper::NamespaceMapping
+$Web::HTML::Dumper::NamespaceMapping
     ->{q<http://suika.fam.cx/www/markup/temma/perl>} = 'templ';
 
 my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('parsing');
 
 test {
   my $c = shift;
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
 
   for_each_test $_->stringify, {
     data => {is_prefixed => 1},
@@ -86,11 +86,11 @@ test {
   my $c = shift;
   my $parser = Temma::Parser->new;
   my $f = $test_data_d->file ('doc-1.html.tm');
-  my $doc = Message::DOM::DOMImplementation->new->create_document;
+  my $doc = Web::DOM::Implementation->new->create_document;
   $parser->parse_f ($f => $doc);
   is $doc->inner_html, q{<!DOCTYPE html><html>
 
-  <head><link href="/foo/bar.css" rel="stylesheet">
+  <head><link rel="stylesheet" href="/foo/bar.css">
   <title t:parse=""><t:text value=" foo () "></t:text></title>
   <t:macro name="text">
     <t:text value="bar()"></t:text>

@@ -20,14 +20,14 @@ aaa
 <!DOCTYPE html><html><body>abcd</body></html>
 
 #data
-<!-- foo bar --><p>abc<!-- ddd --> xxx</p><!-- xxx -->
+<!-- foo bar --><p>abc<!-- ddd --> xxyx</p><!-- xxyx -->
 #output
-<!DOCTYPE html><html><body><p>abc xxx</p></body></html>
+<!DOCTYPE html><html><body><p>abc xxyx</p></body></html>
 
 #data
 <FoO bAr=xYz aaa><img src="">abc</foo>
 #output
-<!DOCTYPE html><html><body><foo aaa="" bar="xYz"><img src="">abc</foo></body></html>
+<!DOCTYPE html><html><body><foo bar="xYz" aaa=""><img src="">abc</foo></body></html>
 
 #data
 <svg><img/>hoge</svg>

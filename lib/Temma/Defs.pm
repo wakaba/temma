@@ -2,8 +2,8 @@ package Temma::Defs;
 use strict;
 use warnings;
 our $VERSION = '1.0';
-use Whatpm::HTML::Defs;
-use Whatpm::HTML::ParserData;
+use Web::HTML::Defs;
+use Web::HTML::ParserData;
 use Exporter::Lite;
 
 our @EXPORT = qw(
@@ -11,12 +11,12 @@ our @EXPORT = qw(
   TEMMA_NS TEMMA_MACRO_NS TEMMA_MSGID_NS TEMMA_PERL_NS
 );
 
-sub HTML_NS (); *HTML_NS = \&Whatpm::HTML::ParserData::HTML_NS;
-sub SVG_NS (); *SVG_NS = \&Whatpm::HTML::ParserData::SVG_NS;
-sub MML_NS (); *MML_NS = \&Whatpm::HTML::ParserData::MML_NS;
-sub XML_NS (); *XML_NS = \&Whatpm::HTML::ParserData::XML_NS;
-sub XMLNS_NS (); *XMLNS_NS = \&Whatpm::HTML::ParserData::XMLNS_NS;
-sub XLINK_NS (); *XLINK_NS = \&Whatpm::HTML::ParserData::XLINK_NS;
+sub HTML_NS (); *HTML_NS = \&Web::HTML::ParserData::HTML_NS;
+sub SVG_NS (); *SVG_NS = \&Web::HTML::ParserData::SVG_NS;
+sub MML_NS (); *MML_NS = \&Web::HTML::ParserData::MML_NS;
+sub XML_NS (); *XML_NS = \&Web::HTML::ParserData::XML_NS;
+sub XMLNS_NS (); *XMLNS_NS = \&Web::HTML::ParserData::XMLNS_NS;
+sub XLINK_NS (); *XLINK_NS = \&Web::HTML::ParserData::XLINK_NS;
 sub TEMMA_NS () { q<http://suika.fam.cx/www/markup/temma> }
 sub TEMMA_MACRO_NS () { q<http://suika.fam.cx/www/markup/temma/macro> }
 sub TEMMA_MSGID_NS () { q<http://suika.fam.cx/www/markup/temma/msg> }

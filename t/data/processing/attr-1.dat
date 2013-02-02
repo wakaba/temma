@@ -133,7 +133,7 @@ aaaa
 #data
 <p XML:lang=ja lang=en>hoge
 #output
-<!DOCTYPE html><html><body><p lang="en" xml:lang="ja">hoge</p></body></html>
+<!DOCTYPE html><html><body><p xml:lang="ja" lang="en">hoge</p></body></html>
 
 #data
 <p xmlNS=http://hoge>

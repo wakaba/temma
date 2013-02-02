@@ -10,8 +10,8 @@ use Test::Differences;
 use Test::HTCT::Parser;
 use Temma::Parser;
 use Temma::Processor;
-use Message::DOM::DOMImplementation;
-use Whatpm::HTML::Dumper;
+use Web::DOM::Implementation;
+use Web::HTML::Dumper;
 use Temma::Defs;
 use Test::X1;
 use Encode;
@@ -20,7 +20,7 @@ my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('processing');
 
 test {
   my $c = shift;
-  my $dom = Message::DOM::DOMImplementation->new;
+  my $dom = Web::DOM::Implementation->new;
 
   for_each_test $_->stringify, {
     data => {is_prefixed => 1, multiple => 1},

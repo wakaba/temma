@@ -37,7 +37,7 @@ For list of error types, see
 =item $parser->parse_char_string ($text => $doc)
 
 Parse the text string and construct a C<Document> object (i.e. an
-instance of the L<Message::DOM::Document>).
+instance of the L<Web::DOM::Document>).
 
 The first argument must be the source template document, represented
 as a (possibly utf8-flagged) string of characters.
@@ -48,8 +48,7 @@ replaced by the parsed document's child nodes.
 =item $parser->parse_f ($f => $doc)
 
 Parse the content of the file, decoded as UTF-8 text, and construct a
-C<Document> object (i.e. an instance of the
-L<Message::DOM::Document>).
+C<Document> object (i.e. an instance of the L<Web::DOM::Document>).
 
 The first argument must be the C<Path::Class::File> object for the
 file.
@@ -65,11 +64,11 @@ L<Temma>, L<Temma::Language>.
 
 =head1 AUTHOR
 
-Wakaba <w@suika.fam.cx>.
+Wakaba <wakaba@suikawiki.org>.
 
 =head1 LICENSE
 
-Copyright 2012 Wakaba <w@suika.fam.cx>.
+Copyright 2012-2013 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

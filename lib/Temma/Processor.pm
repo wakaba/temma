@@ -9,7 +9,7 @@ sub _eval ($) {
 #
 our $VERSION = '1.0';
 use Path::Class;
-use Message::DOM::Node;
+use Web::DOM::Node;
 use Temma::Defs;
 
 sub new ($) {
@@ -297,7 +297,7 @@ sub __process ($$) {
               $ln =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
               $ns = $node->$TemmaContextNode->manakai_get_child_namespace_uri ($ln);
               if ($ns eq SVG_NS) {
-                $ln = $Whatpm::HTML::ParserData::SVGElementNameFixup->{$ln} || $ln;
+                $ln = $Web::HTML::ParserData::SVGElementNameFixup->{$ln} || $ln;
               }
             }
           } elsif ($ln eq 'attr' or $ln eq 'class') {
@@ -311,11 +311,11 @@ sub __process ($$) {
               $attr_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
               my $element_ns = $self->{current_tag}->{ns};
               if ($element_ns eq SVG_NS) {
-                $attr_name = $Whatpm::HTML::ParserData::SVGAttrNameFixup->{$attr_name} || $attr_name;
+                $attr_name = $Web::HTML::ParserData::SVGAttrNameFixup->{$attr_name} || $attr_name;
               } elsif ($element_ns eq MML_NS) {
-                $attr_name = $Whatpm::HTML::ParserData::MathMLAttrNameFixup->{$attr_name} || $attr_name;
+                $attr_name = $Web::HTML::ParserData::MathMLAttrNameFixup->{$attr_name} || $attr_name;
               }
-              ## $Whatpm::HTML::ParserData::ForeignAttrNamespaceFixup
+              ## $Web::HTML::ParserData::ForeignAttrNamespaceFixup
               ## is ignored here as the mapping is no-op for the
               ## purpose of qualified name serialization.
 
@@ -911,7 +911,7 @@ sub __process ($$) {
           $node_info->{lnn} =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
 
           if ($node_info->{ns} eq HTML_NS and
-              $Whatpm::HTML::ParserData::AllVoidElements->{$node_info->{lnn}}) {
+              $Web::HTML::ParserData::AllVoidElements->{$node_info->{lnn}}) {
             unshift @{$self->{processes}}, {type => 'end'};
 
             $self->_print_attrs ($attrs => $fh, $node_info);
@@ -1254,7 +1254,7 @@ sub eval_attr_value ($$$;%) {
       last;
     } else {
       if ($parent->node_type == ELEMENT_NODE) {
-        my $nn = $parent->node_name;
+        my $nn = $parent->manakai_tag_name || $parent->node_name;
         unshift @{$locations->{$_}}, $nn for @descendant;
         $locations->{$parent} = [$nn];
         push @descendant, $parent;

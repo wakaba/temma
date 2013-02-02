@@ -3,11 +3,11 @@ use strict;
 use warnings;
 no warnings 'utf8';
 our $VERSION = '3.0';
-use Whatpm::HTML::Defs;
-use Whatpm::HTML::InputStream;
-use Whatpm::HTML::Tokenizer;
+use Web::HTML::Defs;
+use Web::HTML::InputStream;
+use Web::HTML::Tokenizer;
 use Temma::Defs;
-push our @ISA, qw(Whatpm::HTML::Tokenizer);
+push our @ISA, qw(Web::HTML::Tokenizer);
 
 my $Actions = [];
 $Actions->[CLOSE_TAG_OPEN_STATE]->[0x003E] = {
@@ -25,7 +25,10 @@ sub parse_char_string ($$$;$$) {
   #my ($self, $string, $document, $onerror, $get_wrapper) = @_;
   my $self = ref $_[0] ? $_[0] : $_[0]->new;
   my $doc = $self->{document} = $_[2];
-  @{$self->{document}->child_nodes} = ();
+  {
+    local $self->{document}->dom_config->{manakai_strict_document_children} = 0;
+    $self->{document}->text_content ('');
+  }
 
   ## Confidence: irrelevant.
   $self->{confident} = 1 unless exists $self->{confident};
@@ -340,22 +343,22 @@ sub _construct_tree ($) {
       } elsif ($local_name eq 'svg') {
         $ns = SVG_NS;
         $im = IM_SVG;
-        $attr_fixup = $Whatpm::HTML::ParserData::SVGAttrNameFixup;
+        $attr_fixup = $Web::HTML::ParserData::SVGAttrNameFixup;
       } elsif ($local_name eq 'math' or
                $local_name eq 'mglyph' or
                $local_name eq 'malignmark') {
         $ns = MML_NS;
         $im = IM_MML;
-        $attr_fixup = $Whatpm::HTML::ParserData::MathMLAttrNameFixup;
+        $attr_fixup = $Web::HTML::ParserData::MathMLAttrNameFixup;
       } else {
         if ($self->{open_elements}->[-1]->[2] == IM_SVG) {
           $ns = SVG_NS;
-          $local_name = $Whatpm::HTML::ParserData::SVGElementNameFixup
+          $local_name = $Web::HTML::ParserData::SVGElementNameFixup
               ->{$local_name} || $local_name;
-          $attr_fixup = $Whatpm::HTML::ParserData::SVGAttrNameFixup;
+          $attr_fixup = $Web::HTML::ParserData::SVGAttrNameFixup;
         } elsif ($self->{open_elements}->[-1]->[2] == IM_MML) {
           $ns = MML_NS;
-          $attr_fixup = $Whatpm::HTML::ParserData::MathMLAttrNameFixup;
+          $attr_fixup = $Web::HTML::ParserData::MathMLAttrNameFixup;
         }
       }
 
@@ -369,7 +372,7 @@ sub _construct_tree ($) {
                          keys %{$attrs}) {
         my $attr;
         my $attr_t = $attrs->{$attr_name};
-        my $nsfix = $Whatpm::HTML::ParserData::ForeignAttrNamespaceFixup
+        my $nsfix = $Web::HTML::ParserData::ForeignAttrNamespaceFixup
             ->{$attr_name};
         if ($nsfix) {
           $attr = $self->{document}->create_attribute_ns (@$nsfix);
@@ -396,12 +399,12 @@ sub _construct_tree ($) {
       } else {
         my $orig_im = $im;
         if ($ns eq SVG_NS) {
-          if ($Whatpm::HTML::ParserData::SVGHTMLIntegrationPoints->{$local_name}) {
+          if ($Web::HTML::ParserData::SVGHTMLIntegrationPoints->{$local_name}) {
             $im = IM_HTML;
           }
         } elsif ($ns eq MML_NS) {
-          if ($Whatpm::HTML::ParserData::MathMLTextIntegrationPoints->{$local_name} or
-              $Whatpm::HTML::ParserData::MathMLHTMLIntegrationPoints->{$local_name} or
+          if ($Web::HTML::ParserData::MathMLTextIntegrationPoints->{$local_name} or
+              $Web::HTML::ParserData::MathMLHTMLIntegrationPoints->{$local_name} or
               ($local_name eq 'annotation-xml' and
                $attrs->{encoding} and
                do {
@@ -543,7 +546,7 @@ sub _construct_tree ($) {
 
 =head1 LICENSE
 
-Copyright 2012 Wakaba <w@suika.fam.cx>.
+Copyright 2012-2013 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -2,7 +2,7 @@ package Temma;
 use strict;
 use warnings;
 our $VERSION = '1.0';
-use Message::DOM::DOMImplementation;
+use Web::DOM::Document;
 use Temma::Parser;
 use Temma::Processor;
 
@@ -10,8 +10,7 @@ our $Locale;
 
 sub process_html ($$$$$) {
   #my ($class, $input, $args => $fh, $cb) = @_;
-  my $dom = Message::DOM::DOMImplementation->new;
-  my $doc = $dom->create_document;
+  my $doc = new Web::DOM::Document;
   my $parser = Temma::Parser->new;
   if (UNIVERSAL::isa ($_[1], 'Path::Class::File')) {
     $parser->parse_f ($_[1] => $doc);
@@ -25,8 +24,7 @@ sub process_html ($$$$$) {
 
 sub process_html_fragment ($$$$$) {
   #my ($class, $input, $args => $fh, $cb) = @_;
-  my $dom = Message::DOM::DOMImplementation->new;
-  my $doc = $dom->create_document;
+  my $doc = new Web::DOM::Document;
   my $parser = Temma::Parser->new;
   if (UNIVERSAL::isa ($_[1], 'Path::Class::File')) {
     $parser->parse_f ($_[1] => $doc);
@@ -40,8 +38,7 @@ sub process_html_fragment ($$$$$) {
 
 sub process_plain_text ($$$$$) {
   #my ($class, $input, $args => $fh, $cb) = @_;
-  my $dom = Message::DOM::DOMImplementation->new;
-  my $doc = $dom->create_document;
+  my $doc = new Web::DOM::Document;
   my $parser = Temma::Parser->new;
   if (UNIVERSAL::isa ($_[1], 'Path::Class::File')) {
     $parser->parse_f ($_[1] => $doc);
@@ -57,7 +54,7 @@ sub process_plain_text ($$$$$) {
 
 =head1 LICENSE
 
-Copyright 2012 Wakaba <w@suika.fam.cx>.
+Copyright 2012-2013 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
