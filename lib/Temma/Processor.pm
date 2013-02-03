@@ -609,7 +609,7 @@ sub __process ($$) {
               ([grep { $_->node_type == ELEMENT_NODE or
                        $_->node_type == TEXT_NODE }
                 @{$def->{node}->child_nodes->to_a}],
-               $process->{node_info}, $def->{sp});
+               $process->{node_info}, $def->{sp}, binds => $def->{binds});
 
             next;
           } elsif ($ln eq 'include') {
@@ -1396,7 +1396,8 @@ sub _process_fields ($$$$) {
     my $sp = {preserve => 'preserve', trim => 'trim'}->{$_sp}
         || {preserve => 'preserve', trim => 'trim'}->{$sp}
         || ($process->{node_info}->{preserve_space} ? 'preserve' : 'trim');
-    $fields->{$name} = {node => $_, sp => $sp};
+    $fields->{$name} = {node => $_, sp => $sp,
+                        binds => $process->{node_info}->{binds}};
   }
   my $has_field = [[{map { $_ => 1 } keys %$fields}], 0];
   

@@ -1,0 +1,39 @@
+#data
+<html>
+<t:my as=$foo x=124>
+<t:include path=hoge>
+  <t:field name=title>
+    hoge<t:text value=$foo>
+  <t:field>
+    fuga<t:text value=$foo>
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html>
+  <head>
+    <title t:parse><t:content name=title></title>
+  <body>
+    <t:content>
+#output
+<!DOCTYPE html><html><head><title>hoge124</title></head><body>fuga124</body></html>
+
+#data
+<html>
+<t:include path=hoge>
+  <t:field name=title>
+    hoge<t:text value=$foo>
+  <t:field>
+    fuga<t:text value=$foo>
+</t:include>
+#data hoge
+<!DOCTYPE html>
+<html>
+  <t:my as=$foo x=124>
+  <head>
+    <title t:parse><t:content name=title></title>
+  <body>
+    <t:content>
+#output
+<!DOCTYPE html><html><head><title>hoge</title></head></html>
+#errors escaped
+4;17;m;temma:perl exception;Global symbol "$foo" requires explicit package name at html>t:include>t:field>t:text[value] (at /index.html.tm line 4 column 17) line 1.\u000A;
