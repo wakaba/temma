@@ -86,7 +86,9 @@ The second argument to these methods must be the handle object to
 which the result document is printed.  The object must have the
 C<print> method, whose argument is written to the underlying file.
 The argument is a character string.  The method might be invoked with
-the empty string to notify buffer-flushing oppotunity.
+the empty string to notify buffer-flushing oppotunity.  The object
+should also have the C<autoflush> method (See I<IO::Handle> for its
+semantics).  They are not expected to throw any exception.
 
 These methods accept following options:
 

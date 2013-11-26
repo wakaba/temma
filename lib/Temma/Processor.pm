@@ -738,10 +738,12 @@ sub __process ($$) {
                 undef $as;
               }
 
-              unless (my $af = $fh->autoflush) {
-                $fh->autoflush (1);
-                $fh->print ('');
-                $fh->autoflush ($af);
+              if ($fh->can ('autoflush')) {
+                unless (my $af = $fh->autoflush) {
+                  $fh->autoflush (1);
+                  $fh->print ('');
+                  $fh->autoflush ($af);
+                }
               }
 
               eval {
