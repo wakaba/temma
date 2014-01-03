@@ -52,11 +52,10 @@
 #document
 | <!DOCTYPE html>
 | <html>
-|   <head>
-|     <command>
 |   <body>
-|     "abc"
 |     <command>
+|       "abc"
+|       <command>
 
 #data
 <bgsound>abc<bgsound>

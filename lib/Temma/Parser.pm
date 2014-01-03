@@ -2,7 +2,7 @@ package Temma::Parser;
 use strict;
 use warnings;
 no warnings 'utf8';
-our $VERSION = '3.0';
+our $VERSION = '4.0';
 use Web::HTML::Defs;
 use Web::HTML::InputStream;
 use Web::HTML::Tokenizer;

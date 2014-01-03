@@ -1,7 +1,7 @@
 package Temma::Defs;
 use strict;
 use warnings;
-our $VERSION = '1.0';
+our $VERSION = '2.0';
 use Web::HTML::Defs;
 use Web::HTML::ParserData;
 use Exporter::Lite;
@@ -33,7 +33,7 @@ my @transparentvoid = qw(
   t:attr t:class t:wait t:call t:my
 );
 my @metavoid = qw(
-  link meta base basefont bgsound command t:content
+  link meta base basefont bgsound t:content
 );
 my @transparentcontent = qw(
   t:if t:for t:try t:include
@@ -44,7 +44,7 @@ my @metacontent = qw(
 );
 my @bodyvoid = qw(
   area br embed img keygen wbr input param source track hr image isindex
-  col t:text t:barehtml t:elsif t:else t:sep t:next t:last t:catch
+  col menuitem t:text t:barehtml t:elsif t:else t:sep t:next t:last t:catch
 );
 
 our $AutoOpen = {
@@ -161,7 +161,7 @@ our $RawContent = {
 our $CloseIfInScope = {
   (map { $_ => {p => 1, body => -1} } qw(
     address article aside blockquote center details dialog dir div dl
-    fieldset figcaption figure footer header hgroup menu nav ol
+    fieldset figcaption figure footer header hgroup main menu nav ol
     section summary ul h1 h2 h3 h4 h5 h6 pre listing form plaintext
     form table hr isindex xmp
   )),
@@ -237,7 +237,7 @@ our $IgnoreFirstNewline = {
 
 =head1 LICENSE
 
-Copyright 2012 Wakaba <w@suika.fam.cx>.
+Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

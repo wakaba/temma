@@ -496,6 +496,20 @@ foo<p>abc<form>xx</form>yy
 |     "yy"
 
 #data
+foo<p>abc<main>xx</main>yy
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "foo"
+|     <p>
+|       "abc"
+|     <main>
+|       "xx"
+|     "yy"
+
+#data
 foo<p>abc<plaintext>xx</plaintext>yy
 #errors
 #document
