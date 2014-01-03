@@ -42,11 +42,14 @@ aa"&lt;&>b'ax&copy;
 #data escaped
 aaa\u4E00\u4E01\uD800
 #errors
+1;6;m;nonchar;U+D800;
 #output escaped
 <!DOCTYPE html><html><body>aaa\u4E00\u4E01\uD800</body></html>
 
 #data escaped
 <foo a="&quot;ab&amp;&apos;&lt;&gt;a\uD800"/>
+#errors
+1;37;m;nonchar;U+D800;
 #output escaped
 <!DOCTYPE html><html><body><foo a="&quot;ab&amp;'&lt;&gt;a\uD800"></foo></body></html>
 
