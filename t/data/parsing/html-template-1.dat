@@ -1,0 +1,154 @@
+#data
+<template>aa</template>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <template>
+|       content
+|         "aa"
+
+#data
+<body><template>aa</template>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <template>
+|       content
+|         "aa"
+
+#data
+<body><template>  <!----><?aa?></template>
+#errors
+1;26;m;pio;;
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <template>
+|       content
+|         "  "
+|         <!--  -->
+|         <!-- ?aa? -->
+
+#data
+<p><template>aa</template>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <template>
+|         content
+|           "aa"
+
+#data
+<template><table><tr><td>aa</table>x</template>bb
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <template>
+|       content
+|         <table>
+|           <tbody>
+|             <tr>
+|               <td>
+|                 "aa"
+|         "x"
+|   <body>
+|     "bb"
+
+#data
+<template></sarcasm></template>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <template>
+|       content
+|         <sarcasm>
+
+#data
+<template><p><!--x--></template>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <template>
+|       content
+|         <p>
+|           <!-- x -->
+
+#data
+<svg><template>aaa</template></svg>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg template>
+|         "aaa"
+
+#data
+<math><template>aaa</template></math>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <math math>
+|       <math template>
+|         "aaa"
+
+#data
+<t:template>aaa</t:template>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temma template>
+|       "aaa"
+
+#data
+<m:template>aaa</m:template>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <temmacro template>
+|       <temma field>
+|         "aaa"
+
+#data
+<msg:template>aaa</msg:template>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <temsgid template>
+|       <temma field>
+|         "aaa"
+
+#data
+<template><title>a<p>aa</title></template>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     <template>
+|       content
+|         <title>
+|           "a<p>aa"

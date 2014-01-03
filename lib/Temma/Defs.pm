@@ -39,7 +39,7 @@ my @transparentcontent = qw(
   t:if t:for t:try t:include
 );
 my @metacontent = qw(
-  title style script noscript
+  title style script noscript template
   t:element t:comment t:macro
 );
 my @bodyvoid = qw(

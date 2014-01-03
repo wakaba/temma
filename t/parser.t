@@ -8,7 +8,7 @@ use Test::More;
 use Test::Differences;
 use Test::HTCT::Parser;
 use Temma::Parser;
-use Web::DOM::Implementation;
+use Web::DOM::Document;
 use Web::HTML::Dumper;
 use Test::X1;
 
@@ -23,70 +23,46 @@ $Web::HTML::Dumper::NamespaceMapping
 
 my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('parsing');
 
-test {
-  my $c = shift;
-  my $dom = Web::DOM::Implementation->new;
-
-  for_each_test $_->stringify, {
+for (glob $test_data_d->file ('*.dat')) {
+  my $file_name = $_;
+  $file_name = $1 if m{([^/]+)$};
+  for_each_test $_, {
     data => {is_prefixed => 1},
     errors => {is_list => 1},
     document => {is_prefixed => 1},
   }, sub {
     my $test = shift;
 
-    my @error;
-    my $parser = Temma::Parser->new;
-    my $onerror = sub {
-      my %opt = @_;
-      push @error, join ';', map { 
-        defined $_ ? $_ : '';
-      } @opt{qw(line column level type value text)};
-    }; # onerror
+    test {
+      my $c = shift;
+      my @error;
+      my $parser = Temma::Parser->new;
+      my $onerror = sub {
+        my %opt = @_;
+        push @error, join ';', map { 
+          defined $_ ? $_ : '';
+        } @opt{qw(line column level type value text)};
+      }; # onerror
 
-    my $doc = $dom->create_document;
+      my $doc = new Web::DOM::Document;
+      $parser->parse_char_string ($test->{data}->[0] => $doc, $onerror);
 
-    $parser->parse_char_string ($test->{data}->[0] => $doc, $onerror);
+      my $actual = dumptree $doc;
+      $actual =~ s/\n$//;
+      eq_or_diff $actual, $test->{document}->[0];
 
-    my $actual = dumptree $doc;
-    $actual =~ s/\n$//;
-    eq_or_diff $actual, $test->{document}->[0];
-
-    eq_or_diff [sort { $a cmp $b } @error],
-        [sort { $a cmp $b } @{$test->{errors}->[0] or []}];
-  } for map { $test_data_d->file ($_) } qw(
-    cdata-1.dat
-    cdata-2.dat
-    rcdata-1.dat
-    end-tag-1.dat
-    html-1.dat
-    html-2.dat
-    html-meta-1.dat
-    html-void-1.dat
-    html-flow-1.dat
-    html-lists-1.dat
-    html-tables-1.dat
-    html-forms-1.dat
-    html-text-1.dat
-    svg-1.dat
-    mml-1.dat
-    temma-attr-1.dat
-    temma-attr-2.dat
-    temma-node-1.dat
-    temma-node-2.dat
-    temma-flow-1.dat
-    temma-inclusion-1.dat
-    temma-inclusion-2.dat
-    temma-macro-1.dat
-    temma-msgid-1.dat
-  );
-  done $c;
-};
+      eq_or_diff [sort { $a cmp $b } @error],
+          [sort { $a cmp $b } @{$test->{errors}->[0] or []}];
+      done $c;
+    } n => 2, name => [$file_name, $test->{data}->[0]];
+  };
+}
 
 test {
   my $c = shift;
   my $parser = Temma::Parser->new;
   my $f = $test_data_d->file ('doc-1.html.tm');
-  my $doc = Web::DOM::Implementation->new->create_document;
+  my $doc = new Web::DOM::Document;
   $parser->parse_f ($f => $doc);
   is $doc->inner_html, q{<!DOCTYPE html><html>
 
@@ -109,7 +85,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2012 Wakaba <w@suika.fam.cx>.
+Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

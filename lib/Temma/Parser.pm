@@ -129,10 +129,10 @@ sub _construct_tree ($) {
         if ($self->{ignore_first_newline}) {
           my $v = $1;
           $v =~ s/^\x0A//;
-          $self->{open_elements}->[-1]->[0]->manakai_append_text ($v)
+          $self->{open_elements}->[-1]->[0]->manakai_append_content ($v)
               if length $v;
         } else {
-          $self->{open_elements}->[-1]->[0]->manakai_append_text ($1);
+          $self->{open_elements}->[-1]->[0]->manakai_append_content ($1);
         }
       }
       delete $self->{ignore_first_newline};
@@ -166,7 +166,7 @@ sub _construct_tree ($) {
                       (TEMMA_NS, ['t', $ln])
                 : $self->{document}->create_element_ns
                       (HTML_NS, [undef, $ln]);
-            $self->{open_elements}->[-1]->[0]->append_child ($el);
+            $self->{open_elements}->[-1]->[0]->manakai_append_content ($el);
             push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
           } else {
             last;
@@ -179,7 +179,7 @@ sub _construct_tree ($) {
         #                       type => 'NULL',
         #                       token => $self->{t});
       }
-      $self->{open_elements}->[-1]->[0]->manakai_append_text
+      $self->{open_elements}->[-1]->[0]->manakai_append_content
           ($self->{t}->{data});
       
       $self->{t} = $self->_get_next_token;
@@ -299,7 +299,7 @@ sub _construct_tree ($) {
                       (TEMMA_NS, ['t', $ln])
                 : $self->{document}->create_element_ns
                       (HTML_NS, [undef, $ln]);
-            $self->{open_elements}->[-1]->[0]->append_child ($el);
+            $self->{open_elements}->[-1]->[0]->manakai_append_content ($el);
             push @{$self->{open_elements}}, [$el, $ao, IM_HTML];
           } else {
             last;
@@ -392,7 +392,7 @@ sub _construct_tree ($) {
         $el->set_attribute_node_ns ($attr);
       } # $attrs
 
-      $self->{open_elements}->[-1]->[0]->append_child ($el);
+      $self->{open_elements}->[-1]->[0]->manakai_append_content ($el);
 
       if ($self->{self_closing}) {
         delete $self->{self_closing};
@@ -459,7 +459,7 @@ sub _construct_tree ($) {
       } elsif ($tag_name eq 'sarcasm') {
         my $sarcasm = $self->{document}->create_element_ns
             (HTML_NS, [undef, 'sarcasm']);
-        $self->{open_elements}->[-1]->[0]->append_child ($sarcasm);
+        $self->{open_elements}->[-1]->[0]->manakai_append_content ($sarcasm);
       } elsif ($self->{open_elements}->[-1]->[1] eq $tag_name) {
         pop @{$self->{open_elements}};
       } elsif ($tag_name =~ /\A(t|m|msg|pl):\z/) {
@@ -522,7 +522,7 @@ sub _construct_tree ($) {
       redo B;
     } elsif ($self->{t}->{type} == COMMENT_TOKEN) {
       my $comment = $self->{document}->create_comment ($self->{t}->{data});
-      $self->{open_elements}->[-1]->[0]->append_child ($comment);
+      $self->{open_elements}->[-1]->[0]->manakai_append_content ($comment);
       
       delete $self->{ignore_first_newline};
       $self->{t} = $self->_get_next_token;
