@@ -26,13 +26,14 @@ Create a new instance of the Temma parser.
 
 =item $code = $parser->onerror
 
-Get or set the error handler.  The default error handler used if no
-error handler is specified is to warn the description of the error.
+Get or set the error handler for the parser.  Any parse error, as well
+as warning and additional processing information, is reported to the
+handler.  See
+<https://github.com/manakai/data-errors/blob/master/doc/onerror.txt>
+for details of error handling.
 
-For more information on error handler, see L<Whatpm::Error>
-<https://github.com/wakaba/manakai/blob/master/lib/Whatpm/Errors.pod>.
-For list of error types, see
-<http://suika.fam.cx/gate/2007/html/error-description#temma>.
+The value should not be set while the parser is running.  If the value
+is changed, the result is undefined.
 
 =item $parser->parse_char_string ($text => $doc)
 
@@ -68,7 +69,7 @@ Wakaba <wakaba@suikawiki.org>.
 
 =head1 LICENSE
 
-Copyright 2012-2013 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

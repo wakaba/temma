@@ -175,7 +175,7 @@ sub _construct_tree ($) {
       }
 
       while ($self->{t}->{data} =~ s/\x00/\x{FFFD}/) {
-        #$self->{parse_error}->(level => $self->{level}->{must},
+        #$self->{parse_error}->(level => 'm',
         #                       type => 'NULL',
         #                       token => $self->{t});
       }
@@ -195,7 +195,7 @@ sub _construct_tree ($) {
             not (@{$self->{open_elements}} == 2 and
                  $self->{open_elements}->[1]->[1] eq 'head' and
                  $tag_name eq 'body')) {
-          $self->{parse_error}->(level => $self->{level}->{must},
+          $self->{parse_error}->(level => 'm',
                                  type => 'start tag not allowed',
                                  text => $tag_name,
                                  token => $self->{t});
@@ -209,7 +209,7 @@ sub _construct_tree ($) {
           $self->{parse_error}->(type => 'start tag not allowed',
                                  text => 'html',
                                  token => $self->{t},
-                                 level => $self->{level}->{must});
+                                 level => 'm');
           delete $self->{self_closing};
           $self->{t} = $self->_get_next_token;
           next B;
@@ -226,7 +226,7 @@ sub _construct_tree ($) {
               $self->{parse_error}->(type => 'temma:html non temma attr',
                                      text => $attr_name,
                                      token => $self->{t},
-                                     level => $self->{level}->{must});
+                                     level => 'm');
               next;
             }
             my $attr = $attr_name =~ s/^(t|m|msg|pl)://
@@ -239,7 +239,7 @@ sub _construct_tree ($) {
               $self->{parse_error}->(type => 'duplicate attribute',
                                      text => $attr->name,
                                      token => $self->{t},
-                                     level => $self->{level}->{must});
+                                     level => 'm');
               next;
             }
             $attr->value ($attr_t->{value});
@@ -251,7 +251,7 @@ sub _construct_tree ($) {
             $self->{parse_error}->(type => 'start tag not allowed',
                                    text => 'html',
                                    token => $self->{t},
-                                   level => $self->{level}->{must});
+                                   level => 'm');
           }
         } # $el
         
@@ -319,7 +319,7 @@ sub _construct_tree ($) {
                   -($i + $diff), $i + $diff => ();
               my @not_closed = grep { not $Temma::Defs::EndTagOptional->{$_->[1]} } @closed;
               if (@not_closed) {
-                $self->{parse_error}->(level => $self->{level}->{must},
+                $self->{parse_error}->(level => 'm',
                                        type => 'not closed',
                                        text => $not_closed[-1]->[1],
                                        token => $self->{t});
@@ -447,7 +447,7 @@ sub _construct_tree ($) {
       if ($tag_name eq '') {
         if ($self->{open_elements}->[-1]->[1] eq 'html' or
             $self->{open_elements}->[-1]->[1] eq 'body') {
-          $self->{parse_error}->(level => $self->{level}->{must},
+          $self->{parse_error}->(level => 'm',
                                  type => 'unmatched end tag',
                                  text => $self->{t}->{tag_name},
                                  token => $self->{t});
@@ -476,7 +476,7 @@ sub _construct_tree ($) {
                 $_->[2] == IM_SVG or $_->[2] == IM_MML
               } reverse @closed;
               if (@closed) {
-                $self->{parse_error}->(level => $self->{level}->{must},
+                $self->{parse_error}->(level => 'm',
                                        type => 'not closed',
                                        text => $closed[-1]->[1],
                                        token => $self->{t});
@@ -485,7 +485,7 @@ sub _construct_tree ($) {
             }
           }
 
-          $self->{parse_error}->(level => $self->{level}->{must},
+          $self->{parse_error}->(level => 'm',
                                  type => 'unmatched end tag',
                                  text => $self->{t}->{tag_name},
                                  token => $self->{t});
@@ -502,7 +502,7 @@ sub _construct_tree ($) {
                 $_->[2] == IM_SVG or $_->[2] == IM_MML
               } reverse @closed;
               if (@closed) {
-                $self->{parse_error}->(level => $self->{level}->{must},
+                $self->{parse_error}->(level => 'm',
                                        type => 'not closed',
                                        text => $closed[-1]->[1],
                                        token => $self->{t});
@@ -511,7 +511,7 @@ sub _construct_tree ($) {
             }
           }
 
-          $self->{parse_error}->(level => $self->{level}->{must},
+          $self->{parse_error}->(level => 'm',
                                  type => 'unmatched end tag',
                                  text => $self->{t}->{tag_name},
                                  token => $self->{t});
@@ -546,7 +546,7 @@ sub _construct_tree ($) {
 
 =head1 LICENSE
 
-Copyright 2012-2013 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
