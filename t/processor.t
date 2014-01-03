@@ -55,147 +55,116 @@ test {
   like $result, qr{^<!DOCTYPE html><html><body><p>Before wait</p>$};
 } n => 2, name => 'process_document ondone';
 
-test {
-  my $c = shift;
+for (glob $test_data_d->file ('*.dat')) {
+  my $file_name = $_;
+  $file_name = $1 if m{([^/]+)$};
+  next if $file_name =~ /plaintext/;
   my $dom = Web::DOM::Implementation->new;
 
-  for_each_test $_->stringify, {
+  for_each_test $_, {
     data => {is_prefixed => 1, multiple => 1},
     errors => {is_list => 1},
     output => {is_prefixed => 1},
   }, sub {
     my $test = shift;
-
-    my $datas = $test->{data} || [];
-    my $data_by_file_name = {};
-    my $initial_file_name;
-    for my $data (@$datas) {
-      my $file_name = $data->[1]->[-1];
-      $file_name = 'index.html.tm' unless defined $file_name;
-      $file_name = '/' . $file_name unless $file_name =~ m{^/};
-      if ($data_by_file_name->{$file_name}) {
-        die "Multiple #data section with file name |$file_name|";
-        next;
-      }
-      $data_by_file_name->{$file_name} = $data;
-      $initial_file_name ||= $file_name;
-    }
-
-    my @error;
-    my $parser = Temma::Parser->new;
-    my $onerror = sub {
-      my %opt = @_;
-      my $node = $opt{node};
-      $opt{f} ||= ($node->owner_document || $node)
-          ->get_user_data ('manakai_source_f') if $node;
-      while ($node) {
-        $opt{line} //= $node->get_user_data ('manakai_source_line');
-        $opt{column} //= $node->get_user_data ('manakai_source_column');
-        last if defined $opt{line} and defined $opt{column};
-        $node = $node->parent_node;
-      }
-      push @error,
-          (($opt{f} && $opt{f} ne $initial_file_name) ? $opt{f} . ';' : '') .
-          join ';', map { 
-            defined $_ ? $_ : '';
-          } @opt{qw(line column level type value text)};
-    }; # onerror
-
-    local *Temma::Processor::process_include = sub ($$%) {
-      my ($self, $f, %args) = @_;
-
-      my $file_name = $f->stringify;
-      $file_name =~ s{/[^/]+/\.\.(?=/|$)}{}g;
-      $f = file ($file_name);
-
-      my $data = $data_by_file_name->{$file_name};
-      unless ($data) {
-        $args{onerror}->("File |$file_name| not found");
-        return;
+    test {
+      my $c = shift;
+      my $datas = $test->{data} || [];
+      my $data_by_file_name = {};
+      my $initial_file_name;
+      for my $data (@$datas) {
+        my $file_name = $data->[1]->[-1];
+        $file_name = 'index.html.tm' unless defined $file_name;
+        $file_name = '/' . $file_name unless $file_name =~ m{^/};
+        if ($data_by_file_name->{$file_name}) {
+          die "Multiple #data section with file name |$file_name|";
+          next;
+        }
+        $data_by_file_name->{$file_name} = $data;
+        $initial_file_name ||= $file_name;
       }
 
+      my @error;
       my $parser = Temma::Parser->new;
-      my $doc = $args{dom}->create_document;
-      $parser->{initial_state} = $args{parse_context};
-      $parser->parse_char_string ($data->[0] => $doc, sub {
-        $self->onerror->(@_, f => $f);
-      });
-      $doc->set_user_data (manakai_source_f => $f);
-      $doc->set_user_data (manakai_source_file_name => $f->stringify);
-  
-      $args{onparsed}->($doc);
-    }; # process_include
+      my $onerror = sub {
+        my %opt = @_;
+        my $node = $opt{node};
+        $opt{f} ||= ($node->owner_document || $node)
+            ->get_user_data ('manakai_source_f') if $node;
+        while ($node) {
+          $opt{line} //= $node->get_user_data ('manakai_source_line');
+          $opt{column} //= $node->get_user_data ('manakai_source_column');
+          last if defined $opt{line} and defined $opt{column};
+          $node = $node->parent_node;
+        }
+        push @error,
+            (($opt{f} && $opt{f} ne $initial_file_name) ? $opt{f} . ';' : '') .
+            join ';', map { 
+              defined $_ ? $_ : '';
+            } @opt{qw(line column level type value text)};
+      }; # onerror
 
-    my $doc = $dom->create_document;
-    my $data = $data_by_file_name->{$initial_file_name};
-    $parser->parse_char_string ($data->[0] => $doc, $onerror);
-    $doc->set_user_data (manakai_source_f => file ($initial_file_name));
-    $doc->set_user_data (manakai_source_file_name => $initial_file_name);
+      local *Temma::Processor::process_include = sub ($$%) {
+        my ($self, $f, %args) = @_;
 
-    my $output = '';
-    open my $fh, '>', \$output;
-    binmode $fh, ':utf8';
+        my $file_name = $f->stringify;
+        $file_name =~ s{/[^/]+/\.\.(?=/|$)}{}g;
+        $f = file ($file_name);
 
-    my $processor = Temma::Processor->new;
-    $processor->onerror ($onerror);
+        my $data = $data_by_file_name->{$file_name};
+        unless ($data) {
+          $args{onerror}->("File |$file_name| not found");
+          return;
+        }
 
-    if ($test->{locale}) {
-      my $package = 'test::Locale::' . int rand 1000000;
-      eval ("package $package;\n" . $test->{locale}->[0] .
-            "\nsub new { return bless {}, \$_[0] } 1;") or die $@;
-      $processor->locale ($package->new);
-    }
+        my $parser = Temma::Parser->new;
+        my $doc = $args{dom}->create_document;
+        $parser->{initial_state} = $args{parse_context};
+        $parser->parse_char_string ($data->[0] => $doc, sub {
+          $self->onerror->(@_, f => $f);
+        });
+        $doc->set_user_data (manakai_source_f => $f);
+        $doc->set_user_data (manakai_source_file_name => $f->stringify);
 
-    $processor->process_document ($doc => $fh);
+        $args{onparsed}->($doc);
+      }; # process_include
 
-    while (@Test::Temma::CV::Instance) {
-      my $cv = shift @Test::Temma::CV::Instance;
-      $cv->send;
-    }
+      my $doc = $dom->create_document;
+      my $data = $data_by_file_name->{$initial_file_name};
+      $parser->parse_char_string ($data->[0] => $doc, $onerror);
+      $doc->set_user_data (manakai_source_f => file ($initial_file_name));
+      $doc->set_user_data (manakai_source_file_name => $initial_file_name);
 
-    $output = decode 'utf8', $output;
-    eq_or_diff $output, $test->{output}->[0];
+      my $output = '';
+      open my $fh, '>', \$output;
+      binmode $fh, ':utf8';
 
-    eq_or_diff [sort { $a cmp $b } @error],
-        [sort { $a cmp $b } @{$test->{errors}->[0] or []}];
-  } for map { $test_data_d->file ($_) } qw(
-    basic-1.dat
-    basic-2.dat
-    element-1.dat
-    element-2.dat
-    attr-1.dat
-    attr-2.dat
-    attr-3.dat
-    comment-1.dat
-    text-1.dat
-    space-1.dat
-    eval-1.dat
-    wait-1.dat
-    wait-2.dat
-    if-1.dat
-    call-1.dat
-    for-1.dat
-    for-2.dat
-    for-3.dat
-    try-1.dat
-    try-2.dat
-    try-3.dat
-    try-4.dat
-    my-1.dat
-    barehtml-1.dat
-    macro-1.dat
-    macro-2.dat
-    macro-3.dat
-    include-1.dat
-    include-2.dat
-    include-3.dat
-    include-4.dat
-    include-5.dat
-    include-6.dat
-    msgid-1.dat
-  );
-  $c->done;
-};
+      my $processor = Temma::Processor->new;
+      $processor->onerror ($onerror);
+
+      if ($test->{locale}) {
+        my $package = 'test::Locale::' . int rand 1000000;
+        eval ("package $package;\n" . $test->{locale}->[0] .
+              "\nsub new { return bless {}, \$_[0] } 1;") or die $@;
+        $processor->locale ($package->new);
+      }
+
+      $processor->process_document ($doc => $fh);
+
+      while (@Test::Temma::CV::Instance) {
+        my $cv = shift @Test::Temma::CV::Instance;
+        $cv->send;
+      }
+
+      $output = decode 'utf8', $output;
+      eq_or_diff $output, $test->{output}->[0];
+
+      eq_or_diff [sort { $a cmp $b } @error],
+          [sort { $a cmp $b } @{$test->{errors}->[0] or []}];
+      done $c;
+    } n => 2, name => ['process_document', $file_name, $test->{data}->[0]->[0]];
+  };
+}
 
 {
   package Test::Temma::CV;
@@ -545,7 +514,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2012 Wakaba <w@suika.fam.cx>.
+Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
