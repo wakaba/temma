@@ -1,0 +1,6 @@
+#data
+axya<template>aaa<p>bbbb</template><p><br></p>a<br>a
+#errors
+1;5;m;temma:child not allowed;;
+#output
+axyaaa

@@ -7,7 +7,7 @@ sub _eval ($) {
   return eval ('local @_;' . "\n" . $_[0]);
 } # _eval
 #
-our $VERSION = '1.0';
+our $VERSION = '2.0';
 use Path::Class;
 use Web::DOM::Node;
 use Temma::Defs;
@@ -17,7 +17,7 @@ sub new ($) {
     onerror => sub {
       my %args = @_;
       my $msg = $args{type};
-      $msg .= ' (' . $args{value} . ')' if defined $args{value};
+      $msg .= ' - "' . $args{text} . '"' if defined $args{text};
       if ($args{node}) {
         $msg .= ' at node ' . $args{node}->manakai_local_name;
         my $node = $args{node};
@@ -31,6 +31,9 @@ sub new ($) {
           }
           $node = $node->parent_node;
         }
+        $msg .= ' (' . $args{value} . ')' if defined $args{value};
+      } else {
+        $msg .= ' (' . $args{value} . ')' if defined $args{value};
       }
       warn "$msg\n";
     },
@@ -955,7 +958,10 @@ sub __process ($$) {
                 map { {type => 'node', node => $_, node_info => $node_info} } 
                 grep { $_->node_type == ELEMENT_NODE or
                        $_->node_type == TEXT_NODE }
-                @{$node_info->{node}->child_nodes->to_a};
+                @{((($node_info->{node}->namespace_uri || '') eq HTML_NS and
+                    $node_info->{node}->local_name eq 'template')
+                       ? $node_info->{node}->content : $node_info->{node})
+                      ->child_nodes->to_a};
           }
         } else {
           if (defined $ln) {
@@ -1504,7 +1510,7 @@ sub _print_msgid ($$$$$;%) {
 
 =head1 LICENSE
 
-Copyright 2012 Wakaba <w@suika.fam.cx>.
+Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

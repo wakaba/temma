@@ -1,0 +1,39 @@
+#data
+<template>aaa</template>
+#output
+<!DOCTYPE html><html><head><template>aaa</template></head></html>
+
+#data
+<template>a<p>aa</template>
+#output
+<!DOCTYPE html><html><head><template>a<p>aa</p></template></head></html>
+
+#data
+<template>a<template><br>a</template><svg>a</svg></template>
+#output
+<!DOCTYPE html><html><head><template>a<template><br>a</template><svg>a</svg></template></head></html>
+
+#data
+<t:element name="'template'">aaaM</t:element>
+#output
+<!DOCTYPE html><html><head><template>aaaM</template></head></html>
+
+#data
+<t:element name="'template'">aaaM<template/>b</t:element>
+#output
+<!DOCTYPE html><html><head><template>aaaM<template></template>b</template></head></html>
+
+#data
+<svg><t:element name="'template'">aaaM<t:element name="'title'">&lt;p></t:element>b</t:element></svg>
+#output
+<!DOCTYPE html><html><body><svg><template>aaaM<title>&lt;p&gt;</title>b</template></svg></body></html>
+
+#data
+<svg><t:element name="'template'">aaaM<title>&lt;p><br/></title>b</t:element></svg>
+#output
+<!DOCTYPE html><html><body><svg><template>aaaM<title>&lt;p&gt;<br></title>b</template></svg></body></html>
+
+#data
+<t:element name="'svg'"><t:element name="'template'">aaaM<title>&lt;p><br/></title>b</t:element></t:element>
+#output
+<!DOCTYPE html><html><head><svg><template>aaaM<title>&lt;p&gt;&lt;br/&gt;</title>b</template></svg></head></html>

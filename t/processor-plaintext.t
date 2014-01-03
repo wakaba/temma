@@ -131,6 +131,7 @@ test {
     plaintext-eval-1.dat
     plaintext-macro-1.dat
     plaintext-msgid-1.dat
+    plaintext-html-template-1.dat
   );
   $c->done;
 };
@@ -168,7 +169,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2012 Wakaba <w@suika.fam.cx>.
+Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
