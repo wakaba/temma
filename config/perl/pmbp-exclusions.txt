@@ -1,0 +1,6 @@
+- "../../modules/web-dom" tests
+- "../../modules/web-markup" tests tests-json
+- "../../modules/web-encodings" tests
+- "../../modules/web-url" tests
+- "../../t_deps/modules/testdataparser" tests
+- "../../t_deps/modules/test-x1" tests
