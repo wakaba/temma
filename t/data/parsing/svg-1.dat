@@ -280,3 +280,14 @@ abc<svg>fo<altglyph/>o</svg>bbb
 |           <math annotation-xml>
 |             <svg svg>
 |               <svg g>
+
+#data
+<svg><FEdropshadow></fedropSHAdow></svg>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <svg svg>
+|       <svg feDropShadow>
+|     "a"
