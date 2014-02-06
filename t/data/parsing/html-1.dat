@@ -69,7 +69,7 @@ abc <html>xyx</html>saaa<!--bbb-->aa
 #data
 <!-- aaa --> foo <html/>
 #errors
-1;24;m;start tag not allowed;;html
+1;25;m;start tag not allowed;;html
 #document
 | <!DOCTYPE html>
 | <html>
@@ -200,7 +200,7 @@ aaaa,<bOdy/>a<htML/>b<Head/>c
 #data
 <html foo bar=1><html bar=2 baz>
 #errors
-1;32;m;start tag not allowed;;html
+1;33;m;start tag not allowed;;html
 #document
 | <!DOCTYPE html>
 | <html>
@@ -259,7 +259,7 @@ aaaa,<bOdy/>a<htML/>b<Head/>c
 <html t:foo>a<html t:bar=2 t:baz>b<html t:bar=1>
 #errors
 1;34;m;start tag not allowed;;html
-1;48;m;start tag not allowed;;html
+1;49;m;start tag not allowed;;html
 #document
 | <!DOCTYPE html>
 | <html>
@@ -270,7 +270,7 @@ aaaa,<bOdy/>a<htML/>b<Head/>c
 #data
 <body foo bar=1><body bar=2 baz>
 #errors
-1;32;m;start tag not allowed;;body
+1;33;m;start tag not allowed;;body
 #document
 | <!DOCTYPE html>
 | <html>
@@ -294,7 +294,7 @@ aaaa,<bOdy/>a<htML/>b<Head/>c
 <head foo bar=1><head bar=2 baz><body abc><head xyz bar=3>
 #errors
 1;33;m;start tag not allowed;;head
-1;58;m;start tag not allowed;;head
+1;59;m;start tag not allowed;;head
 #document
 | <!DOCTYPE html>
 | <html>
@@ -325,7 +325,7 @@ abc&copy;axx
 #data
 abc&AMPaxx
 #errors
-1;10;m;no refc;;
+1;11;m;no refc;;
 #document escaped
 | <!DOCTYPE html>
 | <html>
@@ -391,7 +391,7 @@ abc&AMPaxx
 #data
 <body><html hoge t:parms>
 #errors
-1;25;m;start tag not allowed;;html
+1;26;m;start tag not allowed;;html
 #document
 | <!DOCTYPE html>
 | <html>
@@ -400,7 +400,7 @@ abc&AMPaxx
 #data
 <head><html hoge t:parms>
 #errors
-1;25;m;start tag not allowed;;html
+1;26;m;start tag not allowed;;html
 #document
 | <!DOCTYPE html>
 | <html>

@@ -154,7 +154,7 @@ aaaa
 <br><t:attr name="'t:parse'" value=""/></br>
 #errors
 1;5;m;temma:start tag already closed;;
-1;44;m;unmatched end tag;;br
+1;45;m;unmatched end tag;;br
 #output
 <!DOCTYPE html><html><body><br></body></html>
 

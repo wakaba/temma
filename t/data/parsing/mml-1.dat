@@ -71,7 +71,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math><p>aaaa</math>
 #errors
-1;20;m;not closed;;p
+1;21;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -83,7 +83,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math>hoge<br>foo</math>
 #errors
-1;24;m;not closed;;br
+1;25;m;not closed;;br
 #document
 | <!DOCTYPE html>
 | <html>
@@ -108,7 +108,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math>foo<p>bar<p>bc</math>
 #errors
-1;27;m;not closed;;p
+1;28;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -123,7 +123,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math>fo<optgroup>bar<option>aa<optgroup>aa</math>
 #errors
-1;50;m;not closed;;optgroup
+1;51;m;not closed;;optgroup
 #document
 | <!DOCTYPE html>
 | <html>

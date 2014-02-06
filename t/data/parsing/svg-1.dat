@@ -71,7 +71,7 @@ abc<svg>fo<altglyph/>o</svg>bbb
 #data
 <svg><p>aaaa</svg>
 #errors
-1;18;m;not closed;;p
+1;19;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -83,7 +83,7 @@ abc<svg>fo<altglyph/>o</svg>bbb
 #data
 <svg>hoge<br>foo</svg>
 #errors
-1;22;m;not closed;;br
+1;23;m;not closed;;br
 #document
 | <!DOCTYPE html>
 | <html>
@@ -108,7 +108,7 @@ abc<svg>fo<altglyph/>o</svg>bbb
 #data
 <svg>foo<p>bar<p>bc</svg>
 #errors
-1;25;m;not closed;;p
+1;26;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -123,7 +123,7 @@ abc<svg>fo<altglyph/>o</svg>bbb
 #data
 <svg>fo<optgroup>bar<option>aa<optgroup>aa</svg>
 #errors
-1;48;m;not closed;;optgroup
+1;49;m;not closed;;optgroup
 #document
 | <!DOCTYPE html>
 | <html>

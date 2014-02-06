@@ -611,7 +611,7 @@ value="'xx'"/> <p>aa</p> <t:attr name="'abc'" value="'ddd'"/>
 #errors
 2;19;m;not closed;;br
 3;6;m;unmatched end tag;;br
-3;11;m;unmatched end tag;;p
+3;12;m;unmatched end tag;;p
 #document
 | <!DOCTYPE html>
 | <html>

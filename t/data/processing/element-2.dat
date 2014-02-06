@@ -61,7 +61,7 @@ b<noscript>hoge<noscript>abc</noscript>d</noscript>
 #data
 <title t:parse>aaa& <div>fo<!--o</title>xyx
 #errors
-1;43;m;unclosed comment;;
+1;44;m;unclosed comment;;
 #output
 <!DOCTYPE html><html><head><title>aaa&amp; <div>fo</div></title></head></html>
 
