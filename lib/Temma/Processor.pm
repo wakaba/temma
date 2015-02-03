@@ -7,44 +7,64 @@ sub _eval ($) {
   return eval ('local @_;' . "\n" . $_[0]);
 } # _eval
 #
-our $VERSION = '2.0';
+our $VERSION = '3.0';
 use Path::Class;
 use Web::DOM::Node;
+use Web::HTML::SourceMap;
 use Temma::Defs;
 
 sub new ($) {
-  return bless {
-    onerror => sub {
-      my %args = @_;
-      my $msg = $args{type};
-      $msg .= ' - "' . $args{text} . '"' if defined $args{text};
-      if ($args{node}) {
-        $msg .= ' at node ' . $args{node}->manakai_local_name;
-        my $node = $args{node};
-        while ($node) {
-          my $line = $node->get_user_data ('manakai_source_line');
-          my $column = $node->get_user_data ('manakai_source_column');
-          if (defined $line and defined $column) {
-            $msg .= sprintf ' at line %d column %d',
-                $line || 0, $column || 0;
-            last;
-          }
-          $node = $node->parent_node;
-        }
-        $msg .= ' (' . $args{value} . ')' if defined $args{value};
-      } else {
-        $msg .= ' (' . $args{value} . ')' if defined $args{value};
-      }
-      warn "$msg\n";
-    },
-  }, $_[0];
+  return bless {}, $_[0];
 } # new
 
 sub onerror ($;$) {
   if (@_ > 1) {
     $_[0]->{onerror} = $_[1];
   }
-  return $_[0]->{onerror};
+  return $_[0]->{onerror} ||= do {
+    my $dids = $_[0]->di_data_set;
+    sub {
+      my $error = {@_};
+      my $text = defined $error->{text} ? qq{ - $error->{text}} : '';
+      my $value = defined $error->{value} ? qq{ "$error->{value}"} : '';
+      my $level = {
+        m => 'Parse error',
+        s => 'SHOULD-level error',
+        w => 'Warning',
+        i => 'Information',
+      }->{$error->{level} || ''} || $error->{level};
+      my $node = '';
+      if (defined $error->{node}) {
+        $node = ' node ' . $error->{node}->node_name;
+        my $sl = $error->{node}->manakai_get_source_location;
+        $error->{di} = $sl->[1];
+        $error->{index} = $sl->[2];
+      }
+      ($error->{di}, $error->{index}) = resolve_index_pair
+          $dids, $error->{di}, $error->{index};
+      ($error->{line}, $error->{column}) = index_pair_to_lc_pair
+          $dids, $error->{di}, $error->{index};
+      my $doc = 'document #' . $error->{di};
+      if (not $error->{di} == -1) {
+        #my $did = $dids->[$error->{di}];
+        #if (defined $did->{name}) {
+        #  $doc = $did->{name};
+        #} elsif (defined $did->{url}) {
+        #  $doc = 'document <' . $did->{url} . '>';
+        #}
+      }
+      if (defined $error->{node}) {
+        my $fn = ($error->{node}->owner_document or $error->{node})
+            ->get_user_data ('manakai_source_file_name');
+        $doc = 'file "' . $fn . '"' if defined $fn;
+      }
+      my $pos = "index $error->{index}";
+      if (defined $error->{column}) {
+        $pos = "line $error->{line} column $error->{column}";
+      }
+      warn "$level ($error->{type}$text) at $doc $pos$node$value\n";
+    };
+  };
 } # onerror
 
 sub locale ($;$) {
@@ -53,6 +73,13 @@ sub locale ($;$) {
   }
   return $_[0]->{locale};
 } # locale
+
+sub di_data_set ($;$) {
+  if (@_ > 1) {
+    $_[0]->{di_data_set} = $_[1];
+  }
+  return $_[0]->{di_data_set} ||= [];
+} # di_data_set
 
 sub htescape ($) {
   return $_[0] unless $_[0] =~ /[&"<>]/;
@@ -182,10 +209,10 @@ sub _process ($$) {
                binds => $binds);
         } else {
           #warn $exception->source_text;
-          $self->{onerror}->(type => 'temma:perl exception',
-                             level => 'm',
-                             value => $exception,
-                             node => $exception->source_node);
+          $self->onerror->(type => 'temma:perl exception',
+                           level => 'm',
+                           value => $exception,
+                           node => $exception->source_node);
         }
         unshift @{$self->{processes}}, $close;
         redo A;
@@ -230,9 +257,9 @@ sub __process ($$) {
 
         unless ($process->{node_info}->{allow_children}) {
           unless ($process->{node_info}->{children_not_allowed_error}) {
-            $self->{onerror}->(type => 'temma:child not allowed',
-                               node => $node,
-                               level => 'm');
+            $self->onerror->(type => 'temma:child not allowed',
+                             node => $node,
+                             level => 'm');
             $process->{node_info}->{children_not_allowed_error} = 1;
           }
           next;
@@ -323,18 +350,18 @@ sub __process ($$) {
               ## purpose of qualified name serialization.
 
               unless ($attr_name =~ /\A[A-Za-z_-][A-Za-z0-9_:-]*\z/) {
-                $self->{onerror}->(type => 'temma:name not serializable',
-                                   node => $node,
-                                   value => $attr_name,
-                                   level => 'm');
+                $self->onerror->(type => 'temma:name not serializable',
+                                 node => $node,
+                                 value => $attr_name,
+                                 level => 'm');
                 next;
               }
 
               if ($self->{current_tag}->{attrs}->{$attr_name}) {
-                $self->{onerror}->(type => 'temma:duplicate attr',
-                                   node => $node,
-                                   value => $attr_name,
-                                   level => 'm');
+                $self->onerror->(type => 'temma:duplicate attr',
+                                 node => $node,
+                                 value => $attr_name,
+                                 level => 'm');
                 next;
               }
 
@@ -352,9 +379,9 @@ sub __process ($$) {
                 }
               }
             } else {
-              $self->{onerror}->(type => 'temma:start tag already closed',
-                                 node => $node,
-                                 level => 'm');
+              $self->onerror->(type => 'temma:start tag already closed',
+                               node => $node,
+                               level => 'm');
             }
             next;
           } elsif ($ln eq 'comment') {
@@ -362,9 +389,9 @@ sub __process ($$) {
 
             if ($process->{node_info}->{rawtext} or
                 $process->{node_info}->{plaintext}) {
-              $self->{onerror}->(type => 'temma:comment not allowed',
-                                 node => $node,
-                                 level => 'm');
+              $self->onerror->(type => 'temma:comment not allowed',
+                               node => $node,
+                               level => 'm');
               next;
             }
 
@@ -415,9 +442,9 @@ sub __process ($$) {
                 } elsif ($state eq 'if-matched') {
                   last;
                 } else {
-                  $self->{onerror}->(type => 'element not allowed:t:if',
-                                     level => 'm',
-                                     node => $_);
+                  $self->onerror->(type => 'element not allowed:t:if',
+                                   level => 'm',
+                                   node => $_);
                   last;
                 }
               } elsif ($ns eq TEMMA_NS and $ln eq 'else') {
@@ -427,9 +454,9 @@ sub __process ($$) {
                   $state = 'else-matched';
                   $cond_node = $_;
                 } else {
-                  $self->{onerror}->(type => 'element not allowed:t:if',
-                                     level => 'm',
-                                     node => $_);
+                  $self->onerror->(type => 'element not allowed:t:if',
+                                   level => 'm',
+                                   node => $_);
                   last;
                 }
               } else {
@@ -455,9 +482,9 @@ sub __process ($$) {
               eval { 0+@$items };
             };
             if (not defined $item_count) {
-              $self->{onerror}->(type => 'temma:not arrayref',
-                                 node => $node->get_attribute_node ('x'),
-                                 level => 'm');
+              $self->onerror->(type => 'temma:not arrayref',
+                               node => $node->get_attribute_node ('x'),
+                               level => 'm');
               $items = [];
               $item_count = 0;
             }
@@ -473,9 +500,9 @@ sub __process ($$) {
                 my $ln = $node->manakai_local_name;
                 if ($ns eq TEMMA_NS and $ln eq 'sep') {
                   if ($sep_node) {
-                    $self->{onerror}->(type => 'temma:duplicate sep',
-                                       node => $node,
-                                       level => 'm');
+                    $self->onerror->(type => 'temma:duplicate sep',
+                                     node => $node,
+                                     level => 'm');
                     last;
                   } else {
                     $sep_node = $node;
@@ -491,9 +518,9 @@ sub __process ($$) {
               if (defined $as) {
                 $as =~ s/^\$//;
                 if (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or $as eq '_') {
-                  $self->{onerror}->(type => 'temma:variable name',
-                                     node => $node->get_attribute_node ('as'),
-                                     level => 'm');
+                  $self->onerror->(type => 'temma:variable name',
+                                   node => $node->get_attribute_node ('as'),
+                                   level => 'm');
                   undef $as;
                 }
               }
@@ -529,9 +556,9 @@ sub __process ($$) {
                   $as =~ s/^\$//;
                   if (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or
                       $as eq '_') {
-                    $self->{onerror}->(type => 'temma:variable name',
-                                       node => $node->get_attribute_node ('as'),
-                                       level => 'm');
+                    $self->onerror->(type => 'temma:variable name',
+                                     node => $node->get_attribute_node ('as'),
+                                     level => 'm');
                     undef $as;
                   }
                 }
@@ -559,9 +586,9 @@ sub __process ($$) {
             if (not defined $as or
                 not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or
                 $as eq '_') {
-              $self->{onerror}->(type => 'temma:variable name',
-                                 node => $node->get_attribute_node ('as') || $node,
-                                 level => 'm');
+              $self->onerror->(type => 'temma:variable name',
+                               node => $node->get_attribute_node ('as') || $node,
+                               level => 'm');
               next;
             }
 
@@ -575,23 +602,23 @@ sub __process ($$) {
           } elsif ($ln eq 'macro') {
             my $name = $node->get_attribute ('name');
             if (not defined $name) {
-              $self->{onerror}->(type => 'attribute missing',
-                                 text => 'name',
-                                 level => 'm',
-                                 node => $node);
+              $self->onerror->(type => 'attribute missing',
+                               text => 'name',
+                               level => 'm',
+                               node => $node);
               next;
             } elsif (not $name =~ /\A[a-z_.][a-z_.0-9-]*\z/) {
-              $self->{onerror}->(type => 'temma:bad macro name',
-                                 level => 'm',
-                                 node => $node);
+              $self->onerror->(type => 'temma:bad macro name',
+                               level => 'm',
+                               node => $node);
               next;
             }
 
             if ($self->{macros}->{$name}) {
-              $self->{onerror}->(type => 'temma:macro already defined',
-                                 level => 'm',
-                                 value => $name,
-                                 node => $node);
+              $self->onerror->(type => 'temma:macro already defined',
+                               level => 'm',
+                               value => $name,
+                               node => $node);
               next;
             }
 
@@ -618,17 +645,17 @@ sub __process ($$) {
           } elsif ($ln eq 'include') {
             my $path = $node->get_attribute ('path');
             unless (defined $path) {
-              $self->{onerror}->(type => 'attribute missing',
-                                 text => 'path',
-                                 level => 'm',
-                                 node => $node);
+              $self->onerror->(type => 'attribute missing',
+                               text => 'path',
+                               level => 'm',
+                               node => $node);
               next;
             }
 
             if (($process->{node_info}->{macro_depth} || 0) > 50) {
-              $self->{onerror}->(type => 'temma:macro too deep',
-                                 level => 'm',
-                                 node => $node);
+              $self->onerror->(type => 'temma:macro too deep',
+                               level => 'm',
+                               node => $node);
               next;
             }
             
@@ -685,9 +712,9 @@ sub __process ($$) {
                            $self->_print_attrs
                                ($attrs => $fh, $self->{current_tag});
                          } else {
-                           $self->{onerror}->(type => 'temma:start tag already closed',
-                                              node => $html_el,
-                                              level => 'm');
+                           $self->onerror->(type => 'temma:start tag already closed',
+                                            node => $html_el,
+                                            level => 'm');
                          }
                        }
                        $nodes = $html_el->child_nodes->to_a;
@@ -708,10 +735,10 @@ sub __process ($$) {
                    $self->_process ($fh);
                  },
                  onerror => sub {
-                   $self->{onerror}->(type => 'temma:include error',
-                                      level => 'm',
-                                      value => $_[0],
-                                      node => $node);
+                   $self->onerror->(type => 'temma:include error',
+                                    level => 'm',
+                                    value => $_[0],
+                                    node => $node);
                  });
             return;
           } elsif ($ln eq 'call') {
@@ -726,18 +753,18 @@ sub __process ($$) {
             if (not defined $value) {
               #
             } elsif (not UNIVERSAL::can ($value, 'cb')) {
-              $self->{onerror}->(type => 'temma:no cb method',
-                                 level => 'm',
-                                 node => $node->get_attribute_node ('cv'));
+              $self->onerror->(type => 'temma:no cb method',
+                               level => 'm',
+                               node => $node->get_attribute_node ('cv'));
             } else {
               my $as = $node->get_attribute ('as');
               $as =~ s/^\$// if defined $as;
               if (not defined $as) {
                 #
               } elsif (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or $as eq '_') {
-                $self->{onerror}->(type => 'temma:variable name',
-                                   node => $node->get_attribute_node ('as') || $node,
-                                   level => 'm');
+                $self->onerror->(type => 'temma:variable name',
+                                 node => $node->get_attribute_node ('as') || $node,
+                                 level => 'm');
                 undef $as;
               }
 
@@ -765,10 +792,10 @@ sub __process ($$) {
                 });
                 1;
               } or do {
-                $self->{onerror}->(type => 'temma:perl exception:cb',
-                                   level => 'm',
-                                   value => $@,
-                                   node => $node->get_attribute_node ('cv'));
+                $self->onerror->(type => 'temma:perl exception:cb',
+                                 level => 'm',
+                                 value => $@,
+                                 node => $node->get_attribute_node ('cv'));
               };
               return;
             }
@@ -799,10 +826,10 @@ sub __process ($$) {
             if ($found) {
               unshift @{$self->{processes}}, @close;
             } else {
-              $self->{onerror}->(type => 'temma:block not found',
-                                 value => $block_name,
-                                 node => $node,
-                                 level => 'm');
+              $self->onerror->(type => 'temma:block not found',
+                               value => $block_name,
+                               node => $node,
+                               level => 'm');
             }
             next;
           } elsif ($ln eq 'barehtml') {
@@ -815,9 +842,9 @@ sub __process ($$) {
             if (defined $value) {
               if ($process->{node_info}->{rawtext} or
                   $process->{node_info}->{plaintext}) {
-                $self->{onerror}->(type => 'element not allowed:rawtext',
-                                   node => $node,
-                                   level => 'm');
+                $self->onerror->(type => 'element not allowed:rawtext',
+                                 node => $node,
+                                 level => 'm');
               } else {
                 $fh->print ($value);
               }
@@ -827,14 +854,14 @@ sub __process ($$) {
             next if $self->_close_start_tag ($process, $fh);
 
             if ($ln eq 'else' or $ln eq 'elsif') {
-              $self->{onerror}->(type => 'element not allowed',
-                                 node => $node,
-                                 level => 'm');
+              $self->onerror->(type => 'element not allowed',
+                               node => $node,
+                               level => 'm');
             } else { ## Unknown element in Temma namespace
-              $self->{onerror}->(type => 'temma:unknown element',
-                                 node => $node,
-                                 value => $ln,
-                                 level => 'm');
+              $self->onerror->(type => 'temma:unknown element',
+                               node => $node,
+                               value => $ln,
+                               level => 'm');
             }
             next;
           } # $ln
@@ -842,17 +869,17 @@ sub __process ($$) {
           my $ln = $node->manakai_local_name;
           my $macro = $self->{macros}->{$ln};
           unless ($macro) {
-            $self->{onerror}->(type => 'temma:macro not defined',
-                               level => 'm',
-                               value => $ln,
-                               node => $node);
+            $self->onerror->(type => 'temma:macro not defined',
+                             level => 'm',
+                             value => $ln,
+                             node => $node);
             next;
           }
 
           if (($process->{node_info}->{macro_depth} || 0) > 50) {
-            $self->{onerror}->(type => 'temma:macro too deep',
-                               level => 'm',
-                               node => $node);
+            $self->onerror->(type => 'temma:macro too deep',
+                             level => 'm',
+                             node => $node);
             next;
           }
 
@@ -892,9 +919,9 @@ sub __process ($$) {
             $process->{node_info}->{rawtext} or
             $process->{node_info}->{plaintext}) {
           unless ($process->{node_info}->{children_not_allowed_error}) {
-            $self->{onerror}->(type => 'temma:child not allowed',
-                               node => $node,
-                               level => 'm');
+            $self->onerror->(type => 'temma:child not allowed',
+                             node => $node,
+                             level => 'm');
             $process->{node_info}->{children_not_allowed_error} = 1;
           }
           next;
@@ -969,10 +996,10 @@ sub __process ($$) {
             ## name is not serializable.  The element is ignored but
             ## its content is processed.
 
-            $self->{onerror}->(type => 'temma:name not serializable',
-                               node => $node,
-                               value => $ln,
-                               level => 'm');
+            $self->onerror->(type => 'temma:name not serializable',
+                             node => $node,
+                             value => $ln,
+                             level => 'm');
           }
 
           $node_info->{allow_children} = 1;
@@ -1031,9 +1058,9 @@ sub __process ($$) {
                          '</' . $process->{node_info}->{ln} . '>');
         my $value2 = $el->first_child->text_content;
         if ($value ne $value2) {
-          $self->{onerror}->(type => 'temma:not representable in raw text',
-                             node => $process->{node_info}->{node},
-                             level => 'm');
+          $self->onerror->(type => 'temma:not representable in raw text',
+                           node => $process->{node_info}->{node},
+                           level => 'm');
         }
         
         $fh->print ($value2);
@@ -1082,9 +1109,9 @@ sub __process ($$) {
     } elsif ($process->{type} eq 'barehtml') {
       if ($process->{node_info}->{rawtext} or
           $process->{node_info}->{plaintext}) {
-        $self->{onerror}->(type => 'element not allowed:rawtext',
-                           node => $process->{node},
-                           level => 'm');
+        $self->onerror->(type => 'element not allowed:rawtext',
+                         node => $process->{node},
+                         level => 'm');
       } else {
         $fh->print ($process->{value});
       }
@@ -1152,9 +1179,9 @@ sub _print_attrs ($$$$) {
     } elsif ($attr_ns eq TEMMA_MSGID_NS) {
       my $msgid = $attr->value;
       my $locale = $self->{locale} || do {
-        $self->{onerror}->(type => 'temma:no locale',
-                           node => $attr,
-                           level => 'm');
+        $self->onerror->(type => 'temma:no locale',
+                         node => $attr,
+                         level => 'm');
         undef;
       };
       $value = $locale && $locale->plain_text ($msgid);
@@ -1175,10 +1202,10 @@ sub _print_attrs ($$$$) {
     }
 
     unless ($attr_name =~ /\A[A-Za-z_-][A-Za-z0-9_:-]*\z/) {
-      $self->{onerror}->(type => 'temma:name not serializable',
-                         node => $attr,
-                         value => $attr_name,
-                         level => 'm');
+      $self->onerror->(type => 'temma:name not serializable',
+                       node => $attr,
+                       value => $attr_name,
+                       level => 'm');
       next;
     }
 
@@ -1187,10 +1214,10 @@ sub _print_attrs ($$$$) {
           grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $value;
     } else {
       if ($node_info->{attrs}->{$attr_name}) {
-        $self->{onerror}->(type => 'temma:duplicate attr',
-                           node => $attr,
-                           value => $attr_name,
-                           level => 'm');
+        $self->onerror->(type => 'temma:duplicate attr',
+                         node => $attr,
+                         value => $attr_name,
+                         level => 'm');
         next;
       }
       $node_info->{attrs}->{$attr_name} = 1;
@@ -1245,10 +1272,10 @@ sub eval_attr_value ($$$;%) {
   my $attr_node = $args{attr_node} ||
       $node->get_attribute_node_ns ($args{nsurl}, $name) or do {
     if ($args{required}) {
-      $self->{onerror}->(type => 'attribute missing',
-                         text => ($args{nsurl} && $args{nsurl} eq TEMMA_MACRO_NS ? 'm:' . $name : $name),
-                         level => $args{required},
-                         node => $node);
+      $self->onerror->(type => 'attribute missing',
+                       text => ($args{nsurl} && $args{nsurl} eq TEMMA_MACRO_NS ? 'm:' . $name : $name),
+                       level => $args{required},
+                       node => $node);
     }
     return undef;
   };
@@ -1271,11 +1298,18 @@ sub eval_attr_value ($$$;%) {
     }
   }
   my $location = (join '>', @{$locations->{$node}}) . '[' . $name . ']';
-  my $line = $attr_node->get_user_data ('manakai_source_line')
-      || $node->get_user_data ('manakai_source_line');
-  my $column = $attr_node->get_user_data ('manakai_source_column')
-      || $node->get_user_data ('manakai_source_column');
-  if (defined $line and defined $column) {
+  my ($di, $index);
+  for ($attr_node, $node) {
+    my $sl = $_->manakai_get_source_location;
+    unless ($sl->[1] == -1) {
+      $di = $sl->[1];
+      $index = $sl->[2];
+      last;
+    }
+  }
+  if (defined $di) {
+    my $dids = $self->di_data_set;
+    my ($line, $column) = index_pair_to_lc_pair $dids, $di, $index;
     my $fn = $node->owner_document->get_user_data ('manakai_source_file_name');
     $location .= sprintf ' (at %sline %d column %d)',
         defined $fn ? $fn . ' ' : '', $line || 0, $column || 0;
@@ -1323,9 +1357,9 @@ sub eval_attr_value ($$$;%) {
   }
 
   if ($args{disallow_undef} and not defined $evaled) {
-    $self->{onerror}->(type => 'temma:undef',
-                       level => $args{disallow_undef},
-                       node => $attr_node);
+    $self->onerror->(type => 'temma:undef',
+                     level => $args{disallow_undef},
+                     node => $attr_node);
   }
 
   return $evaled;
@@ -1338,10 +1372,10 @@ sub _get_params ($$;%) {
   $params = defined $params
       ? [grep {
            if ($param_found->{$_->[0]}) {
-             $self->{onerror}->(type => 'temma:duplicate param',
-                                value => $_->[0],
-                                node => $node->get_attribute_node_ns (TEMMA_NS, 'params'),
-                                level => 'm');
+             $self->onerror->(type => 'temma:duplicate param',
+                              value => $_->[0],
+                              node => $node->get_attribute_node_ns (TEMMA_NS, 'params'),
+                              level => 'm');
              0;
            } else {
              $param_found->{$_->[0]} = 1;
@@ -1354,10 +1388,10 @@ sub _get_params ($$;%) {
              1;
            } else {
              if (length) {
-               $self->{onerror}->(type => 'temma:bad params',
-                                  value => $_,
-                                  node => $node->get_attribute_node_ns(TEMMA_NS, 'params') || $node,
-                                  level => 'm');
+               $self->onerror->(type => 'temma:bad params',
+                                value => $_,
+                                node => $node->get_attribute_node_ns(TEMMA_NS, 'params') || $node,
+                                level => 'm');
              }
              0;
            }
@@ -1368,10 +1402,10 @@ sub _get_params ($$;%) {
     my $vars = $self->{args} ||= {};
     for my $param (@{$params}) {
       if (not $param->[1] and not exists $vars->{$param->[0]}) {
-        $self->{onerror}->(type => 'temma:no param',
-                           value => $param->[0],
-                           node => $node->get_attribute_node_ns (TEMMA_NS, 'params'),
-                           level => 'm');
+        $self->onerror->(type => 'temma:no param',
+                         value => $param->[0],
+                         node => $node->get_attribute_node_ns (TEMMA_NS, 'params'),
+                         level => 'm');
       }
       $binds->{$param->[0]} = [$vars, $param->[0]];
     }
@@ -1393,10 +1427,10 @@ sub _process_fields ($$$$) {
     my $name = $_->get_attribute ('name');
     $name = $anon_id++ unless defined $name;
     if ($fields->{$name}) {
-      $self->{onerror}->(type => 'temma:duplicate field',
-                         value => $name,
-                         level => 'm',
-                         node => $_);
+      $self->onerror->(type => 'temma:duplicate field',
+                       value => $name,
+                       level => 'm',
+                       node => $_);
       next;
     }
 
@@ -1425,9 +1459,11 @@ sub process_include ($$%) {
   my $parser = Temma::Parser->new;
   my $doc = $args{dom}->create_document;
   $parser->{initial_state} = $args{parse_context};
-  $parser->parse_f ($f => $doc, sub {
+  $parser->di_data_set ($self->di_data_set);
+  $parser->onerror (sub {
     $self->onerror->(@_, f => $f);
   });
+  $parser->parse_f ($f => $doc);
   
   $args{onparsed}->($doc);
 } # process_include
@@ -1439,9 +1475,9 @@ sub _print_msgid ($$$$$;%) {
       ($node, 'n', node_info => $process->{node_info});
 
   my $locale = $self->{locale} || do {
-    $self->{onerror}->(type => 'temma:no locale',
-                       node => $node,
-                       level => 'm');
+    $self->onerror->(type => 'temma:no locale',
+                     node => $node,
+                     level => 'm');
     undef;
   };
   my $set = $node->get_attribute ('set');
@@ -1491,10 +1527,10 @@ sub _print_msgid ($$$$$;%) {
             {type => 'barehtml', value => $_->{value},
              node => $node, node_info => $process->{node_info}};
       } else { # $_->{type} unknown
-        $self->{onerror}->(type => 'temma:components:unknown type',
-                           value => $_->{type},
-                           level => 'm',
-                           node => $node);
+        $self->onerror->(type => 'temma:components:unknown type',
+                         value => $_->{type},
+                         level => 'm',
+                         node => $node);
       } # $_->{type}
     }
   } else {
@@ -1510,7 +1546,7 @@ sub _print_msgid ($$$$$;%) {
 
 =head1 LICENSE
 
-Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2015 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -55,7 +55,7 @@ aaaa
 <br><t:attr name="'xyz'" value="'aa bb'"/>aaa</br>bbb
 #errors
 1;5;m;temma:start tag already closed;;
-1;51;m;unmatched end tag;;br
+1;46;m;unmatched end tag;;br
 #output
 <!DOCTYPE html><html><body><br>aaabbb</body></html>
 
@@ -154,7 +154,7 @@ aaaa
 <br><t:attr name="'t:parse'" value=""/></br>
 #errors
 1;5;m;temma:start tag already closed;;
-1;45;m;unmatched end tag;;br
+1;40;m;unmatched end tag;;br
 #output
 <!DOCTYPE html><html><body><br></body></html>
 

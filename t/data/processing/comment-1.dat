@@ -11,14 +11,14 @@ a<!---->
 #data
 </ foo>
 #errors
-1;1;m;bogus end tag;;
+1;3;m;bare etago;;
 #output
 <!DOCTYPE html><html></html>
 
 #data
 <!hoge>
 #errors
-1;1;m;bogus comment;;
+1;3;m;bogus comment;;
 #output
 <!DOCTYPE html><html></html>
 

@@ -37,6 +37,32 @@ for details of error handling.
 The value should not be set while the parser is running.  If the value
 is changed, the result is undefined.
 
+=item $di = $parser->di
+
+=item $parser->di ($di)
+
+Get or set the "di" for the input to the parsing method.  It is used
+for reporting errors.
+
+The value should not be set while the parser is running.  If the value
+is changed, the result is undefined.
+
+See also SuikaWiki:manakai index data structure
+<http://wiki.suikawiki.org/n/manakai%20index%20data%20structures>.
+
+=item $dids = $parser->di_data_set
+
+=item $parser->di_data_set ($dids)
+
+Get or set the "di" data set for the parser.  It is used for
+reporting errors.
+
+The value should not be set while the parser is running.  If the value
+is changed, the result is undefined.
+
+See also SuikaWiki:manakai index data structure
+<http://wiki.suikawiki.org/n/manakai%20index%20data%20structures>.
+
 =item $parser->parse_char_string ($text => $doc)
 
 Parse the text string and construct a C<Document> object (i.e. an

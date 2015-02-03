@@ -2,7 +2,8 @@ package Temma::Parser;
 use strict;
 use warnings;
 no warnings 'utf8';
-our $VERSION = '4.0';
+our $VERSION = '5.0';
+use Web::HTML::SourceMap;
 use Web::Temma::Tokenizer;
 use Temma::Defs;
 push our @ISA, qw(Web::Temma::Tokenizer);
@@ -18,16 +19,12 @@ sub onerrors ($;$) {
   return $_[0]->{onerrors} ||= sub {
     my ($self, $errors) = @_;
     my $onerror = $self->onerror;
-    require Web::HTML::SourceMap;
     my $dids = $self->di_data_set;
-    my $di = $self->di;
-    $dids->[$di]->{lc_map} ||= Web::HTML::SourceMap::create_index_lc_mapping
-        (${$dids->[$di]->{data_ref}});
     for my $error (@$errors) {
-      ($error->{di}, $error->{index}) = Web::HTML::SourceMap::resolve_index_pair
-          ($dids, $error->{di}, $error->{index});
-      ($error->{line}, $error->{column}) = Web::HTML::SourceMap::index_pair_to_lc_pair
-          ($dids, $error->{di}, $error->{index});
+      ($error->{di}, $error->{index}) = resolve_index_pair
+          $dids, $error->{di}, $error->{index};
+      ($error->{line}, $error->{column}) = index_pair_to_lc_pair
+          $dids, $error->{di}, $error->{index};
       $onerror->(%$error);
     } # $error
   };
@@ -66,36 +63,33 @@ sub onerror ($;$) {
 
 sub parse_char_string ($$$) {
   my $self = shift;
-  my $args = \@_;
-
-  my @prefix;
-  my $delta = 0;
-  $self->{token_count} = 0;
-  if ($self->{initial_state} and
-      $self->{initial_state} eq 'body') {
-    @prefix = split //, '<body>';
-    $delta += -@prefix;
-    $self->{token_count}--;
-  }
 
   my $dids = $self->di_data_set;
   my $di = defined $self->{di} ? $self->{di} : @$dids || 1;
-  $dids->[$di]->{data_ref} = \($args->[0]);
   $self->di ($di);
+  $dids->[$di]->{lc_map} ||= create_index_lc_mapping $_[0];
 
   $self->ontokens (\&_construct);
 
   delete $self->{tainted};
   $self->{open_elements} = [];
 
-  my $doc = $args->[1];
+  my $doc = $_[1];
   my $doctype = $doc->implementation->create_document_type ('html');
   my $el = $doc->create_element_ns (HTML_NS, [undef, 'html']);
   push @{$self->{open_elements}}, [$el, 'html', IM_HTML];
   my $strict = $doc->strict_error_checking;
   $doc->strict_error_checking (0);
 
-  $self->SUPER::parse_char_string (@$args);
+  $self->{token_count} = 0;
+  if ($self->{initial_state} and
+      $self->{initial_state} eq 'body') {
+    my $body = $doc->create_element_ns (HTML_NS, [undef, 'body']);
+    $el->append_child ($body);
+    push @{$self->{open_elements}}, [$body, 'body', IM_HTML];
+  }
+
+  $self->SUPER::parse_char_string (@_);
 
   $doc->strict_error_checking ($strict);
   $doc->append_child ($doctype);

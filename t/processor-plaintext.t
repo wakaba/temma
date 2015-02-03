@@ -10,8 +10,9 @@ use Test::Differences;
 use Test::HTCT::Parser;
 use Temma::Parser;
 use Temma::Processor;
-use Web::DOM::Implementation;
+use Web::DOM::Document;
 use Web::HTML::Dumper;
+use Web::HTML::SourceMap;
 use Temma::Defs;
 use Test::X1;
 use Encode;
@@ -20,7 +21,6 @@ my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('processing');
 
 test {
   my $c = shift;
-  my $dom = Web::DOM::Implementation->new;
 
   for_each_test $_->stringify, {
     data => {is_prefixed => 1, multiple => 1},
@@ -46,17 +46,24 @@ test {
 
     my @error;
     my $parser = Temma::Parser->new;
+    my $dids = $parser->di_data_set;
     my $onerror = sub {
       my %opt = @_;
       my $node = $opt{node};
       $opt{f} ||= ($node->owner_document || $node)
           ->get_user_data ('manakai_source_f') if $node;
       while ($node) {
-        $opt{line} //= $node->get_user_data ('manakai_source_line');
-        $opt{column} //= $node->get_user_data ('manakai_source_column');
-        last if defined $opt{line} and defined $opt{column};
+        my $sl = $node->manakai_get_source_location;
+        unless ($sl->[1] == -1) {
+          $opt{di} = $sl->[1];
+          $opt{index} = $sl->[2];
+          last;
+        }
         $node = $node->parent_node;
       }
+      ($opt{line}, $opt{column}) = index_pair_to_lc_pair
+          $dids, $opt{di}, $opt{index};
+
       push @error,
           (($opt{f} && $opt{f} ne $initial_file_name) ? $opt{f} . ';' : '') .
           join ';', map { 
@@ -80,20 +87,24 @@ test {
       my $parser = Temma::Parser->new;
       my $doc = $args{dom}->create_document;
       $parser->{initial_state} = $args{parse_context};
-      $parser->parse_char_string ($data->[0] => $doc, sub {
+      $parser->di_data_set ($dids);
+      $parser->onerror (sub {
         $self->onerror->(@_, f => $f);
       });
+      $parser->parse_char_string ($data->[0] => $doc);
       $doc->set_user_data (manakai_source_f => $f);
       $doc->set_user_data (manakai_source_file_name => $f->stringify);
   
       $args{onparsed}->($doc);
     }; # process_include
 
-    my $doc = $dom->create_document;
+    my $doc = Web::DOM::Document->new;
     my $data = $data_by_file_name->{$initial_file_name};
     $parser->{initial_state} = 'body'
         unless ($data->[1]->[-1] || '') eq 'html';
-    $parser->parse_char_string ($data->[0] => $doc, $onerror);
+
+    $parser->onerror ($onerror);
+    $parser->parse_char_string ($data->[0] => $doc);
     $doc->set_user_data (manakai_source_f => file ($initial_file_name));
     $doc->set_user_data (manakai_source_file_name => $initial_file_name);
 
@@ -103,6 +114,7 @@ test {
 
     my $processor = Temma::Processor->new;
     $processor->onerror ($onerror);
+    $processor->di_data_set ($dids);
 
     if ($test->{locale}) {
       my $package = 'test::Locale::' . int rand 1000000;
@@ -169,7 +181,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2015 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
