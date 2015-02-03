@@ -1,5 +1,20 @@
 {
    "results" : {
+      "generated tokenizer" : {
+         "count" : 0,
+         "data_sets" : {
+            "" : {
+               "count" : 7,
+               "dry_elapsed" : 0.00606083869934082,
+               "elapsed" : 0.145449672426496,
+               "total_elapsed" : 1.06057357788086
+            }
+         },
+         "git_rev" : "85549f0e366bebc4f313760f02030053ebb31a43",
+         "key" : "generated tokenizer",
+         "timestamp" : 1422956087.75186,
+         "total_elapsed" : 0
+      },
       "w-h-t" : {
          "count" : 0,
          "data_sets" : {

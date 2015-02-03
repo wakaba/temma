@@ -146,15 +146,15 @@ our $Void = {
 };
 
 our $RawContent = {
-  script => SCRIPT_DATA_STATE,
-  style => RAWTEXT_STATE,
-  xmp => RAWTEXT_STATE,
+  script => 'script data state',
+  style => 'RAWTEXT state',
+  xmp => 'RAWTEXT state',
   #iframe => RAWTEXT_STATE,
   #noframes => RAWTEXT_STATE,
   #noembed => RAWTEXT_STATE,
   #noscript => RAWTEXT_STATE,
-  title => RCDATA_STATE,
-  textarea => RCDATA_STATE,
+  title => 'RCDATA state',
+  textarea => 'RCDATA state',
   #plaintext
 };
 

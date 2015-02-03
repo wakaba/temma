@@ -1,5 +1,30 @@
 {
    "results" : {
+      "generated tokenizer" : {
+         "count" : 0,
+         "data_sets" : {
+            "empty" : {
+               "count" : 5,
+               "dry_elapsed" : 0.188987016677856,
+               "elapsed" : 0.0529986381530762,
+               "elapsed_per_size" : 0.0529986381530762,
+               "size" : 0,
+               "total_elapsed" : 1.20992827415466
+            },
+            "swwspots" : {
+               "count" : 4,
+               "dry_elapsed" : 0.190083026885986,
+               "elapsed" : 0.119106233119965,
+               "elapsed_per_size" : 9.174014720786e-06,
+               "size" : 12983,
+               "total_elapsed" : 1.2367570400238
+            }
+         },
+         "git_rev" : "85549f0e366bebc4f313760f02030053ebb31a43",
+         "key" : "generated tokenizer",
+         "timestamp" : 1422956097.53221,
+         "total_elapsed" : 0
+      },
       "w-h-t" : {
          "count" : 0,
          "data_sets" : {

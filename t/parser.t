@@ -10,6 +10,7 @@ use Test::HTCT::Parser;
 use Temma::Parser;
 use Web::DOM::Document;
 use Web::HTML::Dumper;
+use Web::HTML::SourceMap;
 use Test::X1;
 
 $Web::HTML::Dumper::NamespaceMapping
@@ -37,15 +38,23 @@ for (glob $test_data_d->file ('*.dat')) {
       my $c = shift;
       my @error;
       my $parser = Temma::Parser->new;
+
+      my $ip = [];
+      $parser->di (0);
+      $ip->[0]->{lc_map} = create_index_lc_mapping $test->{data}->[0];
+
       my $onerror = sub {
         my %opt = @_;
+        my ($di, $index) = resolve_index_pair $ip, $opt{di}, $opt{index};
+        ($opt{line}, $opt{column}) = index_pair_to_lc_pair $ip, $di, $index;
         push @error, join ';', map { 
           defined $_ ? $_ : '';
         } @opt{qw(line column level type value text)};
       }; # onerror
 
       my $doc = new Web::DOM::Document;
-      $parser->parse_char_string ($test->{data}->[0] => $doc, $onerror);
+      $parser->onerror ($onerror);
+      $parser->parse_char_string ($test->{data}->[0] => $doc);
 
       my $actual = dumptree $doc;
       $actual =~ s/\n$//;
@@ -85,7 +94,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2015 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

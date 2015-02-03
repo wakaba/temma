@@ -3,35 +3,16 @@ use strict;
 use warnings;
 no warnings 'utf8';
 our $VERSION = '4.0';
-use Web::HTML::Defs;
-use Web::HTML::InputStream;
-use Web::HTML::Tokenizer;
+use Web::Temma::Tokenizer;
 use Temma::Defs;
-push our @ISA, qw(Web::HTML::Tokenizer);
+push our @ISA, qw(Web::Temma::Tokenizer);
 
-my $Actions = [];
-$Actions->[CLOSE_TAG_OPEN_STATE]->[0x003E] = {
-  name => 'end tag open > xml',
-  state => DATA_STATE,
-  ct => {
-    type => END_TAG_TOKEN,
-    delta => 2,
-  },
-  emit => '',
-};
-__PACKAGE__->complete_action_def ($Actions);
+sub IM_HTML () { 1 }
+sub IM_SVG () { 2 }
+sub IM_MML () { 3 }
 
-sub parse_char_string ($$$;$$) {
-  #my ($self, $string, $document, $onerror, $get_wrapper) = @_;
-  my $self = ref $_[0] ? $_[0] : $_[0]->new;
-  my $doc = $self->{document} = $_[2];
-  {
-    local $self->{document}->dom_config->{manakai_strict_document_children} = 0;
-    $self->{document}->text_content ('');
-  }
-
-  ## Confidence: irrelevant.
-  $self->{confident} = 1 unless exists $self->{confident};
+sub parse_char_string ($$$) {
+  my $self = shift;
 
   my @prefix;
   my $delta = 0;
@@ -43,31 +24,24 @@ sub parse_char_string ($$$;$$) {
     $self->{token_count}--;
   }
 
-  $self->{line_prev} = $self->{line} = 1;
-  $self->{column_prev} = -1 + $delta;
-  $self->{column} = 0 + $delta;
+  $self->ontokens (\&_construct);
 
-  $self->{chars} = [@prefix, split //, $_[1]];
-  $self->{chars_pos} = 0;
-  $self->{chars_pull_next} = sub { 0 };
-  delete $self->{chars_was_cr};
+  delete $self->{tainted};
+  $self->{open_elements} = [];
 
-  my $onerror = $_[3] || $self->onerror;
-  $self->{parse_error} = sub {
-    $onerror->(line => $self->{line}, column => $self->{column}, @_);
-  };
+  my $doc = $_[1];
+  my $doctype = $doc->implementation->create_document_type ('html');
+  my $el = $doc->create_element_ns (HTML_NS, [undef, 'html']);
+  push @{$self->{open_elements}}, [$el, 'html', IM_HTML];
+  my $strict = $doc->strict_error_checking;
+  $doc->strict_error_checking (0);
 
-  $self->{enable_cdata_section} = 1;
+  $self->SUPER::parse_char_string (@_);
 
-  $self->_initialize_tokenizer;
-  $self->{action_set} = $Actions;
-  $self->_initialize_tree_constructor;
-  $self->{t} = $self->_get_next_token;
-  $self->_construct_tree;
-  $self->_terminate_tree_constructor;
-  $self->_clear_refs;
-
-  return $doc;
+  $doc->strict_error_checking ($strict);
+  $doc->append_child ($doctype);
+  $doc->append_child ($el);
+  delete $self->{open_elements};
 } # parse_char_string
 
 sub parse_f ($$$;$) {
@@ -83,49 +57,12 @@ sub parse_f ($$$;$) {
 
 ## ------ Tree construction ------
 
-sub _initialize_tree_constructor ($) {
-  my $self = shift;
-  ## NOTE: $self->{document} MUST be specified before this method is called
-  $self->{document}->strict_error_checking (0);
-  ## TODO: Turn mutation events off # MUST
-  $self->{document}->manakai_is_html (1);
-  $self->{document}->set_user_data (manakai_source_line => 1);
-  $self->{document}->set_user_data (manakai_source_column => 1);
-} # _initialize_tree_constructor
-
-sub _terminate_tree_constructor ($) {
-  my $self = shift;
-  $self->{document}->strict_error_checking (1);
-  ## TODO: Turn mutation events on
-} # _terminate_tree_constructor
-
-## Tree construction stage
-
-sub IM_HTML () { 1 }
-sub IM_SVG () { 2 }
-sub IM_MML () { 3 }
-
-sub _construct_tree ($) {
-  my ($self) = @_;
-
-  delete $self->{tainted};
-  $self->{open_elements} = [];
-
-  my $doctype = $self->{document}
-      ->implementation->create_document_type ('html');
-  $self->{document}->append_child ($doctype);
-
-  my $el = $self->{document}->create_element_ns (HTML_NS, [undef, 'html']);
-  $self->{document}->append_child ($el);
-  push @{$self->{open_elements}}, [$el, 'html', IM_HTML];
-
-  B: while (1) {
-    if (0) {
-      warn join ' ', map { $_->[1] } @{$self->{open_elements}};
-    }
-
-    if ($self->{t}->{type} == CHARACTER_TOKEN) {
-      if ($self->{t}->{data} =~ s/^([\x09\x0A\x0C\x0D\x20]+)//) {
+sub _construct ($$) {
+  my ($self, $tokens) = @_;
+  my $last_state;
+  B: for my $token (@$tokens) {
+    if ($token->{type} == Web::Temma::Tokenizer::TEXT_TOKEN) {
+      if ($token->{value} =~ s/^([\x09\x0A\x0C\x0D\x20]+)//) {
         if ($self->{ignore_first_newline}) {
           my $v = $1;
           $v =~ s/^\x0A//;
@@ -137,8 +74,7 @@ sub _construct_tree ($) {
       }
       delete $self->{ignore_first_newline};
 
-      if (not length $self->{t}->{data}) {
-        $self->{t} = $self->_get_next_token;
+      if (not length $token->{value}) {
         next B;
       }
 
@@ -174,18 +110,12 @@ sub _construct_tree ($) {
         }
       }
 
-      while ($self->{t}->{data} =~ s/\x00/\x{FFFD}/) {
-        #$self->{parse_error}->(level => 'm',
-        #                       type => 'NULL',
-        #                       token => $self->{t});
-      }
       $self->{open_elements}->[-1]->[0]->manakai_append_content
-          ($self->{t}->{data});
+          ($token->{value});
       
-      $self->{t} = $self->_get_next_token;
       next B;
-    } elsif ($self->{t}->{type} == START_TAG_TOKEN) {
-      my $tag_name = $self->{t}->{tag_name};
+    } elsif ($token->{type} == Web::Temma::Tokenizer::START_TAG_TOKEN) {
+      my $tag_name = $token->{tag_name};
       $tag_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
       delete $self->{ignore_first_newline};
 
@@ -195,38 +125,36 @@ sub _construct_tree ($) {
             not (@{$self->{open_elements}} == 2 and
                  $self->{open_elements}->[1]->[1] eq 'head' and
                  $tag_name eq 'body')) {
-          $self->{parse_error}->(level => 'm',
-                                 type => 'start tag not allowed',
-                                 text => $tag_name,
-                                 token => $self->{t});
+          $self->onerror->(level => 'm',
+                           type => 'start tag not allowed',
+                           text => $tag_name,
+                           di => $token->{di}, index => $token->{index});
 
-          delete $self->{self_closing};
-          $self->{t} = $self->_get_next_token;
+          delete $token->{self_closing_flag};
           next B;
         }
       } elsif ($tag_name eq 'html') {
         if ($self->{token_count} > 1) {
-          $self->{parse_error}->(type => 'start tag not allowed',
-                                 text => 'html',
-                                 token => $self->{t},
-                                 level => 'm');
-          delete $self->{self_closing};
-          $self->{t} = $self->_get_next_token;
+          $self->onerror->(level => 'm',
+                           type => 'start tag not allowed',
+                           text => 'html',
+                           di => $token->{di}, index => $token->{index});
+          delete $token->{self_closing_flag};
           next B;
         }
 
         my $allow_non_temma = @{$self->{open_elements}} <= 1;
         my $el = $self->{open_elements}->[0]->[0];
         if ($el) {
-          my $attrs = $self->{t}->{attributes};
+          my $attrs = $token->{attrs};
           for my $attr_name (keys %{$attrs}) {
             my $attr_t = $attrs->{$attr_name};
             if (not $attr_name =~ /^(?:t|m|msg|pl):/ and
                 not $allow_non_temma) {
-              $self->{parse_error}->(type => 'temma:html non temma attr',
-                                     text => $attr_name,
-                                     token => $self->{t},
-                                     level => 'm');
+              $self->onerror->(level => 'm',
+                               type => 'temma:html non temma attr',
+                               text => $attr_name,
+                               di => $token->{di}, index => $token->{index});
               next;
             }
             my $attr = $attr_name =~ s/^(t|m|msg|pl)://
@@ -236,27 +164,26 @@ sub _construct_tree ($) {
                 : $self->{document}->create_attribute_ns
                     (undef, [undef, $attr_name]);
             if ($el->has_attribute_ns ($attr->namespace_uri, $attr->manakai_local_name)) {
-              $self->{parse_error}->(type => 'duplicate attribute',
-                                     text => $attr->name,
-                                     token => $self->{t},
-                                     level => 'm');
+              $self->onerror->(level => 'm',
+                               type => 'duplicate attribute',
+                               text => $attr->name,
+                               di => $attr_t->{di}, index => $attr_t->{index});
               next;
             }
-            $attr->value ($attr_t->{value});
+            $attr->manakai_append_indexed_string ($attr_t->{value});
             $attr->set_user_data (manakai_source_line => $attr_t->{line});
             $attr->set_user_data (manakai_source_column => $attr_t->{column});
             $el->set_attribute_node_ns ($attr);
           } # $attr_name
           if (not $allow_non_temma and not keys %$attrs) {
-            $self->{parse_error}->(type => 'start tag not allowed',
-                                   text => 'html',
-                                   token => $self->{t},
-                                   level => 'm');
+            $self->onerror->(level => 'm',
+                             type => 'start tag not allowed',
+                             text => 'html',
+                             di => $token->{di}, index => $token->{index});
           }
         } # $el
         
-        delete $self->{self_closing};
-        $self->{t} = $self->_get_next_token;
+        delete $token->{self_closing_flag};
         next B;
       }
 
@@ -319,10 +246,10 @@ sub _construct_tree ($) {
                   -($i + $diff), $i + $diff => ();
               my @not_closed = grep { not $Temma::Defs::EndTagOptional->{$_->[1]} } @closed;
               if (@not_closed) {
-                $self->{parse_error}->(level => 'm',
-                                       type => 'not closed',
-                                       text => $not_closed[-1]->[1],
-                                       token => $self->{t});
+                $self->onerror->(level => 'm',
+                                 type => 'not closed',
+                                 text => $not_closed[-1]->[1],
+                                 di => $token->{di}, index => $token->{index});
               }
               last;
             }
@@ -364,10 +291,10 @@ sub _construct_tree ($) {
 
       my $el = $self->{document}->create_element_ns
           ($ns, [$prefix, $local_name]);
-      $el->set_user_data (manakai_source_line => $self->{t}->{line});
-      $el->set_user_data (manakai_source_column => $self->{t}->{column});
+      $el->set_user_data (manakai_source_line => $token->{line});
+      $el->set_user_data (manakai_source_column => $token->{column});
 
-      my $attrs = $self->{t}->{attributes};
+      my $attrs = $token->{attrs};
       for my $attr_name (sort {$attrs->{$a}->{index} <=> $attrs->{$b}->{index}}
                          keys %{$attrs}) {
         my $attr;
@@ -386,7 +313,7 @@ sub _construct_tree ($) {
           $attr = $self->{document}->create_attribute_ns
               (undef, [undef, $attr_fixup->{$attr_name} || $attr_name]);
         }
-        $attr->value ($attr_t->{value});
+        $attr->manakai_append_indexed_string ($attr_t->{value});
         $attr->set_user_data (manakai_source_line => $attr_t->{line});
         $attr->set_user_data (manakai_source_column => $attr_t->{column});
         $el->set_attribute_node_ns ($attr);
@@ -394,8 +321,8 @@ sub _construct_tree ($) {
 
       $self->{open_elements}->[-1]->[0]->manakai_append_content ($el);
 
-      if ($self->{self_closing}) {
-        delete $self->{self_closing};
+      if ($token->{self_closing_flag}) {
+        delete $token->{self_closing_flag};
       } else {
         my $orig_im = $im;
         if ($ns eq SVG_NS) {
@@ -408,7 +335,7 @@ sub _construct_tree ($) {
               ($local_name eq 'annotation-xml' and
                $attrs->{encoding} and
                do {
-                 my $enc = $attrs->{encoding}->{value};
+                 my $enc = join '', map { $_->[0] } @{$attrs->{encoding}->{value}}; # IndexedString
                  $enc =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
                  ($enc eq 'text/html' or $enc eq 'application/xhtml+xml');
                })) {
@@ -426,7 +353,7 @@ sub _construct_tree ($) {
         } elsif ($Temma::Defs::Void->{$tag_name}) {
           pop @{$self->{open_elements}};
         } elsif ($Temma::Defs::RawContent->{$tag_name}) {
-          $self->{state} = $Temma::Defs::RawContent->{$tag_name};
+          $last_state = $Temma::Defs::RawContent->{$tag_name};
           delete $self->{escape};
         }
 
@@ -436,21 +363,20 @@ sub _construct_tree ($) {
         }
       }
       
-      $self->{t} = $self->_get_next_token;
       next B;
 
-    } elsif ($self->{t}->{type} == END_TAG_TOKEN) {
-      my $tag_name = $self->{t}->{tag_name};
+    } elsif ($token->{type} == Web::Temma::Tokenizer::END_TAG_TOKEN) {
+      my $tag_name = $token->{tag_name};
       $tag_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
       delete $self->{ignore_first_newline};
 
       if ($tag_name eq '') {
         if ($self->{open_elements}->[-1]->[1] eq 'html' or
             $self->{open_elements}->[-1]->[1] eq 'body') {
-          $self->{parse_error}->(level => 'm',
-                                 type => 'unmatched end tag',
-                                 text => $self->{t}->{tag_name},
-                                 token => $self->{t});
+          $self->onerror->(level => 'm',
+                           type => 'unmatched end tag',
+                           text => $token->{tag_name},
+                           di => $token->{di}, index => $token->{index});
         } else {
           pop @{$self->{open_elements}};
         }
@@ -476,19 +402,19 @@ sub _construct_tree ($) {
                 $_->[2] == IM_SVG or $_->[2] == IM_MML
               } reverse @closed;
               if (@closed) {
-                $self->{parse_error}->(level => 'm',
-                                       type => 'not closed',
-                                       text => $closed[-1]->[1],
-                                       token => $self->{t});
+                $self->onerror->(level => 'm',
+                                 type => 'not closed',
+                                 text => $closed[-1]->[1],
+                                 di => $token->{di}, index => $token->{index});
               }
               last INSCOPE;
             }
           }
 
-          $self->{parse_error}->(level => 'm',
-                                 type => 'unmatched end tag',
-                                 text => $self->{t}->{tag_name},
-                                 token => $self->{t});
+          $self->onerror->(level => 'm',
+                           type => 'unmatched end tag',
+                           text => $token->{tag_name},
+                           di => $token->{di}, index => $token->{index});
         } # INSCOPE
       } else {
         ## Has an element in scope
@@ -502,51 +428,47 @@ sub _construct_tree ($) {
                 $_->[2] == IM_SVG or $_->[2] == IM_MML
               } reverse @closed;
               if (@closed) {
-                $self->{parse_error}->(level => 'm',
-                                       type => 'not closed',
-                                       text => $closed[-1]->[1],
-                                       token => $self->{t});
+                $self->onerror->(level => 'm',
+                                 type => 'not closed',
+                                 text => $closed[-1]->[1],
+                                 di => $token->{di}, index => $token->{index});
               }
               last INSCOPE;
             }
           }
 
-          $self->{parse_error}->(level => 'm',
-                                 type => 'unmatched end tag',
-                                 text => $self->{t}->{tag_name},
-                                 token => $self->{t});
+          $self->onerror->(level => 'm',
+                           type => 'unmatched end tag',
+                           text => $token->{tag_name},
+                           di => $token->{di}, index => $token->{index});
         } # INSCOPE
       }
       
-      $self->{t} = $self->_get_next_token;
-      redo B;
-    } elsif ($self->{t}->{type} == COMMENT_TOKEN) {
-      my $comment = $self->{document}->create_comment ($self->{t}->{data});
+      next B;
+    } elsif ($token->{type} == Web::Temma::Tokenizer::COMMENT_TOKEN) {
+      my $comment = $self->{document}->create_comment ('');
+      $comment->manakai_append_indexed_string ($token->{data});
       $self->{open_elements}->[-1]->[0]->manakai_append_content ($comment);
       
       delete $self->{ignore_first_newline};
-      $self->{t} = $self->_get_next_token;
       next B;
-    } elsif ($self->{t}->{type} == END_OF_FILE_TOKEN) {
-      $self->{t} = {type => ABORT_TOKEN};
-      return;
-    } elsif ($self->{t}->{type} == DOCTYPE_TOKEN) {
-      $self->{t} = $self->_get_next_token;
+    } elsif ($token->{type} == Web::Temma::Tokenizer::END_OF_FILE_TOKEN) {
+      last B;
+    } elsif ($token->{type} == Web::Temma::Tokenizer::DOCTYPE_TOKEN) {
       delete $self->{ignore_first_newline};
       next B;
-    } elsif ($self->{t}->{type} == ABORT_TOKEN) {
-      return;
     } else {
-      die "Unknown token type $self->{t}->{type}";
+      die "Unknown token type $token->{type}";
     }
   } # B
-} # _tree_in_element
+  return $last_state;
+} # _construct
 
 1;
 
 =head1 LICENSE
 
-Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2015 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
