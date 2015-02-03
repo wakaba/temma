@@ -1,4 +1,5 @@
 Encode
 Path::Class
+Path::Tiny
 Test::Differences
 Test::More

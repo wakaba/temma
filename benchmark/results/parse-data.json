@@ -1,0 +1,29 @@
+{
+   "results" : {
+      "w-h-t" : {
+         "count" : 0,
+         "data_sets" : {
+            "empty" : {
+               "count" : 7,
+               "dry_elapsed" : 0.125300884246826,
+               "elapsed" : 0.037642138344901,
+               "elapsed_per_size" : 0.037642138344901,
+               "size" : 0,
+               "total_elapsed" : 1.14060115814209
+            },
+            "swwspots" : {
+               "count" : 3,
+               "dry_elapsed" : 0.11549711227417,
+               "elapsed" : 0.218747933705648,
+               "elapsed_per_size" : 1.68487971736615e-05,
+               "size" : 12983,
+               "total_elapsed" : 1.00273513793945
+            }
+         },
+         "git_rev" : "56135d5f70c510c586571b6bcd4be4db19154054",
+         "key" : "w-h-t",
+         "timestamp" : 1422947734.55715,
+         "total_elapsed" : 0
+      }
+   }
+}
