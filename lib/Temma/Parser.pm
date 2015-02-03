@@ -11,6 +11,59 @@ sub IM_HTML () { 1 }
 sub IM_SVG () { 2 }
 sub IM_MML () { 3 }
 
+sub onerrors ($;$) {
+  if (@_ > 1) {
+    $_[0]->{onerrors} = $_[1];
+  }
+  return $_[0]->{onerrors} ||= sub {
+    my ($self, $errors) = @_;
+    my $onerror = $self->onerror;
+    require Web::HTML::SourceMap;
+    my $dids = $self->di_data_set;
+    my $di = $self->di;
+    $dids->[$di]->{lc_map} ||= Web::HTML::SourceMap::create_index_lc_mapping
+        (${$dids->[$di]->{data_ref}});
+    for my $error (@$errors) {
+      ($error->{di}, $error->{index}) = Web::HTML::SourceMap::resolve_index_pair
+          ($dids, $error->{di}, $error->{index});
+      ($error->{line}, $error->{column}) = Web::HTML::SourceMap::index_pair_to_lc_pair
+          ($dids, $error->{di}, $error->{index});
+      $onerror->(%$error);
+    } # $error
+  };
+} # onerrors
+
+sub onerror ($;$) {
+  if (@_ > 1) {
+    $_[0]->{onerror} = $_[1];
+  }
+  return $_[0]->{onerror} ||= sub {
+    my $error = {@_};
+    my $text = defined $error->{text} ? qq{ - $error->{text}} : '';
+    my $value = defined $error->{value} ? qq{ "$error->{value}"} : '';
+    my $level = {
+      m => 'Parse error',
+      s => 'SHOULD-level error',
+      w => 'Warning',
+      i => 'Information',
+    }->{$error->{level} || ''} || $error->{level};
+    my $doc = 'document #' . $error->{di};
+    if (not $error->{di} == -1) {
+      #my $did = $dids->[$error->{di}];
+      #if (defined $did->{name}) {
+      #  $doc = $did->{name};
+      #} elsif (defined $did->{url}) {
+      #  $doc = 'document <' . $did->{url} . '>';
+      #}
+    }
+    my $pos = "index $error->{index}";
+    if (defined $error->{column}) {
+      $pos = "line $error->{line} column $error->{column}";
+    }
+    warn "$level ($error->{type}$text) at $doc $pos$value\n";
+  };
+} # onerror
+
 sub parse_char_string ($$$) {
   my $self = shift;
   my $args = \@_;
@@ -25,21 +78,11 @@ sub parse_char_string ($$$) {
     $self->{token_count}--;
   }
 
-  my $onerror = $self->onerror;
-  local $self->{onerror};
-  $self->onerror (sub {
-    my %args = @_;
-    require Web::HTML::SourceMap;
-    my $di = $self->di;
-    my $dids = $self->di_data_set;
-    $dids->[$di]->{lc_map} ||= Web::HTML::SourceMap::create_index_lc_mapping
-        ($args->[0]);
-    my ($d, $i) = Web::HTML::SourceMap::resolve_index_pair
-        ($dids, $args{di}, $args{index});
-    ($args{line}, $args{column}) = Web::HTML::SourceMap::index_pair_to_lc_pair
-        ($dids, $d, $i);
-    $onerror->(%args);
-  });
+  my $dids = $self->di_data_set;
+  my $di = defined $self->{di} ? $self->{di} : @$dids || 1;
+  $dids->[$di]->{data_ref} = \($args->[0]);
+  $self->di ($di);
+
   $self->ontokens (\&_construct);
 
   delete $self->{tainted};
@@ -60,12 +103,12 @@ sub parse_char_string ($$$) {
   delete $self->{open_elements};
 } # parse_char_string
 
-sub parse_f ($$$;$) {
-  my ($self, $f => $doc, $onerror) = @_;
+sub parse_f ($$$) {
+  my ($self, $f => $doc) = @_;
   require Encode;
   $self->parse_char_string
-      (Encode::decode ('utf-8', scalar $f->slurp), # or die
-       $doc, $onerror);
+      (Encode::decode ('utf-8', scalar $f->slurp), # or die # XXX Web::Encoding
+       $doc);
   $doc->set_user_data (manakai_source_f => $f);
   $doc->set_user_data (manakai_source_file_name => $f->stringify);
   return $doc;
@@ -142,20 +185,20 @@ sub _construct ($$) {
             not (@{$self->{open_elements}} == 2 and
                  $self->{open_elements}->[1]->[1] eq 'head' and
                  $tag_name eq 'body')) {
-          $self->onerror->(level => 'm',
-                           type => 'start tag not allowed',
-                           text => $tag_name,
-                           di => $token->{di}, index => $token->{index});
+          $self->onerrors->($self, [{level => 'm',
+                                     type => 'start tag not allowed',
+                                     text => $tag_name,
+                                     di => $token->{di}, index => $token->{index}}]);
 
           delete $token->{self_closing_flag};
           next B;
         }
       } elsif ($tag_name eq 'html') {
         if ($self->{token_count} > 1) {
-          $self->onerror->(level => 'm',
-                           type => 'start tag not allowed',
-                           text => 'html',
-                           di => $token->{di}, index => $token->{index});
+          $self->onerrors->($self, [{level => 'm',
+                                     type => 'start tag not allowed',
+                                     text => 'html',
+                                     di => $token->{di}, index => $token->{index}}]);
           delete $token->{self_closing_flag};
           next B;
         }
@@ -168,10 +211,11 @@ sub _construct ($$) {
             my $attr_t = $attrs->{$attr_name};
             if (not $attr_name =~ /^(?:t|m|msg|pl):/ and
                 not $allow_non_temma) {
-              $self->onerror->(level => 'm',
-                               type => 'temma:html non temma attr',
-                               text => $attr_name,
-                               di => $token->{di}, index => $token->{index});
+              $self->onerrors->($self, [{level => 'm',
+                                         type => 'temma:html non temma attr',
+                                         text => $attr_name,
+                                         di => $token->{di},
+                                         index => $token->{index}}]);
               next;
             }
             my $attr = $attr_name =~ s/^(t|m|msg|pl)://
@@ -181,10 +225,11 @@ sub _construct ($$) {
                 : $self->{document}->create_attribute_ns
                     (undef, [undef, $attr_name]);
             if ($el->has_attribute_ns ($attr->namespace_uri, $attr->manakai_local_name)) {
-              $self->onerror->(level => 'm',
-                               type => 'duplicate attribute',
-                               text => $attr->name,
-                               di => $attr_t->{di}, index => $attr_t->{index});
+              $self->onerrors->($self, [{level => 'm',
+                                         type => 'duplicate attribute',
+                                         text => $attr->name,
+                                         di => $attr_t->{di},
+                                         index => $attr_t->{index}}]);
               next;
             }
             $attr->manakai_append_indexed_string ($attr_t->{value});
@@ -192,10 +237,11 @@ sub _construct ($$) {
             $el->set_attribute_node_ns ($attr);
           } # $attr_name
           if (not $allow_non_temma and not keys %$attrs) {
-            $self->onerror->(level => 'm',
-                             type => 'start tag not allowed',
-                             text => 'html',
-                             di => $token->{di}, index => $token->{index});
+            $self->onerrors->($self, [{level => 'm',
+                                       type => 'start tag not allowed',
+                                       text => 'html',
+                                       di => $token->{di},
+                                       index => $token->{index}}]);
           }
         } # $el
         
@@ -262,10 +308,11 @@ sub _construct ($$) {
                   -($i + $diff), $i + $diff => ();
               my @not_closed = grep { not $Temma::Defs::EndTagOptional->{$_->[1]} } @closed;
               if (@not_closed) {
-                $self->onerror->(level => 'm',
-                                 type => 'not closed',
-                                 text => $not_closed[-1]->[1],
-                                 di => $token->{di}, index => $token->{index});
+                $self->onerrors->($self, [{level => 'm',
+                                           type => 'not closed',
+                                           text => $not_closed[-1]->[1],
+                                           di => $token->{di},
+                                           index => $token->{index}}]);
               }
               last;
             }
@@ -387,10 +434,10 @@ sub _construct ($$) {
       if ($tag_name eq '') {
         if ($self->{open_elements}->[-1]->[1] eq 'html' or
             $self->{open_elements}->[-1]->[1] eq 'body') {
-          $self->onerror->(level => 'm',
-                           type => 'unmatched end tag',
-                           text => $token->{tag_name},
-                           di => $token->{di}, index => $token->{index});
+          $self->onerrors->($self, [{level => 'm',
+                                     type => 'unmatched end tag',
+                                     text => $token->{tag_name},
+                                     di => $token->{di}, index => $token->{index}}]);
         } else {
           pop @{$self->{open_elements}};
         }
@@ -416,19 +463,21 @@ sub _construct ($$) {
                 $_->[2] == IM_SVG or $_->[2] == IM_MML
               } reverse @closed;
               if (@closed) {
-                $self->onerror->(level => 'm',
-                                 type => 'not closed',
-                                 text => $closed[-1]->[1],
-                                 di => $token->{di}, index => $token->{index});
+                $self->onerrors->($self, [{level => 'm',
+                                           type => 'not closed',
+                                           text => $closed[-1]->[1],
+                                           di => $token->{di},
+                                           index => $token->{index}}]);
               }
               last INSCOPE;
             }
           }
 
-          $self->onerror->(level => 'm',
-                           type => 'unmatched end tag',
-                           text => $token->{tag_name},
-                           di => $token->{di}, index => $token->{index});
+          $self->onerrors->($self, [{level => 'm',
+                                     type => 'unmatched end tag',
+                                     text => $token->{tag_name},
+                                     di => $token->{di},
+                                     index => $token->{index}}]);
         } # INSCOPE
       } else {
         ## Has an element in scope
@@ -442,19 +491,20 @@ sub _construct ($$) {
                 $_->[2] == IM_SVG or $_->[2] == IM_MML
               } reverse @closed;
               if (@closed) {
-                $self->onerror->(level => 'm',
-                                 type => 'not closed',
-                                 text => $closed[-1]->[1],
-                                 di => $token->{di}, index => $token->{index});
+                $self->onerrors->($self, [{level => 'm',
+                                           type => 'not closed',
+                                           text => $closed[-1]->[1],
+                                           di => $token->{di},
+                                           index => $token->{index}}]);
               }
               last INSCOPE;
             }
           }
 
-          $self->onerror->(level => 'm',
-                           type => 'unmatched end tag',
-                           text => $token->{tag_name},
-                           di => $token->{di}, index => $token->{index});
+          $self->onerrors->($self, [{level => 'm',
+                                     type => 'unmatched end tag',
+                                     text => $token->{tag_name},
+                                     di => $token->{di}, index => $token->{index}}]);
         } # INSCOPE
       }
       
