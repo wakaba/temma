@@ -13,6 +13,7 @@ sub IM_MML () { 3 }
 
 sub parse_char_string ($$$) {
   my $self = shift;
+  my $args = \@_;
 
   my @prefix;
   my $delta = 0;
@@ -24,19 +25,34 @@ sub parse_char_string ($$$) {
     $self->{token_count}--;
   }
 
+  my $onerror = $self->onerror;
+  local $self->{onerror};
+  $self->onerror (sub {
+    my %args = @_;
+    require Web::HTML::SourceMap;
+    my $di = $self->di;
+    my $dids = $self->di_data_set;
+    $dids->[$di]->{lc_map} ||= Web::HTML::SourceMap::create_index_lc_mapping
+        ($args->[0]);
+    my ($d, $i) = Web::HTML::SourceMap::resolve_index_pair
+        ($dids, $args{di}, $args{index});
+    ($args{line}, $args{column}) = Web::HTML::SourceMap::index_pair_to_lc_pair
+        ($dids, $d, $i);
+    $onerror->(%args);
+  });
   $self->ontokens (\&_construct);
 
   delete $self->{tainted};
   $self->{open_elements} = [];
 
-  my $doc = $_[1];
+  my $doc = $args->[1];
   my $doctype = $doc->implementation->create_document_type ('html');
   my $el = $doc->create_element_ns (HTML_NS, [undef, 'html']);
   push @{$self->{open_elements}}, [$el, 'html', IM_HTML];
   my $strict = $doc->strict_error_checking;
   $doc->strict_error_checking (0);
 
-  $self->SUPER::parse_char_string (@_);
+  $self->SUPER::parse_char_string (@$args);
 
   $doc->strict_error_checking ($strict);
   $doc->append_child ($doctype);
@@ -110,6 +126,7 @@ sub _construct ($$) {
         }
       }
 
+      $token->{value} =~ s/\x00/\x{FFFD}/g;
       $self->{open_elements}->[-1]->[0]->manakai_append_content
           ($token->{value});
       
@@ -171,8 +188,7 @@ sub _construct ($$) {
               next;
             }
             $attr->manakai_append_indexed_string ($attr_t->{value});
-            $attr->set_user_data (manakai_source_line => $attr_t->{line});
-            $attr->set_user_data (manakai_source_column => $attr_t->{column});
+            $attr->manakai_set_source_location (['', $attr_t->{di}, $attr_t->{index}]);
             $el->set_attribute_node_ns ($attr);
           } # $attr_name
           if (not $allow_non_temma and not keys %$attrs) {
@@ -291,8 +307,7 @@ sub _construct ($$) {
 
       my $el = $self->{document}->create_element_ns
           ($ns, [$prefix, $local_name]);
-      $el->set_user_data (manakai_source_line => $token->{line});
-      $el->set_user_data (manakai_source_column => $token->{column});
+      $el->manakai_set_source_location (['', $token->{di}, $token->{index}]);
 
       my $attrs = $token->{attrs};
       for my $attr_name (sort {$attrs->{$a}->{index} <=> $attrs->{$b}->{index}}
@@ -314,8 +329,7 @@ sub _construct ($$) {
               (undef, [undef, $attr_fixup->{$attr_name} || $attr_name]);
         }
         $attr->manakai_append_indexed_string ($attr_t->{value});
-        $attr->set_user_data (manakai_source_line => $attr_t->{line});
-        $attr->set_user_data (manakai_source_column => $attr_t->{column});
+        $attr->manakai_set_source_location (['', $attr_t->{di}, $attr_t->{index}]);
         $el->set_attribute_node_ns ($attr);
       } # $attrs
 

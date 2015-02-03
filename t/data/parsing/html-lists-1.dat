@@ -136,7 +136,7 @@ f<li>oo<p>abc<li>xyz
 #data
 <li>aa<span>a<li>bbb
 #errors
-1;18;m;not closed;;span
+1;14;m;not closed;;span
 #document
 | <!DOCTYPE html>
 | <html>

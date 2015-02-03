@@ -10,7 +10,6 @@ use Test::HTCT::Parser;
 use Temma::Parser;
 use Web::DOM::Document;
 use Web::HTML::Dumper;
-use Web::HTML::SourceMap;
 use Test::X1;
 
 $Web::HTML::Dumper::NamespaceMapping
@@ -38,15 +37,8 @@ for (glob $test_data_d->file ('*.dat')) {
       my $c = shift;
       my @error;
       my $parser = Temma::Parser->new;
-
-      my $ip = [];
-      $parser->di (0);
-      $ip->[0]->{lc_map} = create_index_lc_mapping $test->{data}->[0];
-
       my $onerror = sub {
         my %opt = @_;
-        my ($di, $index) = resolve_index_pair $ip, $opt{di}, $opt{index};
-        ($opt{line}, $opt{column}) = index_pair_to_lc_pair $ip, $di, $index;
         push @error, join ';', map { 
           defined $_ ? $_ : '';
         } @opt{qw(line column level type value text)};

@@ -71,7 +71,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math><p>aaaa</math>
 #errors
-1;21;m;not closed;;p
+1;14;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -83,7 +83,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math>hoge<br>foo</math>
 #errors
-1;25;m;not closed;;br
+1;18;m;not closed;;br
 #document
 | <!DOCTYPE html>
 | <html>
@@ -108,7 +108,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math>foo<p>bar<p>bc</math>
 #errors
-1;28;m;not closed;;p
+1;21;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -123,7 +123,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math>fo<optgroup>bar<option>aa<optgroup>aa</math>
 #errors
-1;51;m;not closed;;optgroup
+1;44;m;not closed;;optgroup
 #document
 | <!DOCTYPE html>
 | <html>
@@ -140,8 +140,8 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math>foo<html>BAR<body>abz</html>aaa</math>
 #errors
-1;16;m;start tag not allowed;;html
-1;25;m;start tag not allowed;;body
+1;10;m;start tag not allowed;;html
+1;19;m;start tag not allowed;;body
 #document
 | <!DOCTYPE html>
 | <html>
@@ -254,7 +254,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math><annotation-XML><P>foo</annotation-XML></matH>
 #errors
-1;46;m;not closed;;p
+1;29;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -267,7 +267,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math><annotation-XML encoding><P>foo</annotation-XML></matH>
 #errors
-1;55;m;not closed;;p
+1;38;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -281,7 +281,7 @@ aa<math>bb<foo>baa</foo>bcc</math>a
 #data
 <math><annotation-XML encoding=text/xml><P>foo</annotation-XML></matH>
 #errors
-1;64;m;not closed;;p
+1;47;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -322,7 +322,7 @@ application/xhtml+xml><P>foo</annotation-XML></matH>
 #data
 <math><annotation-XML encoding="text/HTml "><P>foo</annotation-XML></matH>
 #errors
-1;68;m;not closed;;p
+1;51;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>
@@ -362,7 +362,7 @@ application/xhtml+xml><P>foo</annotation-XML></matH>
 #data
 <math><mi><svg><P>foo</svg></mi></matH>
 #errors
-1;28;m;not closed;;p
+1;22;m;not closed;;p
 #document
 | <!DOCTYPE html>
 | <html>

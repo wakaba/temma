@@ -177,7 +177,7 @@ b<t:if x=1>xx<p>a<t:elsif>aa</t:if>y
 #data
 foo<t:if><p><q><t:else>aa</t:if>bb
 #errors
-1;24;m;not closed;;q
+1;16;m;not closed;;q
 #document
 | <!DOCTYPE html>
 | <html>
@@ -193,7 +193,7 @@ foo<t:if><p><q><t:else>aa</t:if>bb
 #data
 foo<t:if><p><q><t:elsif>aa</t:if>bb
 #errors
-1;25;m;not closed;;q
+1;16;m;not closed;;q
 #document
 | <!DOCTYPE html>
 | <html>
@@ -368,7 +368,7 @@ a<t:for>x</t:for>b
 #data
 <head><t:for><div>a<t:sep>b</t:for>
 #errors
-1;27;m;not closed;;div
+1;20;m;not closed;;div
 #document
 | <!DOCTYPE html>
 | <html>
@@ -1095,7 +1095,7 @@ a<p><t:attr><t:for><t:attr><t:if><t:last></t:if></t:for>x
 #data
 <p><t:try>aa<a>fuga<t:catch>bb</t:try>aa
 #errors
-1;29;m;not closed;;a
+1;20;m;not closed;;a
 #document
 | <!DOCTYPE html>
 | <html>
@@ -1112,8 +1112,8 @@ a<p><t:attr><t:for><t:attr><t:if><t:last></t:if></t:for>x
 #data
 <p><t:try>aaa<p>bbb</t:try>aaa
 #errors
-1;17;m;not closed;;t:try
-1;28;m;unmatched end tag;;t:try
+1;14;m;not closed;;t:try
+1;20;m;unmatched end tag;;t:try
 #document
 | <!DOCTYPE html>
 | <html>

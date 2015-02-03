@@ -35,7 +35,7 @@
 #data
 <ruby>ab<rp>aa<span>a<rt>x<b>x<rp>ccc</ruby>cc
 #errors
-1;45;m;not closed;;span
+1;38;m;not closed;;span
 #document
 | <!DOCTYPE html>
 | <html>

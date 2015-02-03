@@ -15,7 +15,7 @@ foo<p>abc<address>xx</address>yy
 #data
 foo<p>abc<span>aaa<address>xx</address>yy
 #errors
-1;28;m;not closed;;span
+1;19;m;not closed;;span
 #document
 | <!DOCTYPE html>
 | <html>
@@ -609,9 +609,9 @@ value="'xx'"/> <p>aa</p> <t:attr name="'abc'" value="'ddd'"/>
 value="'xx'"/> <p>aa</p> <t:attr name="'abc'" value="'ddd'"/>
 </br>xx</p>
 #errors
-2;19;m;not closed;;br
-3;6;m;unmatched end tag;;br
-3;12;m;unmatched end tag;;p
+2;16;m;not closed;;br
+3;1;m;unmatched end tag;;br
+3;8;m;unmatched end tag;;p
 #document
 | <!DOCTYPE html>
 | <html>
