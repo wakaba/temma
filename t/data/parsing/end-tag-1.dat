@@ -1,7 +1,7 @@
 #data
 ho<p>fuga</msg:>aa
 #errors
-1;17;m;unmatched end tag;;msg:
+1;10;m;unmatched end tag;;msg:
 #document
 | <!DOCTYPE html>
 | <html>
@@ -26,7 +26,7 @@ aa<msg:aa.bb>aaaa</msg:>aaa
 #data
 aa<msg:aa.bb>aaaa</pl:>aaa
 #errors
-1;24;m;unmatched end tag;;pl:
+1;18;m;unmatched end tag;;pl:
 #document
 | <!DOCTYPE html>
 | <html>
@@ -52,7 +52,7 @@ aa<m:ho.ge>aaaa</m:>x
 #data
 a<msg:aa>b<span>c</msg:>d
 #errors
-1;25;m;not closed;;span
+1;18;m;not closed;;span
 #document
 | <!DOCTYPE html>
 | <html>

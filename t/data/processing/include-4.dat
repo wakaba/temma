@@ -75,8 +75,8 @@
 <body><html t:params=$abc>
 <span><t:text value=$abc></span>x
 #errors escaped
-/foo;1;7;m;start tag not allowed;;body
-/foo;2;0;m;start tag not allowed;;html
+/foo;1;1;m;start tag not allowed;;body
+/foo;1;7;m;start tag not allowed;;html
 /foo;2;15;m;temma:perl exception;Global symbol "$abc" requires explicit package name at html>body>span>t:text[value] (at /foo line 2 column 15) line 1.\u000A;
 #output
 <!DOCTYPE html><html><body><p><span></span></p></body></html>

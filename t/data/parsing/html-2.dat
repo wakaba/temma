@@ -1,7 +1,7 @@
 #data
 hoge</>ab
 #errors
-1;8;m;unmatched end tag;;
+1;5;m;unmatched end tag;;
 #document
 | <!DOCTYPE html>
 | <html>

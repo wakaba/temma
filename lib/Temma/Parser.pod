@@ -1,6 +1,6 @@
 =head1 NAME
 
-Temma::Parser - A parser for Temma template language
+Temma::Parser - A parser for the Temma template language
 
 =head1 SYNOPSIS
 
@@ -12,9 +12,11 @@ Temma::Parser - A parser for Temma template language
 
 =head1 DESCRIPTION
 
-The C<Temma::Parser> is a parser of Temma markup language.
+The C<Temma::Parser> is a parser of the Temma markup language.
 
 =head1 METHODS
+
+Following methods are available:
 
 =over 4
 
@@ -34,6 +36,32 @@ for details of error handling.
 
 The value should not be set while the parser is running.  If the value
 is changed, the result is undefined.
+
+=item $di = $parser->di
+
+=item $parser->di ($di)
+
+Get or set the "di" for the input to the parsing method.  It is used
+for reporting errors.
+
+The value should not be set while the parser is running.  If the value
+is changed, the result is undefined.
+
+See also SuikaWiki:manakai index data structure
+<http://wiki.suikawiki.org/n/manakai%20index%20data%20structures>.
+
+=item $dids = $parser->di_data_set
+
+=item $parser->di_data_set ($dids)
+
+Get or set the "di" data set for the parser.  It is used for
+reporting errors.
+
+The value should not be set while the parser is running.  If the value
+is changed, the result is undefined.
+
+See also SuikaWiki:manakai index data structure
+<http://wiki.suikawiki.org/n/manakai%20index%20data%20structures>.
 
 =item $parser->parse_char_string ($text => $doc)
 
@@ -69,7 +97,7 @@ Wakaba <wakaba@suikawiki.org>.
 
 =head1 LICENSE
 
-Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2015 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

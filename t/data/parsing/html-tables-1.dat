@@ -123,7 +123,7 @@
 #data
 <table><tr><th>aa<span>bbb</table>ccc
 #errors
-1;35;m;not closed;;span
+1;27;m;not closed;;span
 #document
 | <!DOCTYPE html>
 | <html>

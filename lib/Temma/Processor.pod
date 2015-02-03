@@ -45,6 +45,19 @@ For more information on error handler, see L<Whatpm::Error>
 For list of error types, see
 <http://suika.fam.cx/gate/2007/html/error-description#temma>.
 
+=item $dids = $processor->di_data_set
+
+=item $processor->di_data_set ($dids)
+
+Get or set the "di" data set for the processor.  It is used for
+reporting errors.
+
+The value should not be set while the processor is running.  If the
+value is changed, the result is undefined.
+
+See also SuikaWiki:manakai index data structure
+<http://wiki.suikawiki.org/n/manakai%20index%20data%20structures>.
+
 =item $processor->locale ($locale)
 
 =item $locale = $processor->locale

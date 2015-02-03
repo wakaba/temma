@@ -133,7 +133,7 @@ abc</pre>
 <pre></foo>
 abc</pre>
 #errors
-2;0;m;unmatched end tag;;foo
+1;6;m;unmatched end tag;;foo
 #document
 | <!DOCTYPE html>
 | <html>

@@ -61,7 +61,7 @@ b<noscript>hoge<noscript>abc</noscript>d</noscript>
 #data
 <title t:parse>aaa& <div>fo<!--o</title>xyx
 #errors
-1;44;m;unclosed comment;;
+1;44;m;parser:EOF;;
 #output
 <!DOCTYPE html><html><head><title>aaa&amp; <div>fo</div></title></head></html>
 
@@ -254,7 +254,7 @@ abc<p>fo<textarea>
 #data
 <svg>foo<script> if (a < 21) { document.write ('<script></script>') } ab</script>aa</svg>
 #errors
-1;24;m;bare stago;;
+1;25;m;bare stago;;
 #output
 <!DOCTYPE html><html><body><svg>foo<script> if (a &lt; 21) { document.write ('<script></script>') } ab</script>aa</svg></body></html>
 

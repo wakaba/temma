@@ -166,7 +166,7 @@ foo<menuItem>aaa
 #data
 <br><t:attr name="'xyz'" value="'aa bb'"/>aaa</br>bbb
 #errors
-1;51;m;unmatched end tag;;br
+1;46;m;unmatched end tag;;br
 #document
 | <!DOCTYPE html>
 | <html>

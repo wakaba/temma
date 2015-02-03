@@ -81,7 +81,7 @@ axs<t:attr/><link/>
 #data
 <t:attr>a</t:attr><t:attr/><link/>
 #errors
-1;19;m;unmatched end tag;;t:attr
+1;10;m;unmatched end tag;;t:attr
 #document
 | <!DOCTYPE html>
 | <html>
@@ -94,7 +94,7 @@ axs<t:attr/><link/>
 #data
 <t:attr><p>foo</t:attr><link/>
 #errors
-1;24;m;unmatched end tag;;t:attr
+1;15;m;unmatched end tag;;t:attr
 #document
 | <!DOCTYPE html>
 | <html>
@@ -107,7 +107,7 @@ axs<t:attr/><link/>
 #data
 <t:attr><p>f</t:attr><p>b
 #errors
-1;22;m;unmatched end tag;;t:attr
+1;13;m;unmatched end tag;;t:attr
 #document
 | <!DOCTYPE html>
 | <html>
@@ -244,7 +244,7 @@ a<t:text>bbb
 #data
 a<t:text>b</t:text>bb
 #errors
-1;20;m;unmatched end tag;;t:text
+1;11;m;unmatched end tag;;t:text
 #document
 | <!DOCTYPE html>
 | <html>

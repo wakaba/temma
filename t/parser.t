@@ -45,7 +45,8 @@ for (glob $test_data_d->file ('*.dat')) {
       }; # onerror
 
       my $doc = new Web::DOM::Document;
-      $parser->parse_char_string ($test->{data}->[0] => $doc, $onerror);
+      $parser->onerror ($onerror);
+      $parser->parse_char_string ($test->{data}->[0] => $doc);
 
       my $actual = dumptree $doc;
       $actual =~ s/\n$//;
@@ -85,7 +86,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2015 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

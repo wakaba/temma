@@ -212,7 +212,7 @@
 #data
 <noframes>foo<hoge>barbb</noframes>aa<p>bb
 #errors
-1;36;m;not closed;;hoge
+1;25;m;not closed;;hoge
 #document
 | <!DOCTYPE html>
 | <html>
