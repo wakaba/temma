@@ -1,0 +1,19 @@
+{
+  "result_file": "results/parse-data.json",
+  "libs": ["../t_deps/modules/*/lib"],
+  "use": ["Temma::Parser", "Web::DOM::Document", "Path::Tiny"],
+  "dry_code": "my $path = path ($ARGV[0])->absolute ($ENV{BENZY_MANIFEST_DIR}); my $doc = new Web::DOM::Document; my $p = Temma::Parser->new;",
+  "code": "my $path = path ($ARGV[0])->absolute ($ENV{BENZY_MANIFEST_DIR}); my $doc = new Web::DOM::Document; my $p = Temma::Parser->new; $p->parse_char_string ($path->slurp_utf8 => $doc)",
+  "data_sets": {
+    "empty": {
+      "args": ["data/empty.html.tm"],
+      "per_size": "/byte",
+      "size_by_file": "data/empty.html.tm"
+    },
+    "swwspots": {
+      "args": ["data/spots.item.html.tm"],
+      "per_size": "/byte",
+      "size_by_file": "data/spots.item.html.tm"
+    }
+  }
+}

@@ -72,7 +72,7 @@ abc
 &#x4e00;\u0000&#xd;
 #errors
 1;9;m;NULL;;
-1;13;m;invalid character reference;;U+000D
+1;10;m;invalid character reference;;U+000D
 #output escaped
 \u4E00\uFFFD\u000D
 

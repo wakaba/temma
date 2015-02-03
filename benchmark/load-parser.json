@@ -1,0 +1,10 @@
+{
+  "result_file": "results/load-parser.json",
+  "libs": ["../t_deps/modules/*/lib"],
+  "use": [],
+  "code": "use Temma::Parser",
+  "data_sets": {
+    "": {
+    }
+  }
+}

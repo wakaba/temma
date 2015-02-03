@@ -1,0 +1,54 @@
+{
+   "results" : {
+      "w-h-t" : {
+         "count" : 0,
+         "data_sets" : {
+            "empty" : {
+               "count" : 7,
+               "dry_elapsed" : 0.125300884246826,
+               "elapsed" : 0.037642138344901,
+               "elapsed_per_size" : 0.037642138344901,
+               "size" : 0,
+               "total_elapsed" : 1.14060115814209
+            },
+            "swwspots" : {
+               "count" : 3,
+               "dry_elapsed" : 0.11549711227417,
+               "elapsed" : 0.218747933705648,
+               "elapsed_per_size" : 1.68487971736615e-05,
+               "size" : 12983,
+               "total_elapsed" : 1.00273513793945
+            }
+         },
+         "git_rev" : "56135d5f70c510c586571b6bcd4be4db19154054",
+         "key" : "w-h-t",
+         "timestamp" : 1422947734.55715,
+         "total_elapsed" : 0
+      },
+      "w-h-t submodules updated" : {
+         "count" : 0,
+         "data_sets" : {
+            "empty" : {
+               "count" : 6,
+               "dry_elapsed" : 0.133368015289307,
+               "elapsed" : 0.0467355251312256,
+               "elapsed_per_size" : 0.0467355251312256,
+               "size" : 0,
+               "total_elapsed" : 1.08062124252319
+            },
+            "swwspots" : {
+               "count" : 4,
+               "dry_elapsed" : 0.135537147521973,
+               "elapsed" : 0.181851804256439,
+               "elapsed_per_size" : 1.40069170651189e-05,
+               "size" : 12983,
+               "total_elapsed" : 1.26955580711365
+            }
+         },
+         "git_rev" : "f7428cf9e5afd472bbaa6dabb5c63225664dfb53",
+         "key" : "w-h-t submodules updated",
+         "timestamp" : 1422948333.94949,
+         "total_elapsed" : 0
+      }
+   }
+}
