@@ -14,6 +14,21 @@
          "key" : "w-h-t",
          "timestamp" : 1422947470.02266,
          "total_elapsed" : 0
+      },
+      "w-h-t submodules updated" : {
+         "count" : 0,
+         "data_sets" : {
+            "" : {
+               "count" : 11,
+               "dry_elapsed" : 0.0066831111907959,
+               "elapsed" : 0.0859242569316517,
+               "total_elapsed" : 1.01868104934692
+            }
+         },
+         "git_rev" : "f7428cf9e5afd472bbaa6dabb5c63225664dfb53",
+         "key" : "w-h-t submodules updated",
+         "timestamp" : 1422948326.42706,
+         "total_elapsed" : 0
       }
    }
 }
