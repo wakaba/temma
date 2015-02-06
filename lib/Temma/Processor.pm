@@ -7,7 +7,7 @@ sub _eval ($) {
   return eval ('local @_;' . "\n" . $_[0]);
 } # _eval
 #
-our $VERSION = '3.0';
+our $VERSION = '4.0';
 use Path::Class;
 use Web::DOM::Node;
 use Web::HTML::SourceMap;
@@ -927,6 +927,14 @@ sub __process ($$) {
           next;
         }
 
+        if (($self->{need_head_end_tag} || 0) > 0) {
+          if (defined $ln and $ln eq 'head' and not @$attrs) {
+            undef $ln;
+          } else {
+            $fh->print ('</head>');
+          }
+        }
+
         $self->_before_non_space ($process => $fh);
 
         my $node_info = {node => $node, attrs => {},
@@ -1012,6 +1020,11 @@ sub __process ($$) {
           }
           $self->{current_tag} = {ln => '', lnn => ''};
 
+          if (($self->{need_head_end_tag} || 0) > 0) {
+            unshift @{$self->{processes}},
+                {type => 'end tag', node_info => {ln => 'head'}};
+          }
+
           unshift @{$self->{processes}}, {type => 'end'};
           unshift @{$self->{processes}},
               map { {type => 'node', node => $_, node_info => $node_info} } 
@@ -1019,6 +1032,7 @@ sub __process ($$) {
                      $_->node_type == TEXT_NODE }
               @{$node->child_nodes->to_a};
         }
+        $self->{need_head_end_tag}-- if $self->{need_head_end_tag};
       } elsif ($nt == DOCUMENT_TYPE_NODE) {
         next if $self->_close_start_tag ($process, $fh);
 
@@ -1066,7 +1080,15 @@ sub __process ($$) {
         $fh->print ($value2);
       }
 
-      $fh->print ('</' . $process->{node_info}->{ln} . '>');
+      if ($process->{node_info}->{ln} eq 'head') {
+        $self->{need_head_end_tag}++;
+      } else {
+        while (($self->{need_head_end_tag} || 0) > 0) {
+          $fh->print ('</head>');
+          $self->{need_head_end_tag}--;
+        }
+        $fh->print ('</' . $process->{node_info}->{ln} . '>');
+      }
     } elsif ($process->{type} eq 'text') {
       if ($process->{node_info}->{rawtext}) {
         ${$process->{node_info}->{rawtext_value}} .= $process->{value};

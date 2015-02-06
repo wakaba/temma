@@ -44,8 +44,8 @@
 #errors
 /xyxz;1;1;m;temma:start tag already closed;;
 #output
-<!DOCTYPE html><html hoge="abc"><head><title>hoge</title></head>
-<body>aaa</body></html>
+<!DOCTYPE html><html hoge="abc"><head><title>hoge</title>
+</head><body>aaa</body></html>
 
 #data
 <html hoge=abc>
@@ -77,8 +77,8 @@
 #errors
 /ab;1;1;m;temma:start tag already closed;;
 #output
-<!DOCTYPE html><html hoge="abc"><head><link></head>
-<head><meta></head></html>
+<!DOCTYPE html><html hoge="abc"><head><link>
+<meta></head></html>
 
 #data
 <t:include path=aa />
@@ -105,8 +105,8 @@
 /ab;1;1;m;temma:start tag already closed;;
 #output
 | <!DOCTYPE html><html hoge="abc"><body><p><link></p></body>
-| <head><base></head>
-| <body><p><meta></p></body><body><p>aaa</p></body></html>
+| <head><base>
+| </head><body><p><meta></p></body><body><p>aaa</p></body></html>
 
 #data
 <t:include path=hoge />
