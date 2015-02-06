@@ -1,0 +1,48 @@
+#data
+<t:include path=a />
+<p>a
+#data a
+<link>
+#output
+| <!DOCTYPE html><html><head><link></head>
+| <body><p>a</p></body></html>
+
+#data
+<t:include path=a />
+a
+#data a
+<link>
+#output
+| <!DOCTYPE html><html><head><link></head>
+| <body>a</body></html>
+
+#data
+<t:include path=a />
+<t:include path=b />
+<p>a
+#data a
+<link>
+#data b
+#output
+| <!DOCTYPE html><html><head><link>
+| </head>
+| <body><p>a</p></body></html>
+
+#data
+<t:include path=a />
+<meta>
+<p>a
+#data a
+<link>
+#output
+| <!DOCTYPE html><html><head><link>
+| <meta></head><body><p>a</p></body></html>
+
+#data
+<t:include path=a />
+<p>a
+#data a
+<link><p>b
+#output
+| <!DOCTYPE html><html><head><link></head><body><p>b</p></body>
+| <body><p>a</p></body></html>
