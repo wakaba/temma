@@ -11,7 +11,7 @@ MRO::Compat~0.12
 Path::Tiny~0.065
 Try::Tiny~0.22
 Term::ANSIColor~4.03
-parent~0.228
+parent~0.229
 AnyEvent~7.08
 Exporter::Lite~0.06
 Test::Class~0.48
