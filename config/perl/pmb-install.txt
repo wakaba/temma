@@ -11,14 +11,14 @@ MRO::Compat~0.12
 Path::Tiny~0.065
 Try::Tiny~0.22
 Term::ANSIColor~4.03
-parent~0.231
+parent~0.232
 AnyEvent~7.08
 Exporter::Lite~0.06
 Test::Class~0.48
 Data::Dumper~2.154
 Test::Tester~0.114
 Exporter~5.70
-Carp~1.35
+Carp~1.36
 Text::Diff~1.41
 Test::More~1.001014
 Test::Differences~0.63
