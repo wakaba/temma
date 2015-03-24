@@ -8,7 +8,7 @@ Encode~2.72
 Unicode::Normalize~1.18
 Algorithm::Diff~1.1903
 MRO::Compat~0.12
-Path::Tiny~0.065
+Path::Tiny~0.068
 Try::Tiny~0.22
 Term::ANSIColor~4.03
 parent~0.232
