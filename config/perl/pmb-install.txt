@@ -12,7 +12,7 @@ Path::Tiny~0.068
 Try::Tiny~0.22
 Term::ANSIColor~4.03
 parent~0.232
-AnyEvent~7.08
+AnyEvent~7.09
 Exporter::Lite~0.06
 Test::Class~0.48
 Data::Dumper~2.154
