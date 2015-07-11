@@ -22,7 +22,7 @@ Module::Metadata~1.000027
 File::Spec~3.47
 Test::Simple~1.001014
 Module::Runtime~0.014
-Unicode::Normalize~1.18
+Unicode::Normalize~1.19
 MRO::Compat~0.12
 Perl::OSType~1.008
 Algorithm::Diff~1.1903
