@@ -6,7 +6,7 @@ Module::Build~0.4214
 Try::Tiny~0.22
 Term::ANSIColor~4.03
 parent~0.234
-AnyEvent~7.09
+AnyEvent~7.11
 Test::Class~0.50
 Exporter::Lite~0.06
 Data::Dumper~2.154
