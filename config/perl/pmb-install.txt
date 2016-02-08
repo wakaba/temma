@@ -1,6 +1,6 @@
 Capture::Tiny~0.30
 Test::NoWarnings~1.04
-Encode~2.80
+Encode~2.82
 CPAN::Meta~2.150005
 Module::Build~0.4216
 Try::Tiny~0.24
