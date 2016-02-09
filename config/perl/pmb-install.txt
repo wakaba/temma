@@ -18,7 +18,7 @@ CPAN::Meta::Requirements~2.140
 Path::Class~0.35
 Unicode::Stringprep~1.105
 Module::Metadata~1.000027
-Scalar::Util~1.42
+Scalar::Util~1.43
 File::Spec~3.62
 Test::Simple~1.001014
 Module::Runtime~0.014
