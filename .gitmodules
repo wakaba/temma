@@ -1,6 +1,6 @@
 [submodule "modules/perl-charclass"]
 	path = modules/perl-charclass
-	url = git://github.com/wakaba/perl-charclass.git
+	url = git://github.com/wakaba/perl-charclass
 	track = master
 [submodule "t_deps/modules/testdataparser"]
 	path = t_deps/modules/testdataparser
