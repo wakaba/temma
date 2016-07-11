@@ -523,11 +523,123 @@ test {
   });
 } n => 1, name => 'process_fragment t:params';
 
+{
+  package test::pack1;
+  my $destroyed = 0;
+  sub DESTROY {
+    $destroyed++;
+  }
+  sub destroyed { return $destroyed }
+}
+test {
+  my $c = shift;
+
+  my $text = q{
+    <html>
+    <body>
+      <t:call x=" our $Hoge = bless [123], 'test::pack1' ">
+      <p><t:text value="(our $Hoge)->[0]"></p>
+  };
+
+  my $dom = Web::DOM::Implementation->new;
+  my $doc = $dom->create_document;
+
+  my $parser = Temma::Parser->new;
+  $parser->parse_char_string ($text => $doc);
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_document ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<!DOCTYPE html><html><body><p>123</p></body></html>};
+      is +test::pack1->destroyed, 1;
+      done $c;
+      undef $c;
+    } $c;
+  });
+} n => 2, name => 'global variables';
+
+{
+  package test::pack1_2;
+  my $destroyed = 0;
+  sub DESTROY {
+    $destroyed++;
+  }
+  sub destroyed { return $destroyed }
+}
+test {
+  my $c = shift;
+
+  my $text = q{
+    <html>
+    <body>
+      <t:call x=" our $Hoge = bless [123], 'test::pack1_2' ">
+      <p><t:text value="(our $Hoge)->[0]"></p>
+      <t:call x=die>xyz
+  };
+
+  my $dom = Web::DOM::Implementation->new;
+  my $doc = $dom->create_document;
+
+  my $parser = Temma::Parser->new;
+  $parser->parse_char_string ($text => $doc);
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_document ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<!DOCTYPE html><html><body><p>123</p></body></html>};
+      is +test::pack1_2->destroyed, 1;
+      done $c;
+      undef $c;
+    } $c;
+  });
+} n => 2, name => 'global variables';
+
+{
+  package test::pack2;
+  my $destroyed = 0;
+  sub DESTROY {
+    $destroyed++;
+  }
+  sub destroyed { return $destroyed }
+}
+test {
+  my $c = shift;
+
+  my $text = q{
+    <html>
+    <body>
+      <t:my as=$Hoge x=" bless [123], 'test::pack2' ">
+      <p><t:text value="$Hoge->[0]"></p>
+  };
+
+  my $dom = Web::DOM::Implementation->new;
+  my $doc = $dom->create_document;
+
+  my $parser = Temma::Parser->new;
+  $parser->parse_char_string ($text => $doc);
+
+  my $pro = Temma::Processor->new;
+  open my $file, '>:utf8', \(my $result = '');
+  $pro->process_document ($doc => $file, ondone => sub {
+    test {
+      $result = decode 'utf-8', $result;
+      is $result, qq{<!DOCTYPE html><html><body><p>123</p></body></html>};
+      is +test::pack2->destroyed, 1;
+      done $c;
+      undef $c;
+    } $c;
+  });
+} n => 2, name => 't:my variables';
+
 run_tests;
 
 =head1 LICENSE
 
-Copyright 2012-2015 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2016 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -172,6 +172,10 @@ sub _process ($$) {
     eval {
       $self->__process ($fh);
     };
+    {
+      local $@;
+      $self->_cleanup;
+    }
     if ($@) {
       my $exception = $@;
       if (UNIVERSAL::isa ($exception, 'Temma::Exception')) {
@@ -1126,6 +1130,7 @@ sub __process ($$) {
       next if $self->_close_start_tag ($process, $fh);
       $fh->print ('');
       if ($process->{ondone}) {
+        $self->_cleanup;
         $process->{ondone}->($self);
       }
     } elsif ($process->{type} eq 'barehtml') {
@@ -1564,11 +1569,19 @@ sub _print_msgid ($$$$$;%) {
   }
 } # _print_msgid
 
+sub _cleanup ($) {
+  my $self = $_[0];
+  if (defined $self->{eval_package}) {
+    no strict;
+    %{$self->{eval_package}.'::'} = ();
+  }
+} # _cleanup
+
 1;
 
 =head1 LICENSE
 
-Copyright 2012-2015 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2016 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

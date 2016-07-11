@@ -1,5 +1,29 @@
 {
    "results" : {
+      "64434a02c9826c87ec168ee6507d11ce107e5270" : {
+         "count" : 0,
+         "data_sets" : {
+            "empty" : {
+               "count" : 5,
+               "dry_elapsed" : 0.190826177597046,
+               "elapsed" : 0.0518653869628906,
+               "elapsed_per_size" : 0.0518653869628906,
+               "size" : 0,
+               "total_elapsed" : 1.21345782279968
+            },
+            "swwspots" : {
+               "count" : 4,
+               "dry_elapsed" : 0.192689895629883,
+               "elapsed" : 0.118343770503998,
+               "elapsed_per_size" : 9.11528695247615e-06,
+               "size" : 12983,
+               "total_elapsed" : 1.24413466453552
+            }
+         },
+         "git_rev" : "64434a02c9826c87ec168ee6507d11ce107e5270",
+         "key" : "64434a02c9826c87ec168ee6507d11ce107e5270",
+         "timestamp" : 1422972752.46711
+      },
       "generated tokenizer" : {
          "count" : 0,
          "data_sets" : {
