@@ -105,6 +105,9 @@ for (glob $test_data_d->file ('*.dat')) {
         ($opt{line}, $opt{column}) = index_pair_to_lc_pair
             $dids, $opt{di}, $opt{index};
 
+        ## Error messages depend on Perl version...
+        $opt{type} =~ s{ \(did you forget to declare "my [^"]+"\?\)}{}g;
+
         push @error,
             (($opt{f} && $opt{f} ne $initial_file_name) ? $opt{f} . ';' : '') .
             join ';', map { 
