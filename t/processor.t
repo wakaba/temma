@@ -106,7 +106,7 @@ for (glob $test_data_d->file ('*.dat')) {
             $dids, $opt{di}, $opt{index};
 
         ## Error messages depend on Perl version...
-        $opt{type} =~ s{ \(did you forget to declare "my [^"]+"\?\)}{}g;
+        $opt{value} =~ s{ \(did you forget to declare "my [^"]+"\?\)}{}g;
 
         push @error,
             (($opt{f} && $opt{f} ne $initial_file_name) ? $opt{f} . ';' : '') .
