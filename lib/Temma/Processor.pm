@@ -1100,6 +1100,8 @@ sub __process ($$) {
       }
     } elsif ($process->{type} eq 'for block') {
       my $index = $process->{index};
+      next unless defined $index; # end of for
+      my $block_name = $process->{block_name};
       if (++$process->{index} <= $#{$process->{items}}) {
         unshift @{$self->{processes}}, $process;
         $self->_schedule_nodes
@@ -1107,9 +1109,12 @@ sub __process ($$) {
              {preserve => 'preserve', trim => 'trim'}->{$process->{sep_space}} || $process->{space},
              binds => $process->{node_info}->{binds})
                 if @{$process->{sep_nodes}};
+      } else {
+        unshift @{$self->{processes}},
+            {type => 'for block',
+             block_name => $block_name}; # end of for
       }
       
-      my $block_name = $process->{block_name};
       my $binds = $process->{node_info}->{binds} || {};
       if ($process->{bound_to}) {
         $binds = {%$binds, $process->{bound_to} => [$process->{items}, $index]};

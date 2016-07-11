@@ -267,3 +267,26 @@ a<p>
 <p><t:for x=[1,2] name=b><t:for x=[3,4] name=a>q<t:last for=b>y</t:for></t:for>
 #output
 <!DOCTYPE html><html><body><p>q</p></body></html>
+
+#data
+<p><t:for x=[1,2,3] as=$i>
+  <t:if x="$i == 2">a<t:last>b<t:else>c</t:if>
+</t:for>d
+#output
+<!DOCTYPE html><html><body><p>cad</p></body></html>
+
+#data
+<p><t:for x=[1,2,3] as=$i>
+  <t:if x="$i == 3">a<t:last>b<t:else>c</t:if>
+</t:for>d
+#output
+<!DOCTYPE html><html><body><p>ccad</p></body></html>
+
+#data
+<p><t:for x=[1,2,3] as=$i name=I>
+  <t:for x=[1,2,3] as=$j name=J>
+    <t:if x="$i == 3 and $j == 3">a<t:last name=I>b<t:else>c</t:if>
+  </t:for>
+</t:for>d
+#output
+<!DOCTYPE html><html><body><p>ccccccccad</p></body></html>
