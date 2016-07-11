@@ -1112,8 +1112,6 @@ a<p><t:attr><t:for><t:attr><t:if><t:last></t:if></t:for>x
 #data
 <p><t:try>aaa<p>bbb</t:try>aaa
 #errors
-1;14;m;not closed;;t:try
-1;20;m;unmatched end tag;;t:try
 #document
 | <!DOCTYPE html>
 | <html>
@@ -1121,8 +1119,9 @@ a<p><t:attr><t:for><t:attr><t:if><t:last></t:if></t:for>x
 |     <p>
 |       <temma try>
 |         "aaa"
-|     <p>
-|       "bbbaaa"
+|         <p>
+|           "bbb"
+|       "aaa"
 
 #data
 <p><t:try>hh<t:try>aa<t:catch>b</t:try>cc<t:catch>dd</t:try>x
