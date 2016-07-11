@@ -1,0 +1,28 @@
+#data
+<html>
+<t:include path=hoge />
+<link n=1>x
+#data hoge
+<link n=2>
+#output
+<!DOCTYPE html><html><head><link n="2">
+<link n="1"></head><body>x</body></html>
+
+#data
+<html>
+<t:include path=hoge />
+<link n=1>b<m:a/>
+#data hoge
+<t:macro name=a>A</t:macro>
+#output
+<!DOCTYPE html><html><head>
+<link n="1"></head><body>bA</body></html>
+
+#data
+<html>
+<t:macro name=a>A</t:macro>
+<t:include path=hoge />
+<link n=1>b<m:a/>
+#data hoge
+#output
+<!DOCTYPE html><html><head><link n="1"></head><body>bA</body></html>
