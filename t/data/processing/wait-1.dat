@@ -149,6 +149,6 @@ a<t:wait cv="new Test::Temma::CV">b<t:text value=die>c
 <!DOCTYPE html><html><body>ab</body></html>
 
 #data
-a<t:wait cv=' our $hoge = (defined wantarray ? 1 : 0) . (wantarray ? 1 : 0); new Test::Temma::CV '><t:text value=our$hoge>
+a<t:wait cv=' our $hoge = (defined wantarray ? 1 : 0) . (wantarray ? 1 : 0); new Test::Temma::CV '><t:text value=our$hoge>z
 #output
-<!DOCTYPE html><html><body>a10</body></html>
+<!DOCTYPE html><html><body>a10z</body></html>

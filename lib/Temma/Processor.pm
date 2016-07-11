@@ -172,10 +172,6 @@ sub _process ($$) {
     eval {
       $self->__process ($fh);
     };
-    {
-      local $@;
-      $self->_cleanup;
-    }
     if ($@) {
       my $exception = $@;
       if (UNIVERSAL::isa ($exception, 'Temma::Exception')) {
@@ -221,6 +217,7 @@ sub _process ($$) {
         unshift @{$self->{processes}}, $close;
         redo A;
       } else {
+        $self->_cleanup;
         die $exception;
       }
     }
