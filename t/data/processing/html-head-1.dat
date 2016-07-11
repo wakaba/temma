@@ -1,0 +1,4 @@
+#data
+<html><t:attr name="'a'" value=1><head><link>
+#output
+<!DOCTYPE html><html a="1"><head><link></head></html>

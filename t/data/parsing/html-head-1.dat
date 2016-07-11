@@ -1,0 +1,11 @@
+#data
+<html><t:attr name="'a'" value=1><head><link>
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <temma attr>
+|     name="'a'"
+|     value="1"
+|   <head>
+|     <link>

@@ -159,38 +159,36 @@ our $RawContent = {
 };
 
 our $CloseIfInScope = {
-  (map { $_ => {p => 1, body => -1, template => -1} } qw(
+  (map { $_ => {p => 1} } qw(
     address article aside blockquote center details dialog dir div dl
     fieldset figcaption figure footer header hgroup main menu nav ol
     section summary ul h1 h2 h3 h4 h5 h6 pre listing form plaintext
     form table hr isindex xmp
   )),
-  p => {p => 1, body => -1, template => -1},
-  li => {li => 1, ol => -1, ul => -1, menu => -1, dir => -1, body => -1,
-         't:if' => -1, 't:for' => -1, 't:try' => -1, template => -1},
-  dt => {dt => 1, dd => 1, dl => -1, body => -1,
-         't:if' => -1, 't:for' => -1, 't:try' => -1, template => -1},
-  dd => {dt => 1, dd => 1, dl => -1, body => -1,
-         't:if' => -1, 't:for' => -1, 't:try' => -1, template => -1},
-  'thead' => {'table' => 0,
-              't:if' => -1, 't:for' => -1, 't:try' => -1, template => -1},
-  'tbody' => {'table' => 0,
-              't:if' => -1, 't:for' => -1, 't:try' => -1, template => -1},
-  'tfoot' => {'table' => 0,
-              't:if' => -1, 't:for' => -1, 't:try' => -1, template => -1},
-  'tr' => {'tr' => 1, 'table' => -1,
-           't:if' => -1, 't:for' => -1, 't:try' => -1, template => -1},
-  'th' => {'th' => 1, 'td' => 1, 'table' => -1,
-           't:if' => -1, 't:for' => -1, 't:try' => -1, template => -1},
-  'td' => {'th' => 1, 'td' => 1, 'table' => -1,
-           't:if' => -1, 't:for' => -1, 't:try' => -1, template => -1},
-  't:else' => {'t:if' => 0, template => -1},
-  't:elsif' => {'t:if' => 0, template => -1},
-  't:sep' => {'t:for' => 0, template => -1},
-  't:catch' => {'t:try' => 0, template => -1},
+  p => {p => 1},
+  li => {li => 1, ol => -1, ul => -1, menu => -1, dir => -1},
+  dt => {dt => 1, dd => 1, dl => -1},
+  dd => {dt => 1, dd => 1, dl => -1},
+  'thead' => {'table' => 0},
+  'tbody' => {'table' => 0},
+  'tfoot' => {'table' => 0},
+  'tr' => {'tr' => 1, 'table' => -1},
+  'th' => {'th' => 1, 'td' => 1, 'table' => -1},
+  'td' => {'th' => 1, 'td' => 1, 'table' => -1},
+  't:else' => {'t:if' => 0},
+  't:elsif' => {'t:if' => 0},
+  't:sep' => {'t:for' => 0},
+  't:catch' => {'t:try' => 0},
   't:field' => {'t:include' => 0, '<m>' => 0, '<msg>' => 0,
-                't:text' => 0, 't:barehtml' => 0, template => -1},
+                't:text' => 0, 't:barehtml' => 0},
 }; # $CloseIfInScope
+for (values %$CloseIfInScope) {
+  for my $x (qw(
+    html head body template t:if t:for t:try t:content
+  )) {
+    $_->{$x} = -1 unless defined $_->{$x};
+  }
+}
 
 our $EndTagOptional = {
   p => 1,

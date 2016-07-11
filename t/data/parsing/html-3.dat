@@ -1,0 +1,23 @@
+#data
+<p><t:if><div>x
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma if>
+|         <div>
+|           "x"
+
+#data
+<p><t:for><h2>x
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <temma for>
+|         <h2>
+|           "x"
