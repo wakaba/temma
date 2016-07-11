@@ -1,0 +1,94 @@
+#data
+<p><template><p>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <template>
+|         content
+|           <p>
+|             "a"
+
+#data
+<address><template><p>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <address>
+|       <template>
+|         content
+|           <p>
+|             "a"
+
+#data
+<p><template><address>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <p>
+|       <template>
+|         content
+|           <address>
+|             "a"
+
+#data
+<li><template><li>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <li>
+|       <template>
+|         content
+|           <li>
+|             "a"
+
+#data
+<dt><template><dd>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <dt>
+|       <template>
+|         content
+|           <dd>
+|             "a"
+
+#data
+<table><tr><td><template><td>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     <table>
+|       <tbody>
+|         <tr>
+|           <td>
+|             <template>
+|               content
+|                 <td>
+|                   "a"
+
+#data
+x<t:if><template><t:else>a
+#errors
+#document
+| <!DOCTYPE html>
+| <html>
+|   <body>
+|     "x"
+|     <temma if>
+|       <template>
+|         content
+|           <temma else>
+|           "a"

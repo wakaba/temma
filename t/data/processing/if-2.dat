@@ -1,0 +1,14 @@
+#data
+<html><base><t:if x=1><meta></t:if><link>a
+#output
+<!DOCTYPE html><html><head><base><meta><link></head><body>a</body></html>
+
+#data
+<html><head><t:if x=1><meta></t:if><link>a
+#output
+<!DOCTYPE html><html><head><meta><link></head><body>a</body></html>
+
+#data
+<html><t:if x=1><meta></t:if><link>a
+#output
+<!DOCTYPE html><html><meta><head><link></head><body>a</body></html>
