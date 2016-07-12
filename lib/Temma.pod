@@ -15,12 +15,6 @@ Temma - An HTML + Perl template processor
     </t:for>
   </ul>
 
-  use Temma;
-  use Path::Class;
-  $f = file ("template.html.tm");
-  binmode $fh, ':utf8';
-  Temma->process_document ($f, {} => $fh);
-
 =head1 DESCRIPTION
 
 Temma is a template processing engine for genearating HTML or plain
@@ -30,8 +24,6 @@ HTML fragment, or plain text.
 
 =head1 MODULES AND DOCUMENTS
 
-L<Temma> - A simplified interface to Temma parser and processor.
-
 L<Temma::Language> - A documentation for the Temma markup language.
 
 L<Temma::Parser> - A parser to convert a textual representation of
@@ -39,76 +31,6 @@ Temma template document into its DOM representation.
 
 L<Temma::Processor> - A processor to convert the DOM representation of
 a Temma template document into result HTML/plain text document.
-
-=head1 METHODS
-
-The C<Temma> module defines following methods.  Note that the C<Temma>
-module does not expose all functionalities implemented by Temma parser
-and processor.
-
-=over 4
-
-=item Temma->process_html ($input, $args => $fh, $cb)
-
-Parse the input as Temma template source document for a complete HTML
-document and write the result document to the file handle.
-
-The first argument must be the character string representing the
-source document or the L<Path::Class::File> object representing the
-file in which the source document is contained.  If the file is
-specified, its content must be a UTF-8 encoded Temma source document.
-
-The second argument must be the hash reference containing arguments to
-the template represented as zero or more name-value pairs.
-
-The third argument must be the object which has the C<print> method
-that receives the character string to be written.
-
-The four argument must be the code reference, which is invoked when
-the parsing and processing has been done.  The code reference is not
-expected to throw any exception.
-
-Examples:
-
-  use Temma;
-  
-  open my $fh, '>', 'path/to/output.html' or die $!;
-  binmode $fh, ':utf8';
-  Temma->process_html (q{<p><t:if x=1>Hello!</t:if>}, $fh, sub {
-    $cv->send;
-  });
-
-  use Temma;
-  
-  open my $fh, '>', 'path/to/output.html' or die $!;
-  binmode $fh, ':utf8';
-  my $input_f = file ('path/to/input.html.tm');
-  Temma->process_html ($input_f, {}, $fh, sub {
-    $cv->send;
-  });
-
-=item Temma->process_html_fragment ($input, $args => $fh, $cb)
-
-Parse the input as Temma template source document for an HTML fragment
-and write the result document to the file handle.
-
-For arguments, see description for the C<process_html> method.
-
-=item Temma->process_plain_text ($input, $args => $fh, $cb)
-
-Parse the input as Temma template source document for a plain text
-document and write the result document to the file handle.
-
-For arguments, see description for the C<process_html> method.
-
-=item $Temma::Locale
-
-The locale object used to process the input.  The locale object set to
-the variable when the aforemetioned methods are used to process the
-input.  For more information on requirements for the locale object,
-see L<Temma::Processor>.
-
-=back
 
 =head1 DESIGN GOALS
 
