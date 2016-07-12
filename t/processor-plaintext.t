@@ -44,14 +44,16 @@ test {
       $initial_file_name ||= $file_name;
     }
 
+    my $doc_to_file_name = {};
+
     my @error;
     my $parser = Temma::Parser->new;
     my $dids = $parser->di_data_set;
     my $onerror = sub {
       my %opt = @_;
       my $node = $opt{node};
-      $opt{f} ||= ($node->owner_document || $node)
-          ->get_user_data ('manakai_source_f') if $node;
+      $opt{file_name} ||= $doc_to_file_name->{$node->owner_document || $node}
+          if defined $node;
       while ($node) {
         my $sl = $node->manakai_get_source_location;
         unless ($sl->[1] == -1) {
@@ -65,7 +67,7 @@ test {
           $dids, $opt{di}, $opt{index};
 
       push @error,
-          (($opt{f} && $opt{f} ne $initial_file_name) ? $opt{f} . ';' : '') .
+          (defined $opt{file_name} && $opt{file_name} ne $initial_file_name ? $opt{file_name} . ';' : '') .
           join ';', map { 
             defined $_ ? $_ : '';
           } @opt{qw(line column level type value text)};
@@ -74,27 +76,25 @@ test {
     my $oninclude = sub {
       my $x = $_[0];
 
-      my $base_f = $x->{base_f};
+      my $base_f = file ($doc_to_file_name->{$x->{context}->owner_document});
       my $included_f = file ($x->{path});
       $included_f = $included_f->absolute ($base_f->dir) if $base_f;
 
       my $file_name = $included_f->stringify;
       $file_name =~ s{/[^/]+/\.\.(?=/|$)}{}g;
-      $included_f = file ($file_name);
 
       my $data = $data_by_file_name->{$file_name};
       die "File |$file_name| not found" unless $data;
 
       my $parser = $x->{get_parser}->();
       $parser->onerror (sub {
-        $x->{onerror}->(@_, f => $included_f);
+        $x->{onerror}->(@_, file_name => $file_name);
       });
 
       my $doc = $x->{create_document}->();
-      $x->{doc_to_f}->{$doc} = $included_f;
       $parser->parse_char_string ($data->[0] => $doc);
-      $doc->set_user_data (manakai_source_f => $included_f);
-      $doc->set_user_data (manakai_source_file_name => $included_f->stringify);
+      $doc_to_file_name->{$doc} = $file_name;
+      $x->{doc_to_path}->{$doc} = $file_name;
       
       return $doc;
     }; # oninclude
@@ -107,7 +107,7 @@ test {
     $parser->onerror ($onerror);
     $parser->parse_char_string ($data->[0] => $doc);
     $doc->set_user_data (manakai_source_f => file ($initial_file_name));
-    $doc->set_user_data (manakai_source_file_name => $initial_file_name);
+    $doc_to_file_name->{$doc} = $initial_file_name;
 
     my $output = '';
     open my $fh, '>', \$output;

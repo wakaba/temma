@@ -214,6 +214,8 @@ repository:
 
 =back
 
+Although not required, some of features depend on L<Path::Class>.
+
 =head1 DEVELOPMENT
 
 Latest version of Temma implementation is available in the Git
