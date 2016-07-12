@@ -8,13 +8,12 @@ sub _eval ($) {
 } # _eval
 #
 our $VERSION = '4.0';
-use Path::Class;
 use Web::DOM::Node;
 use Web::HTML::SourceMap;
 use Temma::Defs;
 
 sub new ($) {
-  return bless {}, $_[0];
+  return bless {doc_to_f => {}}, $_[0];
 } # new
 
 sub onerror ($;$) {
@@ -23,6 +22,7 @@ sub onerror ($;$) {
   }
   return $_[0]->{onerror} ||= do {
     my $dids = $_[0]->di_data_set;
+    my $doc_to_f = $_[0]->{doc_to_f};
     sub {
       my $error = {@_};
       my $text = defined $error->{text} ? qq{ - $error->{text}} : '';
@@ -54,9 +54,8 @@ sub onerror ($;$) {
         #}
       }
       if (defined $error->{node}) {
-        my $fn = ($error->{node}->owner_document or $error->{node})
-            ->get_user_data ('manakai_source_file_name');
-        $doc = 'file "' . $fn . '"' if defined $fn;
+        my $f = $doc_to_f->{$error->{node}->owner_document or $error->{node}};
+        $doc = 'file "' . $f . '"' if defined $f;
       }
       my $pos = "index $error->{index}";
       if (defined $error->{column}) {
@@ -73,9 +72,21 @@ sub oninclude ($;$) {
   }
   return $_[0]->{oninclude} ||= sub {
     my $x = $_[0];
+
+    use Path::Class;
+    my $base_f = $x->{base_f};
+    my $included_f = file ($x->{path});
+    $included_f = $included_f->absolute ($base_f->dir) if $base_f;
+
     my $parser = $x->{get_parser}->();
+    $parser->onerror (sub {
+      $x->{onerror}->(@_, f => $included_f);
+    });
+
     my $doc = $x->{create_document}->();
-    $parser->parse_f ($x->{f} => $doc);
+    $x->{doc_to_f}->{$doc} = $included_f;
+    $parser->parse_f ($included_f => $doc);
+
     return $doc;
   };
 } # oninclude
@@ -140,6 +151,11 @@ sub process_document ($$$;%) {
        node_info => {allow_children => 1}},
       {type => 'end', ondone => $args{ondone}};
 
+  my $f = $doc->get_user_data ('manakai_source_f');
+  if (UNIVERSAL::isa ($f, 'Path::Class::File')) {
+    $self->{doc_to_f}->{$doc} = $f;
+  }
+
   $self->_process ($fh);
 } # process_document
 
@@ -170,6 +186,11 @@ sub process_fragment ($$$;%) {
 
   push @{$self->{processes}},
       {type => 'end', ondone => $args{ondone}};
+
+  my $f = $doc->get_user_data ('manakai_source_f');
+  if (UNIVERSAL::isa ($f, 'Path::Class::File')) {
+    $self->{doc_to_f}->{$doc} = $f;
+  }
 
   $self->_process ($fh);
 } # process_fragment
@@ -676,11 +697,6 @@ sub __process ($$) {
             $self->_before_non_space ($process => $fh)
                 unless $self->{current_tag};
 
-            my $base_f = $node->owner_document->get_user_data
-                ('manakai_source_f'); # or undef
-            my $included_f = file ($path);
-            $included_f = $included_f->absolute ($base_f->dir) if $base_f;
-
             my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
             my ($fields, $has_field) = $self->_process_fields
                 ($node, $sp, $process);
@@ -698,18 +714,19 @@ sub __process ($$) {
             }
 
             my $x = {
-              f => $included_f,
+              base_f => $self->{doc_to_f}->{$node->owner_document}, # or undef
+              path => $path,
+              doc_to_f => $self->{doc_to_f},
+              onerror => $self->onerror,
               create_document => sub {
-                return $node->owner_document->implementation->create_document;
+                my $doc = $node->owner_document->implementation->create_document;
+                return $doc;
               },
               get_parser => sub {
                 require Temma::Parser;
                 my $parser = Temma::Parser->new;
                 $parser->{initial_state} = $parse_context;
                 $parser->di_data_set ($self->di_data_set);
-                $parser->onerror (sub {
-                  $self->onerror->(@_, f => $included_f);
-                });
                 return $parser;
               },
             }; # $x
@@ -1375,9 +1392,9 @@ sub eval_attr_value ($$$;%) {
   if (defined $di) {
     my $dids = $self->di_data_set;
     my ($line, $column) = index_pair_to_lc_pair $dids, $di, $index;
-    my $fn = $node->owner_document->get_user_data ('manakai_source_file_name');
+    my $f = $self->{doc_to_f}->{$node->owner_document};
     $location .= sprintf ' (at %sline %d column %d)',
-        defined $fn ? $fn . ' ' : '', $line || 0, $column || 0;
+        defined $f ? $f . ' ' : '', $line || 0, $column || 0;
   }
   $location =~ s/[\x00-\x1F\x22]+/ /g;
   my $value = qq<local \$_;\n#line 1 "$location"\n> . $attr_node->value . q<;>;

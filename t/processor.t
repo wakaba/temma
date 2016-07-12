@@ -121,19 +121,27 @@ for (glob $test_data_d->file ('*.dat')) {
       my $oninclude = sub {
         my $x = $_[0];
 
-        my $file_name = $x->{f}->stringify;
+        my $base_f = $x->{base_f};
+        my $included_f = file ($x->{path});
+        $included_f = $included_f->absolute ($base_f->dir) if $base_f;
+
+        my $file_name = $included_f->stringify;
         $file_name =~ s{/[^/]+/\.\.(?=/|$)}{}g;
-        $x->{f} = file ($file_name);
+        $included_f = file ($file_name);
 
         my $data = $data_by_file_name->{$file_name};
         die "File |$file_name| not found" unless $data;
 
         my $parser = $x->{get_parser}->();
-        my $doc = $x->{create_document}->();
+        $parser->onerror (sub {
+          $x->{onerror}->(@_, f => $included_f);
+        });
 
+        my $doc = $x->{create_document}->();
+        $x->{doc_to_f}->{$doc} = $included_f;
         $parser->parse_char_string ($data->[0] => $doc);
-        $doc->set_user_data (manakai_source_f => $x->{f});
-        $doc->set_user_data (manakai_source_file_name => $x->{f}->stringify);
+        $doc->set_user_data (manakai_source_f => $included_f);
+        $doc->set_user_data (manakai_source_file_name => $included_f->stringify);
 
         return $doc;
       }; # oninclude
