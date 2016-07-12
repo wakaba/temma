@@ -114,10 +114,6 @@ repository:
 
 =over 4
 
-=item charclass
-
-<https://github.com/wakaba/perl-charclass>
-
 =item web-encodings
 
 <https://github.com/manakai/perl-web-encodings>
@@ -129,10 +125,6 @@ repository:
 =item web-markup
 
 <https://github.com/manakai/perl-web-markup>
-
-=item web-url
-
-<https://github.com/manakai/perl-web-url>
 
 =back
 

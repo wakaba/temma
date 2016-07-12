@@ -1,7 +1,3 @@
-[submodule "modules/perl-charclass"]
-	path = modules/perl-charclass
-	url = git://github.com/wakaba/perl-charclass
-	track = master
 [submodule "t_deps/modules/testdataparser"]
 	path = t_deps/modules/testdataparser
 	url = git://github.com/wakaba/testdataparser
@@ -13,10 +9,6 @@
 [submodule "modules/web-dom"]
 	path = modules/web-dom
 	url = git://github.com/manakai/perl-web-dom
-	track = master
-[submodule "modules/web-url"]
-	path = modules/web-url
-	url = git://github.com/manakai/perl-web-url
 	track = master
 [submodule "modules/web-markup"]
 	path = modules/web-markup
