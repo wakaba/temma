@@ -43,7 +43,7 @@ error handler is specified is to warn the description of the error.
 For more information on error handler, see L<Whatpm::Error>
 <https://github.com/wakaba/manakai/blob/master/lib/Whatpm/Errors.pod>.
 For list of error types, see
-<http://suika.fam.cx/gate/2007/html/error-description#temma>.
+<https://suika.fam.cx/gate/2007/html/error-description#temma>.
 
 =item $dids = $processor->di_data_set
 
@@ -56,7 +56,7 @@ The value should not be set while the processor is running.  If the
 value is changed, the result is undefined.
 
 See also SuikaWiki:manakai index data structure
-<http://wiki.suikawiki.org/n/manakai%20index%20data%20structures>.
+<https://wiki.suikawiki.org/n/manakai%20index%20data%20structures>.
 
 =item $processor->locale ($locale)
 
@@ -223,7 +223,7 @@ Wakaba <wakaba@suikawiki.org>.
 
 =head1 LICENSE
 
-Copyright 2012-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2016 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
