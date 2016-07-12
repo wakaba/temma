@@ -10,13 +10,13 @@ use Test::Differences;
 use Test::HTCT::Parser;
 use Temma::Parser;
 use Temma::Processor;
+use Web::Encoding qw(decode_web_utf8);
 use Web::DOM::Implementation;
 use Web::DOM::Document;
 use Web::HTML::Dumper;
 use Web::HTML::SourceMap;
 use Temma::Defs;
 use Test::X1;
-use Encode;
 
 my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('processing');
 
@@ -171,7 +171,7 @@ for (glob $test_data_d->file ('*.dat')) {
         $cv->send;
       }
 
-      $output = decode 'utf8', $output;
+      $output = decode_web_utf8 $output;
       eq_or_diff $output, $test->{output}->[0];
 
       eq_or_diff [sort { $a cmp $b } @error],
@@ -273,7 +273,7 @@ test {
     hoge => "hoge fuga\x{45000}",
   }, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<!DOCTYPE html><html><body><p>hoge fuga\x{45000}</p></body></html>};
       done $c;
     } $c;
@@ -304,7 +304,7 @@ test {
     hoge => {21 => "hoge fuga\x{45000}"},
   }, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<!DOCTYPE html><html><body><p>hoge fuga\x{45000}</p></body></html>};
       done $c;
     } $c;
@@ -330,7 +330,7 @@ test {
     hoge => undef,
   }, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<!DOCTYPE html><html><body><p>2</p></body></html>};
       done $c;
     } $c;
@@ -350,7 +350,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_document ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<hoge></hoge><fuga></fuga>};
       done $c;
     } $c;
@@ -372,7 +372,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_document ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<hoge></hoge><fuga></fuga>};
       done $c;
     } $c;
@@ -393,7 +393,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_fragment ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<p>abc</p><p>xyz</p>foo};
       done $c;
     } $c;
@@ -412,7 +412,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_fragment ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{};
       done $c;
     } $c;
@@ -435,7 +435,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_fragment ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<p>abc</p><p>xyz</p>foo};
       done $c;
     } $c;
@@ -454,7 +454,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_fragment ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<p>abc</p><p>xyz</p>foo};
       done $c;
     } $c;
@@ -474,7 +474,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_fragment ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{  <p>abc</p><p>xyz</p>foo   };
       done $c;
     } $c;
@@ -494,7 +494,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_fragment ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{  <p>abc</p><p>xyz</p>foo   };
       done $c;
     } $c;
@@ -519,7 +519,7 @@ test {
     aa => "120 21",
   }, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{ax120 21};
       done $c;
     } $c;
@@ -554,7 +554,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_document ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<!DOCTYPE html><html><body><p>123</p></body></html>};
       is +test::pack1->destroyed, 1;
       done $c;
@@ -592,7 +592,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_document ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<!DOCTYPE html><html><body><p>123</p></body></html>};
       is +test::pack1_2->destroyed, 1;
       done $c;
@@ -629,7 +629,7 @@ test {
   open my $file, '>:utf8', \(my $result = '');
   $pro->process_document ($doc => $file, ondone => sub {
     test {
-      $result = decode 'utf-8', $result;
+      $result = decode_web_utf8 $result;
       is $result, qq{<!DOCTYPE html><html><body><p>123</p></body></html>};
       is +test::pack2->destroyed, 1;
       done $c;

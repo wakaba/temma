@@ -2,7 +2,8 @@ package Temma::Parser;
 use strict;
 use warnings;
 no warnings 'utf8';
-our $VERSION = '5.0';
+our $VERSION = '6.0';
+use Web::Encoding qw(decode_web_utf8);
 use Web::HTML::SourceMap;
 use Web::Temma::Tokenizer;
 use Temma::Defs;
@@ -99,10 +100,7 @@ sub parse_char_string ($$$) {
 
 sub parse_f ($$$) {
   my ($self, $f => $doc) = @_;
-  require Encode;
-  $self->parse_char_string
-      (Encode::decode ('utf-8', scalar $f->slurp), # or die # XXX Web::Encoding
-       $doc);
+  $self->parse_char_string ((decode_web_utf8 scalar $f->slurp), $doc);
   $doc->set_user_data (manakai_source_f => $f);
   $doc->set_user_data (manakai_source_file_name => $f->stringify);
   return $doc;

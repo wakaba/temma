@@ -10,12 +10,12 @@ use Test::Differences;
 use Test::HTCT::Parser;
 use Temma::Parser;
 use Temma::Processor;
+use Web::Encoding qw(decode_web_utf8);
 use Web::DOM::Document;
 use Web::HTML::Dumper;
 use Web::HTML::SourceMap;
 use Temma::Defs;
 use Test::X1;
-use Encode;
 
 my $test_data_d = file (__FILE__)->dir->subdir ('data')->subdir ('processing');
 
@@ -130,7 +130,7 @@ test {
       $cv->send;
     }
 
-    $output = decode 'utf8', $output;
+    $output = decode_web_utf8 $output;
     eq_or_diff $output, $test->{output}->[0];
 
     eq_or_diff [sort { $a cmp $b } @error],
