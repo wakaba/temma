@@ -8,6 +8,7 @@ sub _eval ($) {
 } # _eval
 #
 our $VERSION = '5.0';
+use Web::DOM::Document;
 use Web::DOM::Node;
 use Web::HTML::SourceMap;
 use Temma::Defs;
@@ -83,7 +84,7 @@ sub oninclude ($;$) {
       $x->{onerror}->(@_, f => $included_f);
     });
 
-    my $doc = $x->{create_document}->();
+    my $doc = Web::DOM::Document->new;
     $x->{doc_to_path}->{$doc} = $included_f;
     $parser->parse_f ($included_f => $doc);
 
@@ -718,9 +719,6 @@ sub __process ($$) {
               path => $path,
               doc_to_path => $self->{doc_to_path},
               onerror => $self->onerror,
-              create_document => sub {
-                return $node->owner_document->implementation->create_document;
-              },
               get_parser => sub {
                 require Temma::Parser;
                 my $parser = Temma::Parser->new;
@@ -1115,8 +1113,7 @@ sub __process ($$) {
       } elsif ($process->{node_info}->{rawtext}) {
         my $value = ${$process->{node_info}->{rawtext_value}};
 
-        my $dom = $process->{node_info}->{node}->owner_document->implementation;
-        my $doc = $dom->create_document;
+        my $doc = Web::DOM::Document->new;
         $doc->manakai_is_html (1);
 
         my $el = $doc->create_element ('div');

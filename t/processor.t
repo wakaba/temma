@@ -138,7 +138,7 @@ for (glob $test_data_d->file ('*.dat')) {
           $x->{onerror}->(@_, file_name => $file_name);
         });
 
-        my $doc = $x->{create_document}->();
+        my $doc = new Web::DOM::Document;
         $parser->parse_char_string ($data->[0] => $doc);
         $doc_to_file_name->{$doc} = $file_name;
         $x->{doc_to_path}->{$doc} = $file_name;
