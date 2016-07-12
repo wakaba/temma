@@ -697,76 +697,86 @@ sub __process ($$) {
               $n = $n->parent_node;
             }
 
-            $self->process_include
-                ({
-                   f => $included_f,
-                   create_document => sub {
-                     return $node->owner_document->implementation->create_document;
-                   },
-                   get_parser => sub {
-                     require Temma::Parser;
-                     my $parser = Temma::Parser->new;
-                     $parser->{initial_state} = $parse_context;
-                     $parser->di_data_set ($self->di_data_set);
-                     $parser->onerror (sub {
-                       $self->onerror->(@_, f => $included_f);
-                     });
-                     return $parser;
-                   },
-                 },
-                 onparsed => sub {
-                   my $html_el = $_[0]->manakai_html;
-                   my $binds = {has_field => $has_field};
-                   if ($html_el) {
-                     my $params = $self->_get_params ($html_el);
-                     for my $param (@{$params}) {
-                       my $value = $self->eval_attr_value
-                           ($node, $param->[0],
-                            nsurl => TEMMA_MACRO_NS,
-                            required => $param->[1] ? undef : 'm',
-                            node_info => $process->{node_info});
-                       $binds->{$param->[0]} = [[$value], 0];
-                     }
-                   }
+            my $x = {
+              f => $included_f,
+              create_document => sub {
+                return $node->owner_document->implementation->create_document;
+              },
+              get_parser => sub {
+                require Temma::Parser;
+                my $parser = Temma::Parser->new;
+                $parser->{initial_state} = $parse_context;
+                $parser->di_data_set ($self->di_data_set);
+                $parser->onerror (sub {
+                  $self->onerror->(@_, f => $included_f);
+                });
+                return $parser;
+              },
+            }; # $x
+            my $onparsed = sub {
+              my $html_el = $_[0]->manakai_html;
+              my $binds = {has_field => $has_field};
+              if ($html_el) {
+                my $params = $self->_get_params ($html_el);
+                for my $param (@{$params}) {
+                  my $value = $self->eval_attr_value
+                      ($node, $param->[0],
+                       nsurl => TEMMA_MACRO_NS,
+                       required => $param->[1] ? undef : 'm',
+                       node_info => $process->{node_info});
+                  $binds->{$param->[0]} = [[$value], 0];
+                }
+              }
 
-                   my $nodes;
-                   if ($parse_context eq 'html') {
-                     if ($html_el) {
-                       my $attrs = $html_el->attributes;
-                       if (@$attrs) {
-                         if ($self->{current_tag} and
-                             $self->{current_tag}->{lnn} eq 'html') {
-                           $self->_print_attrs
-                               ($attrs => $fh, $self->{current_tag});
-                         } else {
-                           $self->onerror->(type => 'temma:start tag already closed',
-                                            node => $html_el,
-                                            level => 'm');
-                         }
-                       }
-                       $nodes = $html_el->child_nodes->to_a;
-                     }
-                   } else {
-                     my $body_el = $_[0]->body;
-                     $nodes = $body_el->child_nodes->to_a if $body_el;
-                   }
-                   $self->_schedule_nodes
-                       ([grep { $_->node_type == ELEMENT_NODE or
-                                $_->node_type == TEXT_NODE } @$nodes],
-                        $process->{node_info}, 'trim',
-                        binds => $binds,
-                        fields => $fields,
-                        is_entity_boundary => 1,
-                        macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1)
-                           if $nodes;
-                   $self->_process ($fh);
-                 },
-                 onerror => sub {
-                   $self->onerror->(type => 'temma:include error',
-                                    level => 'm',
-                                    value => $_[0],
-                                    node => $node);
-                 });
+              my $nodes;
+              if ($parse_context eq 'html') {
+                if ($html_el) {
+                  my $attrs = $html_el->attributes;
+                  if (@$attrs) {
+                    if ($self->{current_tag} and
+                        $self->{current_tag}->{lnn} eq 'html') {
+                      $self->_print_attrs
+                          ($attrs => $fh, $self->{current_tag});
+                    } else {
+                      $self->onerror->(type => 'temma:start tag already closed',
+                                       node => $html_el,
+                                       level => 'm');
+                    }
+                  }
+                  $nodes = $html_el->child_nodes->to_a;
+                }
+              } else {
+                my $body_el = $_[0]->body;
+                $nodes = $body_el->child_nodes->to_a if $body_el;
+              }
+              $self->_schedule_nodes
+                  ([grep { $_->node_type == ELEMENT_NODE or
+                           $_->node_type == TEXT_NODE } @$nodes],
+                   $process->{node_info}, 'trim',
+                   binds => $binds,
+                   fields => $fields,
+                   is_entity_boundary => 1,
+                   macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1)
+                      if $nodes;
+              $self->_process ($fh);
+            }; # onparsed
+            my $onerror = sub {
+              $self->onerror->(type => 'temma:include error',
+                               level => 'm',
+                               value => $_[0],
+                               node => $node);
+            }; # onerror
+
+            my $code = $self->oninclude;
+            my $result = eval { $code->($x) };
+            if ($@) {
+              $onerror->($@);
+            } elsif (UNIVERSAL::can ($result, 'then')) {
+              eval { $result->then ($onparsed, $onerror) };
+              $onerror->($@) if $@;
+            } else {
+              $onparsed->($result);
+            }
             return;
           } elsif ($ln eq 'call') {
             $self->eval_attr_value
@@ -1500,23 +1510,6 @@ sub _process_fields ($$$$) {
   
   return ($fields, $has_field);
 } # _process_fields
-
-sub process_include ($$%) {
-  my ($self, $x, %args) = @_;
-
-  my $code = $self->oninclude;
-  my $result = eval { $code->($x) };
-  if ($@) {
-    $args{onerror}->($@);
-  } elsif (UNIVERSAL::can ($result, 'then')) {
-    eval { $result->then ($args{onparsed}, $args{onerror}) };
-    if ($@) {
-      $args{onerror}->($@);
-    }
-  } else {
-    $args{onparsed}->($result);
-  }
-} # process_include
 
 sub _print_msgid ($$$$$;%) {
   my ($self, $node, $process => $msgid, $fh, %args) = @_;
