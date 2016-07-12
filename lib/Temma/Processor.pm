@@ -67,6 +67,19 @@ sub onerror ($;$) {
   };
 } # onerror
 
+sub oninclude ($;$) {
+  if (@_ > 1) {
+    $_[0]->{oninclude} = $_[1];
+  }
+  return $_[0]->{oninclude} ||= sub {
+    my $x = $_[0];
+    my $parser = $x->{get_parser}->();
+    my $doc = $x->{create_document}->();
+    $parser->parse_f ($x->{f} => $doc);
+    return $doc;
+  };
+} # oninclude
+
 sub locale ($;$) {
   if (@_ > 1) {
     $_[0]->{locale} = $_[1];
@@ -1491,18 +1504,18 @@ sub _process_fields ($$$$) {
 sub process_include ($$%) {
   my ($self, $x, %args) = @_;
 
-  my $parser = $x->{get_parser}->();
-  my $doc = $x->{create_document}->();
-
-  eval {
-    $parser->parse_f ($x->{f} => $doc);
-  };
+  my $code = $self->oninclude;
+  my $result = eval { $code->($x) };
   if ($@) {
     $args{onerror}->($@);
-    return;
+  } elsif (UNIVERSAL::can ($result, 'then')) {
+    eval { $result->then ($args{onparsed}, $args{onerror}) };
+    if ($@) {
+      $args{onerror}->($@);
+    }
+  } else {
+    $args{onparsed}->($result);
   }
-  
-  $args{onparsed}->($doc);
 } # process_include
 
 sub _print_msgid ($$$$$;%) {

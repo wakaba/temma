@@ -71,18 +71,15 @@ test {
           } @opt{qw(line column level type value text)};
     }; # onerror
 
-    local *Temma::Processor::process_include = sub ($$%) {
-      my ($self, $x, %args) = @_;
+    my $oninclude = sub {
+      my $x = $_[0];
 
       my $file_name = $x->{f}->stringify;
       $file_name =~ s{/[^/]+/\.\.(?=/|$)}{}g;
       $x->{f} = file ($file_name);
 
       my $data = $data_by_file_name->{$file_name};
-      unless ($data) {
-        $args{onerror}->("File |$file_name| not found");
-        return;
-      }
+      die "File |$file_name| not found" unless $data;
 
       my $parser = $x->{get_parser}->();
       my $doc = $x->{create_document}->();
@@ -90,9 +87,9 @@ test {
       $parser->parse_char_string ($data->[0] => $doc);
       $doc->set_user_data (manakai_source_f => $x->{f});
       $doc->set_user_data (manakai_source_file_name => $x->{f}->stringify);
-  
-      $args{onparsed}->($doc);
-    }; # process_include
+
+      return $doc;
+    }; # oninclude
 
     my $doc = Web::DOM::Document->new;
     my $data = $data_by_file_name->{$initial_file_name};
@@ -110,6 +107,7 @@ test {
 
     my $processor = Temma::Processor->new;
     $processor->onerror ($onerror);
+    $processor->oninclude ($oninclude);
     $processor->di_data_set ($dids);
 
     if ($test->{locale}) {

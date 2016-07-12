@@ -105,8 +105,11 @@ for (glob $test_data_d->file ('*.dat')) {
         ($opt{line}, $opt{column}) = index_pair_to_lc_pair
             $dids, $opt{di}, $opt{index};
 
-        ## Error messages depend on Perl version...
-        $opt{value} =~ s{ \(did you forget to declare "my [^"]+"\?\)}{}g;
+        if (defined $opt{value}) {
+          ## Error messages depend on Perl version...
+          $opt{value} =~ s{ \(did you forget to declare "my [^"]+"\?\)}{}g;
+          $opt{value} =~ s{ at .*?processor.t line \d+\.?\s*$}{}g;
+        }
 
         push @error,
             (($opt{f} && $opt{f} ne $initial_file_name) ? $opt{f} . ';' : '') .
@@ -115,18 +118,15 @@ for (glob $test_data_d->file ('*.dat')) {
             } @opt{qw(line column level type value text)};
       }; # onerror
 
-      local *Temma::Processor::process_include = sub ($$%) {
-        my ($self, $x, %args) = @_;
+      my $oninclude = sub {
+        my $x = $_[0];
 
         my $file_name = $x->{f}->stringify;
         $file_name =~ s{/[^/]+/\.\.(?=/|$)}{}g;
         $x->{f} = file ($file_name);
 
         my $data = $data_by_file_name->{$file_name};
-        unless ($data) {
-          $args{onerror}->("File |$file_name| not found");
-          return;
-        }
+        die "File |$file_name| not found" unless $data;
 
         my $parser = $x->{get_parser}->();
         my $doc = $x->{create_document}->();
@@ -135,8 +135,8 @@ for (glob $test_data_d->file ('*.dat')) {
         $doc->set_user_data (manakai_source_f => $x->{f});
         $doc->set_user_data (manakai_source_file_name => $x->{f}->stringify);
 
-        $args{onparsed}->($doc);
-      }; # process_include
+        return $doc;
+      }; # oninclude
 
       my $doc = new Web::DOM::Document;
       my $data = $data_by_file_name->{$initial_file_name};
@@ -151,6 +151,7 @@ for (glob $test_data_d->file ('*.dat')) {
 
       my $processor = Temma::Processor->new;
       $processor->onerror ($onerror);
+      $processor->oninclude ($oninclude);
       $processor->di_data_set ($dids);
 
       if ($test->{locale}) {
