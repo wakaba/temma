@@ -116,11 +116,11 @@ for (glob $test_data_d->file ('*.dat')) {
       }; # onerror
 
       local *Temma::Processor::process_include = sub ($$%) {
-        my ($self, $f, %args) = @_;
+        my ($self, $x, %args) = @_;
 
-        my $file_name = $f->stringify;
+        my $file_name = $x->{f}->stringify;
         $file_name =~ s{/[^/]+/\.\.(?=/|$)}{}g;
-        $f = file ($file_name);
+        $x->{f} = file ($file_name);
 
         my $data = $data_by_file_name->{$file_name};
         unless ($data) {
@@ -128,16 +128,12 @@ for (glob $test_data_d->file ('*.dat')) {
           return;
         }
 
-        my $parser = Temma::Parser->new;
-        my $doc = $args{dom}->create_document;
-        $parser->{initial_state} = $args{parse_context};
-        $parser->di_data_set ($dids);
-        $parser->onerror (sub {
-          $self->onerror->(@_, f => $f);
-        });
+        my $parser = $x->{get_parser}->();
+        my $doc = $x->{create_document}->();
+
         $parser->parse_char_string ($data->[0] => $doc);
-        $doc->set_user_data (manakai_source_f => $f);
-        $doc->set_user_data (manakai_source_file_name => $f->stringify);
+        $doc->set_user_data (manakai_source_f => $x->{f});
+        $doc->set_user_data (manakai_source_file_name => $x->{f}->stringify);
 
         $args{onparsed}->($doc);
       }; # process_include

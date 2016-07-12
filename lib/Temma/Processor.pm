@@ -685,9 +685,22 @@ sub __process ($$) {
             }
 
             $self->process_include
-                ($included_f,
-                 parse_context => $parse_context,
-                 dom => $node->owner_document->implementation,
+                ({
+                   f => $included_f,
+                   create_document => sub {
+                     return $node->owner_document->implementation->create_document;
+                   },
+                   get_parser => sub {
+                     require Temma::Parser;
+                     my $parser = Temma::Parser->new;
+                     $parser->{initial_state} = $parse_context;
+                     $parser->di_data_set ($self->di_data_set);
+                     $parser->onerror (sub {
+                       $self->onerror->(@_, f => $included_f);
+                     });
+                     return $parser;
+                   },
+                 },
                  onparsed => sub {
                    my $html_el = $_[0]->manakai_html;
                    my $binds = {has_field => $has_field};
@@ -1476,23 +1489,18 @@ sub _process_fields ($$$$) {
 } # _process_fields
 
 sub process_include ($$%) {
-  my ($self, $f, %args) = @_;
+  my ($self, $x, %args) = @_;
 
-  my $file = eval { $f->openr };
+  my $parser = $x->{get_parser}->();
+  my $doc = $x->{create_document}->();
+
+  eval {
+    $parser->parse_f ($x->{f} => $doc);
+  };
   if ($@) {
     $args{onerror}->($@);
     return;
   }
-
-  require Temma::Parser;
-  my $parser = Temma::Parser->new;
-  my $doc = $args{dom}->create_document;
-  $parser->{initial_state} = $args{parse_context};
-  $parser->di_data_set ($self->di_data_set);
-  $parser->onerror (sub {
-    $self->onerror->(@_, f => $f);
-  });
-  $parser->parse_f ($f => $doc);
   
   $args{onparsed}->($doc);
 } # process_include
