@@ -279,6 +279,8 @@ document.write ('<script>hoge</script>')
 <t:element name="'SCRIpt'"><![CDATA[<!--
   document.write ('<script>ho<br>ge</script>');
 //--></t:element>
+#errors
+3;18;m;parser:EOF;;
 #output
 <!DOCTYPE html><html><head><script><!--
   document.write ('<script>ho<br>ge</script>');
