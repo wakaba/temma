@@ -98,6 +98,133 @@ sub parse_char_string ($$$) {
   delete $self->{open_elements};
 } # parse_char_string
 
+use AnyEvent;
+use Web::DOM::Document;
+
+sub _sub_main ($) {
+  my $fh = $_[0];
+  my $cv = AE::cv;
+  my $hdl = AnyEvent::Handle->new
+      (fh => $fh,
+       on_eof => sub { $cv->send },
+       on_error => sub { $cv->croak ($_[2]) });
+
+  $hdl->push_read (storable => sub {
+    my $self = __PACKAGE__->new;
+    $self->_parse_char_string_child ($hdl, $_[1]->[0]);
+  });
+
+  $cv->recv;
+} # _sub_main
+
+sub _parse_char_string_child ($$$) {
+  my $self = shift;
+  my $hdl = shift;
+
+  my $dids = $self->di_data_set;
+  my $di = defined $self->{di} ? $self->{di} : @$dids || 1;
+  $self->di ($di);
+  $dids->[$di]->{lc_map} ||= create_index_lc_mapping $_[0];
+
+  $self->ontokens (sub {
+    $hdl->push_write (storable => ['tokens', $_[1]]);
+  });
+  $self->onerrors (sub {
+    $hdl->push_write (storable => ['error', $_[1]]);
+  });
+
+  delete $self->{tainted};
+  $self->{token_count} = 0;
+  my $doc = new Web::DOM::Document; # XXX dummy
+  $self->SUPER::parse_char_string ($_[0], $doc);
+
+  $hdl->push_write (storable => ['end']);
+  $hdl->push_shutdown;
+} # _parse_char_string_child
+
+use AnyEvent::Fork;
+use AnyEvent::Handle;
+use Promise;
+sub parse_char_string_forking ($$$) {
+  my $self = shift;
+
+  my $dids = $self->di_data_set;
+  my $di = defined $self->{di} ? $self->{di} : @$dids || 1;
+  $self->di ($di);
+
+  my $fork = AnyEvent::Fork->new;
+  $fork->require ('Temma::Parser');
+
+  delete $self->{tainted};
+  $self->{open_elements} = [];
+
+  my $doc = $_[1];
+  my $doctype = $doc->implementation->create_document_type ('html');
+  my $el = $doc->create_element_ns (HTML_NS, [undef, 'html']);
+  push @{$self->{open_elements}}, [$el, 'html', IM_HTML];
+  my $strict = $doc->strict_error_checking;
+  $doc->strict_error_checking (0);
+
+  $self->{token_count} = 0;
+  if ($self->{initial_state} and
+      $self->{initial_state} eq 'body') {
+    my $body = $doc->create_element_ns (HTML_NS, [undef, 'body']);
+    $el->append_child ($body);
+    push @{$self->{open_elements}}, [$body, 'body', IM_HTML];
+  }
+
+  my ($p_ok, $p_ng);
+  my $p = Promise->new (sub { ($p_ok, $p_ng) = @_ });
+
+  $self->{document} = $doc;
+  $self->{IframeSrcdoc} = $doc->manakai_is_srcdoc;
+  $doc->manakai_is_html (1);
+  $doc->manakai_compat_mode ('no quirks');
+  $doc->remove_child ($_) for $doc->child_nodes->to_list;
+  $self->{nodes} = [$doc];
+  $doc->manakai_set_source_location (['', $self->{di}, 0]);
+
+  my $x;
+  my $sref = \($_[0]);
+  $fork->run (__PACKAGE__.'::_sub_main', sub {
+    my $fh = $_[0];
+    my $hdl = AnyEvent::Handle->new
+        (fh => $fh,
+         on_eof => sub { $_[0]->destroy; $p_ok->($doc) },
+         on_error => sub { $_[0]->destroy; $p_ng->($_[2]) });
+
+    $hdl->push_write (storable => [$$sref]);
+
+    $x = sub {
+      my $type = $_[1]->[0];
+      if ($type eq 'tokens') {
+        $self->_construct ($_[1]->[1]);
+        $hdl->push_read (storable => $x);
+      } elsif ($type eq 'error') {
+        $self->onerrors->($self, $_[1]->[1]);
+        $hdl->push_read (storable => $x);
+      } elsif ($type eq 'end') {
+        $hdl->on_read (sub { });
+      } else {
+        die "Bad type |$type|";
+      }
+    }; # $x
+    $hdl->push_read (storable => $x);
+  }); # run
+
+  return $p->then (sub {
+    $doc->strict_error_checking ($strict);
+    $doc->append_child ($doctype);
+    $doc->append_child ($el);
+    delete $self->{open_elements};
+    undef $x;
+  }, sub {
+    delete $self->{open_elements};
+    undef $x;
+    die $_[0];
+  });
+} # parse_char_string_forking
+
 sub parse_f ($$$) {
   my ($self, $f => $doc) = @_;
   $self->parse_char_string ((decode_web_utf8 scalar $f->slurp), $doc);
