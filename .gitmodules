@@ -18,3 +18,7 @@
 	path = modules/web-encodings
 	url = https://github.com/manakai/perl-web-encodings
 	track = master
+[submodule "modules/promise"]
+	path = modules/promise
+	url = https://github.com/wakaba/perl-promise
+	track = master
