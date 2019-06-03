@@ -154,6 +154,11 @@ Example.  If you prefer AnyEvent condvar:
     $cv->send;
   });
 
+The template processing might be aborted by an exception thrown by
+embedded Perl codes.  An error handler has to be installed by
+C<onerror> method to detect whether the template processing has been
+successfully completed or not.
+
 =back
 
 For more information on the template processing, see
