@@ -8,6 +8,7 @@ sub _eval ($) {
 } # _eval
 #
 our $VERSION = '5.0';
+use Symbol qw(delete_package);
 use Web::DOM::Document;
 use Web::DOM::Node;
 use Web::HTML::SourceMap;
@@ -1426,6 +1427,7 @@ sub eval_attr_value ($$$;%) {
     }
     $error = $@;
   }
+  delete_package $self->{eval_package};
   if ($error) {
     require Temma::Exception;
     my $exception = Temma::Exception->new_from_value ($error);
