@@ -1427,7 +1427,6 @@ sub eval_attr_value ($$$;%) {
     }
     $error = $@;
   }
-  delete_package $self->{eval_package};
   if ($error) {
     require Temma::Exception;
     my $exception = Temma::Exception->new_from_value ($error);
@@ -1603,8 +1602,7 @@ sub _print_msgid ($$$$$;%) {
 sub _cleanup ($) {
   my $self = $_[0];
   if (defined $self->{eval_package}) {
-    no strict;
-    %{$self->{eval_package}.'::'} = ();
+    delete_package $self->{eval_package};
   }
 } # _cleanup
 
@@ -1612,7 +1610,7 @@ sub _cleanup ($) {
 
 =head1 LICENSE
 
-Copyright 2012-2016 Wakaba <wakaba@suikawiki.org>.
+Copyright 2012-2019 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
