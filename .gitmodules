@@ -22,3 +22,7 @@
 	path = modules/promise
 	url = https://github.com/wakaba/perl-promise
 	track = master
+[submodule "modules/streams"]
+	path = modules/streams
+	url = https://github.com/manakai/perl-streams
+	track = master
