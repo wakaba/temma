@@ -1,4 +1,4 @@
-package Temma::Processor;
+package Temma::Compiler;
 use strict;
 use warnings;
 no warnings 'utf8';
@@ -141,24 +141,20 @@ my $TemmaContextNode = sub ($) {
   return $node;
 }; # $TemmaContextNode
 
-sub process_document ($$$;%) {
-  my ($self, $doc => $fh, %args) = @_;
+# XXX
+use Promised::Flow;
+sub compile ($$) {
+  my ($self, $doc) = @_;
 
-  $self->{processes} = [];
   $self->{location_cache} = {};
-  $self->{args} = $args{args} || {};
-  $self->{doc} = $doc; ## Hold ref to Document to not destory until done
-  push @{$self->{processes}},
-      {type => 'node', node => $doc,
-       node_info => {allow_children => 1}},
-      {type => 'end', ondone => $args{ondone}};
 
+  #XXX
   my $f = $doc->get_user_data ('manakai_source_f');
   if (UNIVERSAL::isa ($f, 'Path::Class::File')) {
     $self->{doc_to_path}->{$doc} = $f;
   }
 
-  $self->_process ($fh);
+  return $self->_compile ([$doc]);
 } # process_document
 
 sub process_fragment ($$$;%) {
@@ -186,8 +182,9 @@ sub process_fragment ($$$;%) {
         @{$body->child_nodes->to_a};
   }
 
-  push @{$self->{processes}},
-      {type => 'end', ondone => $args{ondone}};
+#      next if $self->_close_start_tag ($process);
+#      $self->_cleanup;
+#      $process->{ondone}->($self->{result});
 
   my $f = $doc->get_user_data ('manakai_source_f');
   if (UNIVERSAL::isa ($f, 'Path::Class::File')) {
@@ -202,69 +199,27 @@ sub process_plain_text ($$$;%) {
   $self->process_fragment (@_, plain_text => 1);
 } # process_plain_text
 
-sub _process ($$) {
-  my ($self, $fh) = @_;
-  A: {
-    eval {
-      $self->__process ($fh);
-    };
-    if ($@) {
-      my $exception = $@;
-      if (UNIVERSAL::isa ($exception, 'Temma::Exception')) {
-        my $catch;
-        my @close;
-        while (@{$self->{processes}}) {
-          my $process = shift @{$self->{processes}};
-          if ($process->{type} eq 'end block' and
-              $process->{catches}) {
-            for my $c (@{$process->{catches}}) {
-              if (not defined $c->{package} or
-                  $exception->isa_package ($c->{package})) {
-                $catch = $c;
-                last;
-              }
-            }
-            push @close, $process;
-            last if $catch;
-          } elsif ({
-            end => 1, 'end tag' => 1, 'end block' => 1,
-          }->{$process->{type}}) {
-            push @close, $process;
-          }
-        }
+# XXX t:macro is not allowed within t:macro, t:param, t:if, t:for
 
-        my $close = shift @close;
-        unshift @{$self->{processes}}, @close;
-        if ($catch) {
-          my $binds = $catch->{node_info}->{binds} || {};
-          if (defined $catch->{bound_to}) {
-            $binds = {%$binds, $catch->{bound_to} => [[$exception], 0]};
-          }
-          $self->_schedule_nodes
-              ($catch->{nodes}, $catch->{node_info}, $catch->{sp},
-               binds => $binds);
-        } else {
-          #warn $exception->source_text;
-          $self->onerror->(type => 'temma:perl exception',
-                           level => 'm',
-                           value => $exception,
-                           node => $exception->source_node);
-        }
-        unshift @{$self->{processes}}, $close;
-        redo A;
-      } else {
-        $self->_cleanup;
-        die $exception;
+sub _compile ($) {
+  my $self = shift;
+
+  my $result = [];
+  my $processes = [map {
+      if ($_->node_type == 3) {
+        {type => 'text', value => $_->node_value};
+      } else { # 1, document
+        {type => 'node', node => $_};
       }
-    }
-  } # A
-} # _process
+    } @{$_[0]}];
 
-sub __process ($$) {
-  my ($self, $fh) = @_;
+  return Promise->resolve->then (sub {
 
-  while (@{$self->{processes}}) {
-    my $process = shift @{$self->{processes}};
+  return promised_until {
+    return 'done' unless @$processes;
+
+  while (@{$processes}) {
+    my $process = shift @{$processes};
 
     if ($process->{type} eq 'node') {
       my $node = $process->{node};
@@ -273,7 +228,7 @@ sub __process ($$) {
         my $data = $node->data;
         if ($data =~ /[^\x09\x0A\x0C\x0D\x20]/) {
           ## Non white-space node
-          next if $self->_close_start_tag ($process, $fh);
+          next if $self->_close_start_tag ($process => $processes => $result);
           if (not $process->{node_info}->{has_non_space} and 
               not $process->{node_info}->{preserve_space}) {
             $data =~ s/^[\x09\x0A\x0C\x0D\x20]+//;
@@ -282,7 +237,7 @@ sub __process ($$) {
         } else {
           ## White space only Text node
           if ($process->{node_info}->{preserve_space}) {
-            next if $self->_close_start_tag ($process, $fh);
+            next if $self->_close_start_tag ($process => $processes => $result);
           } elsif (not $process->{node_info}->{has_non_space}) {
             next;
           }
@@ -320,109 +275,78 @@ sub __process ($$) {
         if (not length $data) {
           #
         } elsif ($process->{node_info}->{rawtext}) {
-          ${$process->{node_info}->{rawtext_value}} .= $data;
+          push @$result, ['rawtext', $data];
         } elsif ($process->{node_info}->{plaintext}) {
-          $fh->print ($data);
+          push @$result, $data;
         } else {
-          $fh->print (htescape $data);
+          push @$result, htescape $data;
         }
       } elsif ($nt == ELEMENT_NODE) {
         my $ns = $node->namespace_uri || '';
         my $ln = $node->manakai_local_name;
         my $attrs = [];
-        if ($ns eq TEMMA_MSGID_NS) {
-          next if $self->_close_start_tag ($process, $fh);
-          $self->_before_non_space ($process => $fh);
+        if ($ns eq TEMMA_NS) {
+          if ($ln eq 'text') { # <t:text>
+            next if $self->_close_start_tag ($process => $processes => $result);
+            $self->_before_non_space ($process => $result);
 
-          $self->_print_msgid ($node, $process => $ln => $fh);
-          next;
-        } elsif ($ns eq TEMMA_NS) {
-          if ($ln eq 'text') {
-            next if $self->_close_start_tag ($process, $fh);
-            $self->_before_non_space ($process => $fh);
-            
-            my $value = $self->eval_attr_value
-                ($node, 'value', disallow_undef => 'w', required => 'm',
-                 node_info => $process->{node_info});
-            if (defined $value) {
-              if ($process->{node_info}->{rawtext}) {
-                ${$process->{node_info}->{rawtext_value}} .= $value;
-              } elsif ($process->{node_info}->{plaintext}) {
-                $fh->print ($value);
-              } else {
-                $fh->print (htescape $value);
-              }
-            }
-            next;
-          } elsif ($ln eq 'element') {
-            next if $self->_close_start_tag ($process, $fh);
-
-            $ln = $self->eval_attr_value
-                ($node, 'name', required => 'm',
-                 node_info => $process->{node_info});
-            if (defined $ln) {
-              $ln =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
-              $ns = $node->$TemmaContextNode->manakai_get_child_namespace_uri ($ln);
-              if ($ns eq SVG_NS) {
-                $ln = $Web::HTML::ParserData::SVGElementNameFixup->{$ln} || $ln;
-              }
-            }
-          } elsif ($ln eq 'attr' or $ln eq 'class') {
-            if ($self->{current_tag}) {
-              next if $self->{current_tag}->{ln} eq '';
-
-              my $attr_name = $ln eq 'class' ? 'class' :
-                  $self->eval_attr_value ($node, 'name',
-                                          node_info => $process->{node_info});
-              $attr_name = '' unless defined $attr_name;
-              $attr_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
-              my $element_ns = $self->{current_tag}->{ns};
-              if ($element_ns eq SVG_NS) {
-                $attr_name = $Web::HTML::ParserData::SVGAttrNameFixup->{$attr_name} || $attr_name;
-              } elsif ($element_ns eq MML_NS) {
-                $attr_name = $Web::HTML::ParserData::MathMLAttrNameFixup->{$attr_name} || $attr_name;
-              }
-              ## $Web::HTML::ParserData::ForeignAttrNamespaceFixup
-              ## is ignored here as the mapping is no-op for the
-              ## purpose of qualified name serialization.
-
-              unless ($attr_name =~ /\A[A-Za-z_-][A-Za-z0-9_:-]*\z/) {
-                $self->onerror->(type => 'temma:name not serializable',
-                                 node => $node,
-                                 value => $attr_name,
-                                 level => 'm');
-                next;
-              }
-
-              if ($self->{current_tag}->{attrs}->{$attr_name}) {
-                $self->onerror->(type => 'temma:duplicate attr',
-                                 node => $node,
-                                 value => $attr_name,
-                                 level => 'm');
-                next;
-              }
-
-              my $value = $self->eval_attr_value
-                  ($node, $ln eq 'class' ? 'name' : 'value',
-                   disallow_undef => 'w', required => 'm',
-                   node_info => $process->{node_info});
-              if (defined $value) {
-                if ($attr_name eq 'class') {
-                  push @{$self->{current_tag}->{classes} ||= []}, 
-                      grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $value;
-                } else {
-                  $self->{current_tag}->{attrs}->{$attr_name} = 1;
-                  $fh->print (' ' . $attr_name . '="' . (htescape $value) . '"');
-                }
-              }
+            my $dest;
+            if ($process->{node_info}->{rawtext}) {
+              $dest = 'rawtext';
+              $process->{node_info}->{rawtext_has_eval} = 1;
+            } elsif ($process->{node_info}->{plaintext}) {
+              $dest = 'print';
             } else {
+              $dest = 'printescaped';
+            }
+            push @$result, $self->eval_attr_value
+                ($node, 'value', disallow_undef => 'w', required => 'm',
+                 node_info => $process->{node_info},
+                 destination => $dest);
+            next;
+          } elsif ($ln eq 'element') { # <t:element>
+            next if $self->_close_start_tag ($process => $processes => $result);
+
+            push @$result, $self->eval_attr_value
+                ($node, 'name', required => 'm',
+                 node_info => $process->{node_info},
+                 destination => 'openstart');
+
+            # XXX children
+            next;
+          } elsif ($ln eq 'class') { # <t:class>
+            unless (defined $self->{current_tag}) {
               $self->onerror->(type => 'temma:start tag already closed',
                                node => $node,
                                level => 'm');
+              next;
             }
+
+            push @$result, $self->eval_attr_value
+                ($node, 'name',
+                 disallow_undef => 'w', required => 'm',
+                 node_info => $process->{node_info},
+                 destination => 'classes');
             next;
-          } elsif ($ln eq 'comment') {
-            next if $self->_close_start_tag ($process, $fh);
+          } elsif ($ln eq 'attr') { # <t:attr>
+            unless (defined $self->{current_tag}) {
+              $self->onerror->(type => 'temma:start tag already closed',
+                               node => $node,
+                               level => 'm');
+              next;
+            }
+
+            push @$result, $self->eval_attr_value
+                ($node, 'name', node_info => $process->{node_info},
+                 destination => 'attr_name');
+            push @$result, $self->eval_attr_value
+                ($node, 'value',
+                 disallow_undef => 'w', required => 'm',
+                 node_info => $process->{node_info},
+                 destination => 'attr');
+            next;
+          } elsif ($ln eq 'comment') { # <t:comment>
+            next if $self->_close_start_tag ($process => $processes => $result);
 
             if ($process->{node_info}->{rawtext} or
                 $process->{node_info}->{plaintext}) {
@@ -432,192 +356,139 @@ sub __process ($$) {
               next;
             }
 
-            $self->_before_non_space ($process => $fh);
+            $self->_before_non_space ($process => $result);
 
-            my $node_info = {rawtext => 1, rawtext_value => \(my $v = ''),
+            my $node_info = {rawtext => 1,
                              allow_children => 1, comment => 1,
                              has_non_space => 1, preserve_space => 1,
                              binds => $process->{node_info}->{binds},
                              fields => $process->{node_info}->{fields}};
 
-            unshift @{$self->{processes}},
+            unshift @{$processes},
                 {type => 'end tag', node_info => $node_info};
 
-            unshift @{$self->{processes}},
+            unshift @{$processes},
                 map { {type => 'node', node => $_, node_info => $node_info} }
                 grep { $_->node_type == ELEMENT_NODE or
                        $_->node_type == TEXT_NODE }
                 @{$node->child_nodes->to_a};
 
-            $fh->print ("<!--");
+            push @$result, "<!--";
             next;
 
-          } elsif ($ln eq 'if') {
-            $self->_before_non_space ($process => $fh, transparent => 1);
+          } elsif ($ln eq 'if') { # <t:if>
+            $self->_before_non_space ($process => $result, transparent => 1);
 
-            my $value = $self->eval_attr_value
+            push @$result, my $if = ['if'];
+            
+            push @$if, my $ww = [undef, undef, []];
+            $ww->[0] = $self->eval_attr_value
                 ($node, 'x', required => 'm', context => 'bool',
                  node_info => $process->{node_info});
+            $ww->[1] = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
 
-            my $state = $value ? 'if-matched' : 'not yet';
-            my @node;
-            my $cond_node = $value ? $node : undef;
+            my $has_else;
             for (@{$node->child_nodes->to_a}) {
               my $nt = $_->node_type;
               next unless $nt == ELEMENT_NODE or $nt == TEXT_NODE;
               my $ns = $_->namespace_uri || '';
               my $ln = $_->manakai_local_name || '';
               if ($ns eq TEMMA_NS and $ln eq 'elsif') {
-                if ($state eq 'not yet') {
-                  my $value = $self->eval_attr_value
-                      ($_, 'x', required => 'm', context => 'bool',
-                       node_info => $process->{node_info});
-                  if ($value) {
-                    $state = 'if-matched';
-                    $cond_node = $_;
-                  }
-                } elsif ($state eq 'if-matched') {
-                  last;
-                } else {
+                if ($has_else) {
                   $self->onerror->(type => 'element not allowed:t:if',
                                    level => 'm',
                                    node => $_);
                   last;
                 }
+
+                push @$if, $ww = [undef, undef, []];
+                $ww->[0] = $self->eval_attr_value
+                    ($_, 'x', required => 'm', context => 'bool',
+                     node_info => $process->{node_info});
+                $ww->[1] = _ascii_lc $_->get_attribute_ns (TEMMA_NS, 'space') || '';
               } elsif ($ns eq TEMMA_NS and $ln eq 'else') {
-                if ($state eq 'if-matched') {
-                  last;
-                } elsif ($state eq 'not yet') {
-                  $state = 'else-matched';
-                  $cond_node = $_;
-                } else {
+                if ($has_else) {
                   $self->onerror->(type => 'element not allowed:t:if',
                                    level => 'm',
                                    node => $_);
                   last;
                 }
+                $has_else = 1;
+
+                push @$if, $ww = [1, undef, []];
+                $ww->[1] = _ascii_lc $_->get_attribute_ns (TEMMA_NS, 'space') || '';
               } else {
-                if ($state =~ /matched/) {
-                  push @node, $_;
-                }
+                push @{$ww->[2]}, $_;
+              }
+            } # child node
+
+            return Promise->resolve->then (sub {
+              return promised_for {
+                my $v = $_[0];
+                return $self->_compile ($v->[2])->then (sub {
+                  $v->[2] = $_[0];
+                });
+              } [@$if[1..$#$if]];
+            })->then (sub {
+              return not 'done';
+            });
+          } elsif ($ln eq 'for') { # <t:for>
+            $self->_before_non_space ($process => $result, transparent => 1);
+
+            push @$result,
+                my $for = ['for', undef, undef, undef, undef, [], '', []];
+
+            my $as = $node->get_attribute_ns (undef, 'as');
+            if (defined $as) {
+              $as =~ s/^\$//;
+              if (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or $as eq '_') {
+                $self->onerror->(type => 'temma:variable name',
+                                 node => $node->get_attribute_node ('as'),
+                                 level => 'm');
+                undef $as;
               }
             }
-            next unless $cond_node;
+            $for->[1] = $as;
 
-            my $sp = _ascii_lc $cond_node->get_attribute_ns (TEMMA_NS, 'space') || '';
-            $self->_schedule_nodes (\@node, $process->{node_info}, $sp);
-            next;
-          } elsif ($ln eq 'for') {
-            $self->_before_non_space ($process => $fh, transparent => 1);
-
-            my $items = $self->eval_attr_value
+            my $block_name = $node->get_attribute ('name');
+            $block_name = '' unless defined $block_name;
+            $for->[2] = $block_name;
+            
+            $for->[3] = $self->eval_attr_value
                 ($node, 'x', required => 'm', disallow_undef => 'm',
                  node_info => $process->{node_info});
-            $items = [] unless defined $items;
-            my $item_count = do {
-              local $@;
-              eval { 0+@$items };
-            };
-            if (not defined $item_count) {
-              $self->onerror->(type => 'temma:not arrayref',
-                               node => $node->get_attribute_node ('x'),
-                               level => 'm');
-              $items = [];
-              $item_count = 0;
-            }
+            $for->[4] = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
 
-            if ($item_count > 0) {
-              my $nodes = [];
-              my $sep_nodes = [];
-              my $sep_node;
-              for my $node (@{$node->child_nodes->to_a}) {
-                next unless $node->node_type == ELEMENT_NODE or
-                            $node->node_type == TEXT_NODE;
-                my $ns = $node->namespace_uri || '';
-                my $ln = $node->manakai_local_name;
-                if ($ns eq TEMMA_NS and $ln eq 'sep') {
-                  if ($sep_node) {
-                    $self->onerror->(type => 'temma:duplicate sep',
-                                     node => $node,
-                                     level => 'm');
-                    last;
-                  } else {
-                    $sep_node = $node;
-                  }
-                } elsif ($sep_node) {
-                  push @$sep_nodes, $node;
-                } else {
-                  push @$nodes, $node;
-                } 
-              }
-              
-              my $as = $node->get_attribute_ns (undef, 'as');
-              if (defined $as) {
-                $as =~ s/^\$//;
-                if (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or $as eq '_') {
-                  $self->onerror->(type => 'temma:variable name',
-                                   node => $node->get_attribute_node ('as'),
-                                   level => 'm');
-                  undef $as;
-                }
-              }
-              
-              my $block_name = $node->get_attribute ('name');
-              $block_name = '' unless defined $block_name;
-              unshift @{$self->{processes}},
-                  {type => 'for block',
-                   nodes => $nodes,
-                   sep_nodes => $sep_nodes,
-                   node_info => $process->{node_info},
-                   space => _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '',
-                   sep_space => $sep_node ? _ascii_lc $sep_node->get_attribute_ns (TEMMA_NS, 'space') || '' : undef,
-                   items => $items,
-                   index => 0,
-                   bound_to => $as,
-                   block_name => $block_name};
-            }
-            next;
-          } elsif ($ln eq 'try') {
-            $self->_before_non_space ($process => $fh, transparent => 1);
-            
-            my $nodes = [];
-            my $catches = [];
+            my $container = $for->[5];
+            my $has_sep;
             for my $node (@{$node->child_nodes->to_a}) {
               next unless $node->node_type == ELEMENT_NODE or
                           $node->node_type == TEXT_NODE;
               my $ns = $node->namespace_uri || '';
               my $ln = $node->manakai_local_name;
-              if ($ns eq TEMMA_NS and $ln eq 'catch') {
-                my $as = $node->get_attribute ('as');
-                if (defined $as) {
-                  $as =~ s/^\$//;
-                  if (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or
-                      $as eq '_') {
-                    $self->onerror->(type => 'temma:variable name',
-                                     node => $node->get_attribute_node ('as'),
-                                     level => 'm');
-                    undef $as;
-                  }
+              if ($ns eq TEMMA_NS and $ln eq 'sep') {
+                if ($has_sep) {
+                  $self->onerror->(type => 'temma:duplicate sep',
+                                   node => $node,
+                                   level => 'm');
+                  last;
                 }
-
-                push @$catches,
-                    {nodes => [],
-                     package => $node->get_attribute ('package'),
-                     sp => _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '',
-                     bound_to => $as,
-                     node_info => $process->{node_info}};
-              } elsif (@$catches) {
-                push @{$catches->[-1]->{nodes}}, $node;
+                $has_sep = 1;
+                $for->[6] = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
+                $container = $for->[7];
               } else {
-                push @$nodes, $node;
-              } 
-            }
+                push @$container, $node;
+              }
+            } # child nodes
 
-            my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
-            $self->_schedule_nodes
-                ($nodes, $process->{node_info}, $sp, catches => $catches);
-            next;
-          } elsif ($ln eq 'my') {
+            return $self->_compile ($for->[5])->then (sub {
+              $for->[5] = $_[0];
+              return $self->_compile ($for->[7]);
+            })->then (sub {
+              $for->[7] = $_[0];
+              return not 'done';
+            });
+          } elsif ($ln eq 'my') { # <t:my>
             my $as = $node->get_attribute ('as');
             $as =~ s/^\$// if defined $as;
             if (not defined $as or
@@ -629,14 +500,15 @@ sub __process ($$) {
               next;
             }
 
-            my $value = $self->eval_attr_value
+            my $vx = $self->eval_attr_value
                 ($node, 'x', context => 'scalar',
                  node_info => $process->{node_info});
             $process->{node_info}->{binds}
-                = {%{$process->{node_info}->{binds} || {}},
-                   $as => [[$value], 0]};
+                = {%{$process->{node_info}->{binds} || {}}};
+            $process->{node_info}->{binds}->{$as} = [my $x = [], 0];
+            push @$result, ['my', $vx => $x, 0];
             next;
-          } elsif ($ln eq 'macro') {
+          } elsif ($ln eq 'macro') { # <t:macro>
             my $name = $node->get_attribute ('name');
             if (not defined $name) {
               $self->onerror->(type => 'attribute missing',
@@ -663,23 +535,15 @@ sub __process ($$) {
                 = {node => $node,
                    preserve_space => $process->{node_info}->{preserve_space},
                    params => $self->_get_params ($node)};
-
+            # XXX output
+            
             next;
-          } elsif ($ln eq 'content') {
+          } elsif ($ln eq 'content') { # <t:content>
             my $name = $node->get_attribute ('name');
             $name = '1' unless defined $name;
-
-            my $def = $process->{node_info}->{fields}->{$name};
-            next unless $def;
-
-            $self->_schedule_nodes
-              ([grep { $_->node_type == ELEMENT_NODE or
-                       $_->node_type == TEXT_NODE }
-                @{$def->{node}->child_nodes->to_a}],
-               $process->{node_info}, $def->{sp}, binds => $def->{binds});
-
+            push @$result, ['content', $name];
             next;
-          } elsif ($ln eq 'include') {
+          } elsif ($ln eq 'include') { # <t:include>
             my $path = $node->get_attribute ('path');
             unless (defined $path) {
               $self->onerror->(type => 'attribute missing',
@@ -689,6 +553,7 @@ sub __process ($$) {
               next;
             }
 
+            #XXX
             if (($process->{node_info}->{macro_depth} || 0) > 50) {
               $self->onerror->(type => 'temma:macro too deep',
                                level => 'm',
@@ -696,8 +561,7 @@ sub __process ($$) {
               next;
             }
             
-            $self->_before_non_space ($process => $fh)
-                unless $self->{current_tag};
+            $self->_before_non_space ($process => $result) unless $self->{current_tag};
 
             my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
             my ($fields, $has_field) = $self->_process_fields
@@ -715,195 +579,37 @@ sub __process ($$) {
               $n = $n->parent_node;
             }
 
-            my $x = {
-              context => $node,
-              path => $path,
-              doc_to_path => $self->{doc_to_path},
-              onerror => $self->onerror,
-              get_parser => sub {
-                require Temma::Parser;
-                my $parser = Temma::Parser->new;
-                $parser->{initial_state} = $parse_context;
-                $parser->di_data_set ($self->di_data_set);
-                return $parser;
-              },
-            }; # $x
-            my $onparsed = sub {
-              my $html_el = $_[0]->manakai_html;
-              my $binds = {has_field => $has_field};
-              if ($html_el) {
-                my $params = $self->_get_params ($html_el);
-                for my $param (@{$params}) {
-                  my $value = $self->eval_attr_value
-                      ($node, $param->[0],
-                       nsurl => TEMMA_MACRO_NS,
-                       required => $param->[1] ? undef : 'm',
-                       node_info => $process->{node_info});
-                  $binds->{$param->[0]} = [[$value], 0];
-                }
-              }
-
-              my $nodes;
-              if ($parse_context eq 'html') {
-                if ($html_el) {
-                  my $attrs = $html_el->attributes;
-                  if (@$attrs) {
-                    if ($self->{current_tag} and
-                        $self->{current_tag}->{lnn} eq 'html') {
-                      $self->_print_attrs
-                          ($attrs => $fh, $self->{current_tag});
-                    } else {
-                      $self->onerror->(type => 'temma:start tag already closed',
-                                       node => $html_el,
-                                       level => 'm');
-                    }
-                  }
-                  $nodes = $html_el->child_nodes->to_a;
-                }
-              } else {
-                my $body_el = $_[0]->body;
-                $nodes = $body_el->child_nodes->to_a if $body_el;
-              }
-              $self->_schedule_nodes
-                  ([grep { $_->node_type == ELEMENT_NODE or
-                           $_->node_type == TEXT_NODE } @$nodes],
-                   $process->{node_info}, 'trim',
-                   binds => $binds,
-                   fields => $fields,
-                   is_entity_boundary => 1,
-                   macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1)
-                      if $nodes;
-              $self->_process ($fh);
-            }; # onparsed
-            my $onerror = sub {
-              $self->onerror->(type => 'temma:include error',
-                               level => 'm',
-                               value => $_[0],
-                               node => $node);
-            }; # onerror
-
-            my $code = $self->oninclude;
-            my $result = eval { $code->($x) };
-            if ($@) {
-              $onerror->($@);
-            } elsif (UNIVERSAL::can ($result, 'then')) {
-              eval { $result->then ($onparsed, $onerror) };
-              $onerror->($@) if $@;
-            } else {
-              $onparsed->($result);
-            }
-            return;
-          } elsif ($ln eq 'call') {
-            $self->eval_attr_value
+            push @$result, ['include', $path];
+          } elsif ($ln eq 'call') { # <t:call>
+            push @$result, $self->eval_attr_value
                 ($node, 'x', required => 'm', context => 'void',
-                 node_info => $process->{node_info});
+                 node_info => $process->{node_info},
+                 destination => 'nop');
             next;
-          } elsif ($ln eq 'wait') {
-            my $value = $self->eval_attr_value
-                  ($node, 'cv', disallow_undef => 'm', required => 'm',
-                   node_info => $process->{node_info});
-            if (not defined $value) {
-              #
-            } elsif (not UNIVERSAL::can ($value, 'cb')) {
-              $self->onerror->(type => 'temma:no cb method',
-                               level => 'm',
-                               node => $node->get_attribute_node ('cv'));
-            } else {
-              my $as = $node->get_attribute ('as');
-              $as =~ s/^\$// if defined $as;
-              if (not defined $as) {
-                #
-              } elsif (not $as =~ /\A[A-Za-z_][0-9A-Za-z_]*\z/ or $as eq '_') {
-                $self->onerror->(type => 'temma:variable name',
-                                 node => $node->get_attribute_node ('as') || $node,
-                                 level => 'm');
-                undef $as;
-              }
-
-              if ($fh->can ('autoflush')) {
-                unless (my $af = $fh->autoflush) {
-                  $fh->autoflush (1);
-                  $fh->print ('');
-                  $fh->autoflush ($af);
-                }
-              }
-
-              eval {
-                $value->cb (sub {
-                  if ($as) {
-                    $process->{node_info}->{binds}
-                        = {%{$process->{node_info}->{binds} || {}},
-                           $as => [[$_[0]->recv], 0]};
-                  }
-
-                  unshift @{$self->{processes}},
-                      {type => 'eval_attr_value',
-                       node => $node, attr_name => 'cb',
-                       node_info => $process->{node_info}};
-                  $self->_process ($fh);
-                });
-                1;
-              } or do {
-                $self->onerror->(type => 'temma:perl exception:cb',
-                                 level => 'm',
-                                 value => $@,
-                                 node => $node->get_attribute_node ('cv'));
-              };
-              return;
-            }
-            next;
-          } elsif ($ln eq 'last' or $ln eq 'next') {
+          } elsif ($ln eq 'last' or $ln eq 'next') { # <t:last> <t:next>
             my $block_name = $node->get_attribute ('for');
             $block_name = '' unless defined $block_name;
-
-            my $found;
-            my $searched = $ln eq 'last' ? 'for block' : 'end block';
-            my @close;
-            while (@{$self->{processes}}) {
-              my $process = shift @{$self->{processes}};
-              if ($process->{type} eq $searched and
-                  defined $process->{block_name} and
-                  ($process->{block_name} eq $block_name or
-                   $block_name eq '')) {
-                $found = 1;
-                last;
-              } elsif ({
-                end => 1, 'end tag' => 1, 'end block' => 1,
-              }->{$process->{type}}) {
-                last if $process->{is_entity_boundary};
-                push @close, $process;
-              }
-            }
-
-            if ($found) {
-              unshift @{$self->{processes}}, @close;
-            } else {
-              $self->onerror->(type => 'temma:block not found',
-                               value => $block_name,
+            # XXX compile-time error if no block
+            push @$result, [$ln, $block_name];
+            next;
+          } elsif ($ln eq 'barehtml') { # <t:barehtml>
+            next if $self->_close_start_tag ($process => $processes => $result);
+            $self->_before_non_space ($process => $result);
+            
+            if ($process->{node_info}->{rawtext} or
+                $process->{node_info}->{plaintext}) {
+              $self->onerror->(type => 'element not allowed:rawtext',
                                node => $node,
                                level => 'm');
-            }
-            next;
-          } elsif ($ln eq 'barehtml') {
-            next if $self->_close_start_tag ($process, $fh);
-            $self->_before_non_space ($process => $fh);
-            
-            my $value = $self->eval_attr_value
+            } else {
+              push @$result, $self->eval_attr_value
                 ($node, 'value', disallow_undef => 'w', required => 'm',
-                 node_info => $process->{node_info});
-            if (defined $value) {
-              if ($process->{node_info}->{rawtext} or
-                  $process->{node_info}->{plaintext}) {
-                $self->onerror->(type => 'element not allowed:rawtext',
-                                 node => $node,
-                                 level => 'm');
-              } else {
-                $fh->print ($value);
-              }
+                 node_info => $process->{node_info},
+                 destination => 'print');
             }
             next;
           } else { # $ln
-            next if $self->_close_start_tag ($process, $fh);
+            next if $self->_close_start_tag ($process => $processes => $result);
 
             if ($ln eq 'else' or $ln eq 'elsif') {
               $self->onerror->(type => 'element not allowed',
@@ -939,6 +645,7 @@ sub __process ($$) {
           my ($fields, $has_field) = $self->_process_fields
               ($node, $sp, $process);
 
+          #XXX
           my $binds = {has_field => $has_field};
           for my $param (@{$macro->{params}}) {
             my $value = $self->eval_attr_value
@@ -963,7 +670,7 @@ sub __process ($$) {
 
           next;
         } else { # $ns
-          next if $self->_close_start_tag ($process, $fh);
+          next if $self->_close_start_tag ($process => $processes => $result);
           $attrs = $node->attributes;
         } # $ns
 
@@ -983,11 +690,11 @@ sub __process ($$) {
           if (defined $ln and $ln eq 'head' and not @$attrs) {
             undef $ln;
           } else {
-            $fh->print ('</head>');
+            push @$result, '</head>';
           }
         }
 
-        $self->_before_non_space ($process => $fh);
+        $self->_before_non_space ($process => $result);
 
         my $node_info = {node => $node, attrs => {},
                          binds => $process->{node_info}->{binds},
@@ -995,7 +702,7 @@ sub __process ($$) {
                          macro_depth => $process->{node_info}->{macro_depth}};
 
         if (defined $ln and $ln =~ /\A[A-Za-z_-][A-Za-z0-9_-]*\z/) {
-          $fh->print ('<' . $ln);
+          push @$result, '<' . $ln;
           $self->{current_tag} = $node_info;
           $node_info->{ns} = $ns;
           $node_info->{ln} = $ln;
@@ -1004,11 +711,11 @@ sub __process ($$) {
 
           if ($node_info->{ns} eq HTML_NS and
               $Web::HTML::ParserData::AllVoidElements->{$node_info->{lnn}}) {
-            unshift @{$self->{processes}}, {type => 'end'};
+            unshift @{$processes}, {type => 'end start tag'};
 
-            $self->_print_attrs ($attrs => $fh, $node_info);
+            $self->_print_attrs ($attrs, $node_info => $result);
 
-            unshift @{$self->{processes}},
+            unshift @{$processes},
                 map { {type => 'node', node => $_, node_info => $node_info} } 
                 grep { $_->node_type == ELEMENT_NODE or
                        $_->node_type == TEXT_NODE }
@@ -1019,7 +726,6 @@ sub __process ($$) {
               if ($node_info->{lnn} eq 'script' or
                   $node_info->{lnn} eq 'style') {
                 $node_info->{rawtext} = 1;
-                $node_info->{rawtext_value} = \(my $v = '');
               } elsif ($node_info->{lnn} eq 'html') {
                 $self->_get_params
                     ($node_info->{node},
@@ -1036,12 +742,12 @@ sub __process ($$) {
               $node_info->{has_non_space} = 1; # for children
             }
 
-            unshift @{$self->{processes}},
+            unshift @{$processes},
                 {type => 'end tag', node_info => $node_info};
             
-            $self->_print_attrs ($attrs => $fh, $node_info);
+            $self->_print_attrs ($attrs, $node_info => $result);
 
-            unshift @{$self->{processes}},
+            unshift @{$processes},
                 map { {type => 'node', node => $_, node_info => $node_info} } 
                 grep { $_->node_type == ELEMENT_NODE or
                        $_->node_type == TEXT_NODE }
@@ -1073,12 +779,12 @@ sub __process ($$) {
           $self->{current_tag} = {ln => '', lnn => ''};
 
           if (($self->{need_head_end_tag} || 0) > 0) {
-            unshift @{$self->{processes}},
+            unshift @{$processes},
                 {type => 'end tag', node_info => {ln => 'head'}};
           }
 
-          unshift @{$self->{processes}}, {type => 'end'};
-          unshift @{$self->{processes}},
+          unshift @{$processes}, {type => 'end start tag'};
+          unshift @{$processes},
               map { {type => 'node', node => $_, node_info => $node_info} } 
               grep { $_->node_type == ELEMENT_NODE or
                      $_->node_type == TEXT_NODE }
@@ -1086,14 +792,14 @@ sub __process ($$) {
         }
         $self->{need_head_end_tag}-- if $self->{need_head_end_tag};
       } elsif ($nt == DOCUMENT_TYPE_NODE) {
-        next if $self->_close_start_tag ($process, $fh);
+        next if $self->_close_start_tag ($process => $processes => $result);
 
         my $nn = $node->node_name;
         $nn =~ s/[^0-9A-Za-z_-]/_/g;
-        $fh->print ('<!DOCTYPE ' . $nn . '>');
+        push @$result, '<!DOCTYPE ' . $nn . '>';
       } elsif ($nt == DOCUMENT_NODE) {
         my $node_info = {allow_children => 1};
-        unshift @{$self->{processes}},
+        unshift @{$processes},
             map { {type => 'node', node => $_, node_info => $node_info} } 
             grep { $_->node_type == ELEMENT_NODE or
                    $_->node_type == DOCUMENT_TYPE_NODE }
@@ -1103,133 +809,49 @@ sub __process ($$) {
       }
 
     } elsif ($process->{type} eq 'end tag') {
-      next if $self->_close_start_tag ($process, $fh);
+      next if $self->_close_start_tag ($process => $processes => $result);
 
       if ($process->{node_info}->{comment}) {
-        my $value = ${$process->{node_info}->{rawtext_value}};
-        $value =~ s/--/- - /g;
-        $value =~ s/-\z/- /;
-        $fh->print ($value, "-->");
+        push @$result, ['printctext'], "-->";
         next;
       } elsif ($process->{node_info}->{rawtext}) {
-        my $value = ${$process->{node_info}->{rawtext_value}};
-
-        my $doc = Web::DOM::Document->new;
-        $doc->manakai_is_html (1);
-
-        my $el = $doc->create_element ('div');
-        $el->inner_html ('<' . $process->{node_info}->{ln} . '>' .
-                         $value .
-                         '</' . $process->{node_info}->{ln} . '>');
-        my $value2 = $el->first_child->text_content;
-        if ($value ne $value2) {
-          $self->onerror->(type => 'temma:not representable in raw text',
-                           node => $process->{node_info}->{node},
-                           level => 'm');
-        }
-        
-        $fh->print ($value2);
+        push @$result, ['printrawtext', $process->{node_info}->{ln}];
       }
 
       if ($process->{node_info}->{ln} eq 'head') {
         $self->{need_head_end_tag}++;
       } else {
         while (($self->{need_head_end_tag} || 0) > 0) {
-          $fh->print ('</head>');
+          push @$result, '</head>';
           $self->{need_head_end_tag}--;
         }
-        $fh->print ('</' . $process->{node_info}->{ln} . '>');
+        push @$result, '</' . $process->{node_info}->{ln} . '>';
       }
     } elsif ($process->{type} eq 'text') {
       if ($process->{node_info}->{rawtext}) {
-        ${$process->{node_info}->{rawtext_value}} .= $process->{value};
+        push @$result, ['rawtext', $process->{value}];
       } elsif ($process->{node_info}->{plaintext}) {
-        $fh->print ($process->{value});
+        push @$result, $process->{value};
       } else {
-        $fh->print (htescape $process->{value});
+        push @$result, htescape $process->{value};
       }
-    } elsif ($process->{type} eq 'for block') {
-      my $index = $process->{index};
-      next unless defined $index; # end of for
-      my $block_name = $process->{block_name};
-      if (++$process->{index} <= $#{$process->{items}}) {
-        unshift @{$self->{processes}}, $process;
-        $self->_schedule_nodes
-            ($process->{sep_nodes}, $process->{node_info},
-             {preserve => 'preserve', trim => 'trim'}->{$process->{sep_space}} || $process->{space},
-             binds => $process->{node_info}->{binds})
-                if @{$process->{sep_nodes}};
-      } else {
-        unshift @{$self->{processes}},
-            {type => 'for block',
-             block_name => $block_name}; # end of for
-      }
-      
-      my $binds = $process->{node_info}->{binds} || {};
-      if ($process->{bound_to}) {
-        $binds = {%$binds, $process->{bound_to} => [$process->{items}, $index]};
-      }
-      $self->_schedule_nodes
-          ($process->{nodes}, $process->{node_info}, $process->{space},
-           binds => $binds, block_name => $block_name);
-    } elsif ($process->{type} eq 'end block') {
-      $process->{parent_node_info}->{has_non_space} = 1
-          if $process->{node_info}->{has_non_space};
-    } elsif ($process->{type} eq 'eval_attr_value') {
-      $self->eval_attr_value ($process->{node}, $process->{attr_name},
-                              node_info => $process->{node_info});
-    } elsif ($process->{type} eq 'end') {
-      next if $self->_close_start_tag ($process, $fh);
-      $fh->print ('');
-      if ($process->{ondone}) {
-        $self->_cleanup;
-        $process->{ondone}->($self);
-      }
-    } elsif ($process->{type} eq 'barehtml') {
-      if ($process->{node_info}->{rawtext} or
-          $process->{node_info}->{plaintext}) {
-        $self->onerror->(type => 'element not allowed:rawtext',
-                         node => $process->{node},
-                         level => 'm');
-      } else {
-        $fh->print ($process->{value});
-      }
+    } elsif ($process->{type} eq 'end start tag') {
+      next if $self->_close_start_tag ($process => $processes => $result);
     } else {
       die "Process type |$process->{type}| is not supported";
     }
-  } # @{$self->{processes}}
-} # __process
+  } # @{$processes}
 
-## Schedule processing of nodes, used for processing of <t:if>,
-## <t:for>, and <t:try>.
-sub _schedule_nodes ($$$$;%) {
-  my ($self, $nodes, $parent_node_info, $sp, %args) = @_;
-
-  my $node_info = {
-    %{$parent_node_info},
-    trailing_space => '',
-    binds => $args{binds} || $parent_node_info->{binds},
-    fields => $args{fields} || $parent_node_info->{fields},
-    macro_depth => $args{macro_depth} || $parent_node_info->{macro_depth},
+    return not 'done';
   };
-  $node_info->{preserve_space}
-      = $sp eq 'preserve' ? 1 :
-        $sp eq 'trim' ? 0 :
-        $parent_node_info->{preserve_space};
-  $node_info->{has_non_space} = $node_info->{preserve_space};
-  
-  unshift @{$self->{processes}},
-      {type => 'end block', node_info => $node_info,
-       parent_node_info => $parent_node_info,
-       block_name => $args{block_name},
-       catches => $args{catches},
-       is_entity_boundary => $args{is_entity_boundary}};
-  unshift @{$self->{processes}},
-      map { {type => 'node', node => $_, node_info => $node_info} } @$nodes;
-} # _schedule_nodes
+
+  })->then (sub {
+    return $result;
+  });
+} # _compile
 
 sub _print_attrs ($$$$) {
-  my ($self, $attrs => $fh, $node_info) = @_;
+  my ($self, $attrs, $node_info, $result) = @_;
   my @attr;
   for my $attr (@$attrs) {
     ## Note that if there are multiple attributes with only case
@@ -1242,6 +864,7 @@ sub _print_attrs ($$$$) {
     my $attr_ns = $attr->namespace_uri;
     my $attr_name;
     my $value;
+    my $eval;
     if (not defined $attr_ns) {
       $attr_name = $attr->manakai_local_name;
       $value = $attr->value;
@@ -1255,23 +878,8 @@ sub _print_attrs ($$$$) {
     } elsif ($attr_ns eq XLINK_NS) {
       $attr_name = 'xlink:' . $attr->manakai_local_name;
       $value = $attr->value;
-    } elsif ($attr_ns eq TEMMA_MSGID_NS) {
-      my $msgid = $attr->value;
-      my $locale = $self->{locale} || do {
-        $self->onerror->(type => 'temma:no locale',
-                         node => $attr,
-                         level => 'm');
-        undef;
-      };
-      $value = $locale && $locale->plain_text ($msgid);
-      $value = $msgid if not defined $value;
-      $attr_name = $attr->manakai_local_name;
     } elsif ($attr_ns eq TEMMA_PERL_NS) {
-      $value = $self->eval_attr_value
-          ($attr->owner_element, $attr->node_name,
-           attr_node => $attr,
-           node_info => $node_info);
-      next unless defined $value;
+      $eval = 1;
       $attr_name = $attr->manakai_local_name;
     } elsif ($attr_ns eq TEMMA_NS) {
       next;
@@ -1289,55 +897,66 @@ sub _print_attrs ($$$$) {
     }
 
     if ($attr_name eq 'class') {
-      push @{$node_info->{classes} ||= []},
-          grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $value;
-    } else {
-      if ($node_info->{attrs}->{$attr_name}) {
-        $self->onerror->(type => 'temma:duplicate attr',
-                         node => $attr,
-                         value => $attr_name,
-                         level => 'm');
-        next;
+      if ($eval) {
+        push @$result, $self->eval_attr_value
+            ($attr->owner_element, $attr->node_name,
+             attr_node => $attr,
+             node_info => $node_info,
+             destination => 'classes');
+      } else {
+        push @$result, ['addclasses', [grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $value]];
       }
-      $node_info->{attrs}->{$attr_name} = 1;
-      push @attr, ' ' . $attr_name . '="' . (htescape $value) . '"';
+    } else {
+      if ($eval) {
+        push @$result, $self->eval_attr_value
+            ($attr->owner_element, $attr->node_name,
+             attr_node => $attr,
+             node_info => $node_info,
+             destination => 'addattr',
+             attr_name => $attr_name);
+      } else {
+        if ($node_info->{attrs}->{$attr_name}) {
+          $self->onerror->(type => 'temma:duplicate attr',
+                           node => $attr,
+                           value => $attr_name,
+                           level => 'm');
+          next;
+        }
+        $node_info->{attrs}->{$attr_name} = 1;
+
+        push @attr, ' ' . $attr_name . '="' . (htescape $value) . '"';
+      }
     }
   }
-  $fh->print (join '', @attr) if @attr;
+  push @$result, join '', @attr if @attr;
 } # _print_attrs
 
-sub _close_start_tag ($$$) {
-  my ($self, $current_process, $fh) = @_;
+sub _close_start_tag ($$$$) {
+  my ($self, $current_process, $processes, $result) = @_;
   return 0 unless my $node_info = delete $self->{current_tag};
   return 0 if $node_info->{ln} eq '';
-  
-  if (@{$node_info->{classes} or []}) {
-    $fh->print (q< class=">);
-    $fh->print (htescape join ' ', @{$node_info->{classes}});
-    $fh->print (q<">);
-  }
-  $fh->print ('>');
-  unshift @{$self->{processes}}, $current_process;
+
+  push @$result, ['endofstarttag'], '>';
+  unshift @$processes, $current_process;
 
   if ($Temma::Defs::IgnoreFirstNewline->{$node_info->{ln}} and
       $node_info->{ns} eq HTML_NS) {
-    $fh->print ("\x0A");
+    push @$result, "\x0A";
   }
 
   return 1;
 } # _close_start_tag
 
 sub _before_non_space ($$;%) {
-  my ($self, $process => $fh, %args) = @_;
+  my ($self, $process, $result, %args) = @_;
   if (defined $process->{node_info}->{trailing_space}) {
     if ($process->{node_info}->{has_non_space}) {
       if ($process->{node_info}->{rawtext}) {
-        ${$process->{node_info}->{rawtext_value}}
-            .= $process->{node_info}->{trailing_space};
+        push @$result, ['rawtext', $process->{node_info}->{trailing_space}];
       } elsif ($process->{node_info}->{plaintext}) {
-        $fh->print ($process->{node_info}->{trailing_space});
+        push @$result, $process->{node_info}->{trailing_space};
       } else {
-        $fh->print (htescape $process->{node_info}->{trailing_space});
+        push @$result, htescape $process->{node_info}->{trailing_space};
       }
     }
     delete $process->{node_info}->{trailing_space};
@@ -1394,54 +1013,20 @@ sub eval_attr_value ($$$;%) {
         defined $pa ? $pa . ' ' : '', $line || 0, $column || 0;
   }
   $location =~ s/[\x00-\x1F\x22]+/ /g;
-  my $value = qq<local \$_;\n#line 1 "$location"\n> . $attr_node->value . q<;>;
 
-  local $_ = $args{node_info}->{binds} || {};
-  if (keys %$_) {
-    $value = "return do {\n$value\n};";
-    for my $var (keys %$_) {
-      if (ref $_->{$var}->[0] eq 'HASH') {
-        $value = qq{for my \$$var (\$_->{$var}->[0]->{$_->{$var}->[1]}) {\n$value\n}\n};
-      } else {
-        $value = qq{for my \$$var (\$_->{$var}->[0]->[$_->{$var}->[1]]) {\n$value\n}\n};
-      }
-    }
-    $value = qq{#line 1 "vars for $location"\n} . $value;
-  }
-  $self->{eval_package} ||= qq{Temma::Eval::@{[time]}::@{[int rand 100000]}};
-  $value = qq{package $self->{eval_package};\n$value};
-
-  my $evaled;
-  my $error;
-  my $context = $args{context} || '';
-  {
-    local $@;
-    if ($context eq 'bool') {
-      $evaled = !! (_eval $value);
-    } elsif ($context eq 'list') {
-      $evaled = [_eval $value];
-    } elsif ($context eq 'void') {
-      _eval $value;
-    } else {
-      $evaled = _eval $value;
-    }
-    $error = $@;
-  }
-  if ($error) {
-    require Temma::Exception;
-    my $exception = Temma::Exception->new_from_value ($error);
-    $exception->source_text ($value);
-    $exception->source_node ($attr_node);
-    die $exception;
+  my $opts = {};
+  if ($args{destination} eq 'attr') {
+    $opts->{used_names} = $args{node_info}->{attrs};
+    $opts->{ns} = $self->{current_tag}->{ns};
+  } elsif ($args{destination} eq 'addattr') {
+    $opts->{attr_name} = $args{attr_name};
+    $opts->{used_names} = $args{node_info}->{attrs};
   }
 
-  if ($args{disallow_undef} and not defined $evaled) {
-    $self->onerror->(type => 'temma:undef',
-                     level => $args{disallow_undef},
-                     node => $attr_node);
-  }
-
-  return $evaled;
+  return ['eval', $location, $attr_node->value,
+          $args{context} // '', $args{disallow_undef},
+          $args{node_info}->{binds} || {},
+          $args{destination}, $opts];
 } # eval_attr_value
 
 sub _get_params ($$;%) {
@@ -1477,6 +1062,7 @@ sub _get_params ($$;%) {
          } split /[\x09\x0A\x0C\x0D\x20]+/, $params]
       : [];
 
+  #XXX
   if (my $binds = $args{bind_args}) {
     my $vars = $self->{args} ||= {};
     for my $param (@{$params}) {
@@ -1525,79 +1111,472 @@ sub _process_fields ($$$$) {
   return ($fields, $has_field);
 } # _process_fields
 
-sub _print_msgid ($$$$$;%) {
-  my ($self, $node, $process => $msgid, $fh, %args) = @_;
+sub evaluate ($$$;%) {
+  my ($self, $compiled, $ws, %args) = @_;
+  my $writer = $ws->get_writer;
+  return Promise->resolve->then (sub {
+    my @op = @$compiled;
+    return promised_until {
+      return 'done' unless @op;
+      while (@op) {
+        if (not ref $op[0]) {
+          $writer->write (\($op[0]));
+          shift @op;
+          next;
+        }
 
-  my $n = $self->eval_attr_value
-      ($node, 'n', node_info => $process->{node_info});
+        my $x = shift @op;
+        if ($x->[0] eq 'eval') {
+          local $_ = $x->[5]; # XXX
+          my $value = qq{local \$_;\n#line 1 "$x->[1]"\n$x->[2];};
+          if (keys %$_) {
+            $value = "return do {\n$value\n};";
+            for my $var (keys %$_) {
+              $value = qq{for my \$$var (\$_->{$var}->[0]->[$_->{$var}->[1]]) {\n$value\n}\n};
+            }
+            $value = qq{#line 1 "vars for $x->[1]"\n} . $value;
+          }
+          $self->{eval_package} ||= qq{Temma::Eval::@{[time]}::@{[int rand 100000]}};
+          $value = qq{package $self->{eval_package};\n$value};
 
-  my $locale = $self->{locale} || do {
-    $self->onerror->(type => 'temma:no locale',
-                     node => $node,
-                     level => 'm');
-    undef;
-  };
-  my $set = $node->get_attribute ('set');
-  $locale = $locale->for_text_set ($set) if defined $set;
+          my $evaled;
+          my $error;
+          my $context = $x->[3];
+          {
+            local $@;
+            if ($context eq 'bool') {
+              $evaled = !! (_eval $value);
+            } elsif ($context eq 'list') {
+              $evaled = [_eval $value];
+            } elsif ($context eq 'void') {
+              _eval $value;
+            } else {
+              $evaled = _eval $value;
+            }
+            $error = $@;
+          }
+          if ($error) {
+            require Temma::Exception;
+            my $exception = Temma::Exception->new_from_value ($error);
+            $exception->source_text ($value);
+            #$exception->source_node ($attr_node);
+            # XXX location $x->[1]
+            die $exception;
+          }
 
-  my $barehtml = $node->has_attribute ('barehtml');
-  my $method = ($barehtml ? 'html' : 'plain_text') .
-               (defined $n ? '_n' : '') .
-               '_as_components';
-  my $texts = $locale && $locale->$method ($msgid, defined $n ? (0+$n) : ());
+          if ($x->[4] and not defined $evaled) {
+            $self->onerror->(type => 'temma:undef',
+                             level => $x->[4]);
+            #node => $attr_node);
+            # XXX throw if level is m
+          }
 
-  if ($texts and ref $texts eq 'ARRAY') {
-    if (@$texts == 1 and $texts->[0]->{type} eq 'text') {
-      if ($process->{node_info}->{rawtext}) {
-        #
-      } elsif ($process->{node_info}->{plaintext}) {
-        $fh->print ($texts->[0]->{value});
-        return;
-      } else {
-        $fh->print (htescape $texts->[0]->{value});
-        return;
-      }
-    }
+          if (not defined $evaled) {
+            #
+          } elsif ($x->[6] eq 'attr_name') {
+            $self->{current}->{attr_name} = $evaled;
+          } elsif ($x->[6] eq 'attr') {
 
-    my $sp = _ascii_lc $node->get_attribute_ns (TEMMA_NS, 'space') || '';
-    my ($fields, $has_field) = $self->_process_fields ($node, $sp, $process);
-    
-    my $binds = {%{$process->{node_info}->{binds}}, 'n' => [[$n], 0]};
+            #XXXif ($self->{current_tag}) {
+            #} else {
+            #  $self->onerror->(type => 'temma:start tag already closed',
+            #                   node => $node,
+            #                   level => 'm');
+            #}
+            #next if $self->{current_tag}->{ln} eq '';
 
-    for (reverse @$texts) {
-      if ($_->{type} eq 'text') {
-        unshift @{$self->{processes}},
-            {type => 'text', value => $_->{value},
-             node_info => $process->{node_info}};
-      } elsif ($_->{type} eq 'field') {
-        my $def = $fields->{$_->{name}};
-        if ($def) {
-          $self->_schedule_nodes
+            my $attr_name = delete $self->{current}->{attr_name};
+            $attr_name = '' unless defined $attr_name;
+            $attr_name =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
+            my $element_ns = $x->[7]->{ns};
+            if ($element_ns eq SVG_NS) {
+              $attr_name = $Web::HTML::ParserData::SVGAttrNameFixup->{$attr_name} || $attr_name;
+            } elsif ($element_ns eq MML_NS) {
+              $attr_name = $Web::HTML::ParserData::MathMLAttrNameFixup->{$attr_name} || $attr_name;
+            }
+            ## $Web::HTML::ParserData::ForeignAttrNamespaceFixup is
+            ## ignored here as the mapping is no-op for the purpose of
+            ## qualified name serialization.
+
+            unless ($attr_name =~ /\A[A-Za-z_-][A-Za-z0-9_:-]*\z/) {
+              $self->onerror->(type => 'temma:name not serializable',
+                               #node => $node,
+                               value => $attr_name,
+                               level => 'm');
+              next;
+            }
+
+            if ($x->[7]->{used_names}->{$attr_name}) {
+              $self->onerror->(type => 'temma:duplicate attr',
+                               #node => $node,
+                               value => $attr_name,
+                               level => 'm');
+              next;
+            }
+
+            if ($attr_name eq 'class') {
+              push @{$self->{current}->{classes} ||= []}, 
+                  grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $evaled;
+            } else {
+              $x->[7]->{used_names}->{$attr_name} = 1;
+              $writer->write (\(' ' . $attr_name . '="' . (htescape $evaled) . '"'));
+            }
+          } elsif ($x->[6] eq 'addattr') {
+            my $attr_name = $x->[7]->{attr_name};
+            if ($x->[7]->{used_names}->{$attr_name}) {
+              $self->onerror->(type => 'temma:duplicate attr',
+                               #node => $node,
+                               value => $attr_name,
+                               level => 'm');
+              next;
+            }
+
+            $x->[7]->{used_names}->{$attr_name} = 1;
+            $writer->write (\(' ' . $attr_name . '="' . (htescape $evaled) . '"'));
+          } elsif ($x->[6] eq 'classes') {
+            # XXX if no current tag
+            push @{$self->{current}->{classes} ||= []}, 
+                grep { length } split /[\x09\x0A\x0C\x0D\x20]+/, $evaled;
+          } elsif ($x->[6] eq 'print') {
+            $writer->write (\$evaled);
+          } elsif ($x->[6] eq 'printescaped') {
+            $writer->write (\(htescape $evaled));
+          } elsif ($x->[6] eq 'rawtext') {
+            $self->{current}->{rawtext} .= $evaled;
+          } elsif ($x->[6] eq 'openstart') {
+            #XXX
+          } elsif ($x->[6] eq 'nop') {
+            #
+          } else {
+            die "Bad destination |$x->[6]|";
+          }
+        } elsif ($x->[0] eq 'addclasses') {
+          push @{$self->{current}->{classes} ||= []}, @{$x->[1]};
+        } elsif ($x->[0] eq 'endofstarttag') {
+          if (@{$self->{current}->{classes} or []}) {
+            $writer->write (\(
+                q< class="> .
+                (htescape join ' ', @{delete $self->{current}->{classes}}) .
+                q<">
+            ));
+          }
+        } elsif ($x->[0] eq 'rawtext') {
+          $self->{current}->{rawtext} .= $x->[1];
+        } elsif ($x->[0] eq 'printrawtext') {
+          # XXX run compiletime when possible
+          my $value = delete $self->{current}->{rawtext};
+          if ($value =~ m{</}) {
+            my $doc = Web::DOM::Document->new;
+            $doc->manakai_is_html (1);
+
+            my $el = $doc->create_element ('div');
+            my $ln = $x->[1];
+            $el->inner_html ('<' . $ln . '>' . $value . '</' . $ln . '>');
+            my $value2 = $el->first_child->text_content;
+            if ($value ne $value2) {
+              $self->onerror->(type => 'temma:not representable in raw text',
+                               #node => $process->{node_info}->{node},
+                               level => 'm');
+              next;
+            }
+          }
+          $writer->write (\$value);
+        } elsif ($x->[0] eq 'printctext') {
+          my $value = delete $self->{current}->{rawtext};
+          $value =~ s/--/- - /g;
+          $value =~ s/-\z/- /;
+          $writer->write (\$value);
+        } else {
+          #XXX
+        }
+      } # while
+      return not 'done';
+    }; # until
+  })->finally (sub {
+    return $writer->close;
+  });
+} # evaluate
+
+=pod
+
+XXX
+  if (not ref $vv) {
+
+  } elsif ($vv->[0] eq 'openstart') {
+    XXX
+    my $ln = evaluated $vn->[1]
+            if (defined $ln) {
+              $ln =~ tr/A-Z/a-z/; ## ASCII case-insensitive.
+              $ns = $node->$TemmaContextNode->manakai_get_child_namespace_uri ($ln);
+              if ($ns eq SVG_NS) {
+                $ln = $Web::HTML::ParserData::SVGElementNameFixup->{$ln} || $ln;
+              }
+            }
+    # XXX
+  } elsif ($v->[0] eq 'if') {
+  } elsif ($v->[0] eq 'for') {
+            $items = [] unless defined $items;
+            my $item_count = do {
+              local $@;
+              eval { 0+@$items };
+            };
+            if (not defined $item_count) {
+              $self->onerror->(type => 'temma:not arrayref',
+                               node => $node->get_attribute_node ('x'),
+                               level => 'm');
+              $items = [];
+              $item_count = 0;
+            }
+
+            if ($item_count > 0) {
+              unshift @{$processes},
+                  {type => 'for block',
+                   nodes => $nodes,
+                   sep_nodes => $sep_nodes,
+                   node_info => $process->{node_info},
+                   space => 
+                   sep_space => $sep_node ? _ascii_lc $sep_node->get_attribute_ns (TEMMA_NS, 'space') || '' : undef,
+                   items => $items,
+                   index => 0,
+                   bound_to => $as,
+                   block_name => $block_name};
+  } elsif ($v->[0] eq 'my') {
+  } elsif ($v->[0] eq 'content') {
+            my $def = $process->{node_info}->{fields}->{$name};
+            next unless $def;
+
+            $self->_schedule_nodes
               ([grep { $_->node_type == ELEMENT_NODE or
                        $_->node_type == TEXT_NODE }
                 @{$def->{node}->child_nodes->to_a}],
-               $process->{node_info}, $def->{sp},
-               binds => $binds);
-        }
-      } elsif ($_->{type} eq 'html' and $barehtml) {
-        unshift @{$self->{processes}},
-            {type => 'barehtml', value => $_->{value},
-             node => $node, node_info => $process->{node_info}};
-      } else { # $_->{type} unknown
-        $self->onerror->(type => 'temma:components:unknown type',
-                         value => $_->{type},
-                         level => 'm',
-                         node => $node);
-      } # $_->{type}
-    }
+               $process->{node_info}, $def->{sp}, binds => $def->{binds});
+  } elsif ($x->[0] eq 'include') {
+
+            my $x = {
+              context => $node,
+              path => $path,
+              doc_to_path => $self->{doc_to_path},
+              onerror => $self->onerror,
+              get_parser => sub {
+                require Temma::Parser;
+                my $parser = Temma::Parser->new;
+                $parser->{initial_state} = $parse_context;
+                $parser->di_data_set ($self->di_data_set);
+                return $parser;
+              },
+            }; # $x
+            my $onparsed = sub {
+              my $html_el = $_[0]->manakai_html;
+              my $binds = {has_field => $has_field};
+              if ($html_el) {
+                my $params = $self->_get_params ($html_el);
+                for my $param (@{$params}) {
+                  my $value = $self->eval_attr_value
+                      ($node, $param->[0],
+                       nsurl => TEMMA_MACRO_NS,
+                       required => $param->[1] ? undef : 'm',
+                       node_info => $process->{node_info});
+                  $binds->{$param->[0]} = [[$value], 0];
+                }
+              }
+
+              my $nodes;
+              if ($parse_context eq 'html') {
+                if ($html_el) {
+                  my $attrs = $html_el->attributes;
+                  if (@$attrs) {
+                    if ($self->{current_tag} and
+                        $self->{current_tag}->{lnn} eq 'html') {
+                      $self->_print_attrs ($attrs, $self->{current_tag});
+                    } else {
+                      $self->onerror->(type => 'temma:start tag already closed',
+                                       node => $html_el,
+                                       level => 'm');
+                    }
+                  }
+                  $nodes = $html_el->child_nodes->to_a;
+                }
+              } else {
+                my $body_el = $_[0]->body;
+                $nodes = $body_el->child_nodes->to_a if $body_el;
+              }
+              $self->_schedule_nodes
+                  ([grep { $_->node_type == ELEMENT_NODE or
+                           $_->node_type == TEXT_NODE } @$nodes],
+                   $process->{node_info}, 'trim',
+                   binds => $binds,
+                   fields => $fields,
+                   is_entity_boundary => 1,
+                   macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1)
+                      if $nodes;
+              $self->_compile;
+            }; # onparsed
+            my $onerror = sub {
+              $self->onerror->(type => 'temma:include error',
+                               level => 'm',
+                               value => $_[0],
+                               node => $node);
+            }; # onerror
+
+            my $code = $self->oninclude;
+            my $result = eval { $code->($x) };
+            if ($@) {
+              $onerror->($@);
+            } elsif (UNIVERSAL::can ($result, 'then')) {
+              eval { $result->then ($onparsed, $onerror) };
+              $onerror->($@) if $@;
+            } else {
+              $onparsed->($result);
+            }
+            return;
+  } elsif ($x->[0] eq 'next') {
+  } elsif ($x->[0] eq 'last') {
+
+            my $found;
+            my $searched = $ln eq 'last' ? 'for block' : 'end block';
+            my @close;
+            while (@{$processes}) {
+              my $process = shift @{$processes};
+              if ($process->{type} eq $searched and
+                  defined $process->{block_name} and
+                  ($process->{block_name} eq $block_name or
+                   $block_name eq '')) {
+                $found = 1;
+                last;
+              } elsif ({
+                end => 1, 'end tag' => 1, 'end block' => 1,
+              }->{$process->{type}}) {
+                last if $process->{is_entity_boundary};
+                push @close, $process;
+              }
+            }
+
+            if ($found) {
+              unshift @{$processes}, @close;
+            } else {
+              $self->onerror->(type => 'temma:block not found',
+                               value => $block_name,
+                               node => $node,
+                               level => 'm');
+            }
+
   } else {
-    my $msgstr = $node->get_attribute ('alt');
-    unshift @{$self->{processes}},
-        {type => 'text',
-         value => defined $msgstr ? $msgstr : $msgid,
-         node_info => $process->{node_info}};
+
   }
-} # _print_msgid
+
+
+sub _compile ($) {
+  my ($self) = @_;
+  A: {
+    eval {
+      $self->__compile;
+    };
+    #XXX
+    if ($@) {
+      my $exception = $@;
+      if (UNIVERSAL::isa ($exception, 'Temma::Exception')) {
+        my $catch;
+        my @close;
+        while (@{$processes}) {
+          my $process = shift @{$processes};
+          if ($process->{type} eq 'end block' and
+              $process->{catches}) {
+            for my $c (@{$process->{catches}}) {
+              if (not defined $c->{package} or
+                  $exception->isa_package ($c->{package})) {
+                $catch = $c;
+                last;
+              }
+            }
+            push @close, $process;
+            last if $catch;
+          } elsif ({
+            end => 1, 'end tag' => 1, 'end block' => 1,
+          }->{$process->{type}}) {
+            push @close, $process;
+          }
+        }
+
+        my $close = shift @close;
+        unshift @{$processes}, @close;
+        if ($catch) {
+          my $binds = $catch->{node_info}->{binds} || {};
+          if (defined $catch->{bound_to}) {
+            $binds = {%$binds, $catch->{bound_to} => [[$exception], 0]};
+          }
+          $self->_schedule_nodes
+              ($catch->{nodes}, $catch->{node_info}, $catch->{sp},
+               binds => $binds);
+        } else {
+          #warn $exception->source_text;
+          $self->onerror->(type => 'temma:perl exception',
+                           level => 'm',
+                           value => $exception,
+                           node => $exception->source_node);
+        }
+        unshift @{$processes}, $close;
+        redo A;
+      } else {
+        $self->_cleanup;
+        die $exception;
+      }
+    }
+  } # A
+} # _compile
+## Schedule processing of nodes, used for processing of <t:if>,
+## <t:for>, and <t:try>.
+sub _schedule_nodes ($$$$;%) {
+  my ($self, $nodes, $parent_node_info, $sp, %args) = @_;
+
+  my $node_info = {
+    %{$parent_node_info},
+    trailing_space => '',
+    binds => $args{binds} || $parent_node_info->{binds},
+    fields => $args{fields} || $parent_node_info->{fields},
+    macro_depth => $args{macro_depth} || $parent_node_info->{macro_depth},
+  };
+  $node_info->{preserve_space}
+      = $sp eq 'preserve' ? 1 :
+        $sp eq 'trim' ? 0 :
+        $parent_node_info->{preserve_space};
+  $node_info->{has_non_space} = $node_info->{preserve_space};
+  
+  unshift @{$processes},
+      {type => 'end block', node_info => $node_info,
+       parent_node_info => $parent_node_info,
+       block_name => $args{block_name},
+       catches => $args{catches},
+       is_entity_boundary => $args{is_entity_boundary}};
+  unshift @{$processes},
+      map { {type => 'node', node => $_, node_info => $node_info} } @$nodes;
+} # _schedule_nodes
+    } elsif ($process->{type} eq 'for block') {
+      my $index = $process->{index};
+      next unless defined $index; # end of for
+      my $block_name = $process->{block_name};
+      if (++$process->{index} <= $#{$process->{items}}) {
+        unshift @{$processes}, $process;
+        $self->_schedule_nodes
+            ($process->{sep_nodes}, $process->{node_info},
+             {preserve => 'preserve', trim => 'trim'}->{$process->{sep_space}} || $process->{space},
+             binds => $process->{node_info}->{binds})
+                if @{$process->{sep_nodes}};
+      } else {
+        unshift @{$processes},
+            {type => 'for block',
+             block_name => $block_name}; # end of for
+      }
+      
+      my $binds = $process->{node_info}->{binds} || {};
+      if ($process->{bound_to}) {
+        $binds = {%$binds, $process->{bound_to} => [$process->{items}, $index]};
+      }
+      $self->_schedule_nodes
+          ($process->{nodes}, $process->{node_info}, $process->{space},
+           binds => $binds, block_name => $block_name);
+    } elsif ($process->{type} eq 'end block') {
+      $process->{parent_node_info}->{has_non_space} = 1
+          if $process->{node_info}->{has_non_space};
 
 sub _cleanup ($) {
   my $self = $_[0];
@@ -1605,6 +1584,8 @@ sub _cleanup ($) {
     delete_package $self->{eval_package};
   }
 } # _cleanup
+
+=cut
 
 1;
 
