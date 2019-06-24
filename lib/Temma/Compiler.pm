@@ -154,6 +154,7 @@ sub compile ($$) {
     $self->{doc_to_path}->{$doc} = $f;
   }
 
+  $self->{compile} = {stack_size => 0};
   return $self->_compile ([$doc]);
 } # process_document
 
@@ -171,7 +172,7 @@ sub process_fragment ($$$;%) {
     my $binds = {};
     my $node_info = {allow_children => 1,
                      preserve_space => $sp eq 'preserve',
-                     binds => $binds,
+                     binds => $binds, # XXX
                      plaintext => $args{plain_text}};
     $self->_get_params ($doc->document_element, bind_args => $binds);
 
@@ -362,6 +363,7 @@ sub _compile ($) {
                              allow_children => 1, comment => 1,
                              has_non_space => 1, preserve_space => 1,
                              binds => $process->{node_info}->{binds},
+                             initial_stack_size => $self->{compile}->{stack_size},
                              fields => $process->{node_info}->{fields}};
 
             unshift @{$processes},
@@ -500,13 +502,15 @@ sub _compile ($) {
               next;
             }
 
-            my $vx = $self->eval_attr_value
-                ($node, 'x', context => 'scalar',
-                 node_info => $process->{node_info});
+            my $stack_index = $self->{compile}->{stack_size}++;
             $process->{node_info}->{binds}
-                = {%{$process->{node_info}->{binds} || {}}};
-            $process->{node_info}->{binds}->{$as} = [my $x = [], 0];
-            push @$result, ['my', $vx => $x, 0];
+                = {%{$process->{node_info}->{binds} || {}},
+                   $as => $stack_index};
+            push @$result, $self->eval_attr_value
+                ($node, 'x', context => 'scalar',
+                 node_info => $process->{node_info},
+                 destination => 'my',
+                 stack_index => $stack_index);
             next;
           } elsif ($ln eq 'macro') { # <t:macro>
             my $name = $node->get_attribute ('name');
@@ -663,7 +667,7 @@ sub _compile ($) {
                        $_->node_type == TEXT_NODE }
                 @{$macro->{node}->child_nodes->to_a}],
                $process->{node_info}, $sp,
-               binds => $binds,
+               binds => $binds, # XXX
                fields => $fields,
                is_entity_boundary => 1,
                macro_depth => ($process->{node_info}->{macro_depth} || 0) + 1);
@@ -698,6 +702,7 @@ sub _compile ($) {
 
         my $node_info = {node => $node, attrs => {},
                          binds => $process->{node_info}->{binds},
+                         initial_stack_size => $self->{compile}->{stack_size},
                          fields => $process->{node_info}->{fields},
                          macro_depth => $process->{node_info}->{macro_depth}};
 
@@ -729,7 +734,7 @@ sub _compile ($) {
               } elsif ($node_info->{lnn} eq 'html') {
                 $self->_get_params
                     ($node_info->{node},
-                     bind_args => $node_info->{binds} ||= {});
+                     bind_args => $node_info->{binds} ||= {}); # XXX
               }
             }
 
@@ -810,6 +815,11 @@ sub _compile ($) {
 
     } elsif ($process->{type} eq 'end tag') {
       next if $self->_close_start_tag ($process => $processes => $result);
+
+      if ($self->{compile}->{stack_size} != $process->{node_info}->{initial_stack_size}) {
+        push @$result, ['setstacksize', $process->{node_info}->{initial_stack_size}];
+        $self->{compile}->{stack_size} = $process->{node_info}->{initial_stack_size};
+      }
 
       if ($process->{node_info}->{comment}) {
         push @$result, ['printctext'], "-->";
@@ -1017,15 +1027,17 @@ sub eval_attr_value ($$$;%) {
   my $opts = {};
   if ($args{destination} eq 'attr') {
     $opts->{used_names} = $args{node_info}->{attrs};
-    $opts->{ns} = $self->{current_tag}->{ns};
+    $opts->{ns} = $self->{current_tag}->{ns}; # XXX optimization
   } elsif ($args{destination} eq 'addattr') {
     $opts->{attr_name} = $args{attr_name};
     $opts->{used_names} = $args{node_info}->{attrs};
+  } elsif ($args{destination} eq 'my') {
+    $opts->{stack_index} = $args{stack_index};
   }
 
   return ['eval', $location, $attr_node->value,
           $args{context} // '', $args{disallow_undef},
-          $args{node_info}->{binds} || {},
+          $args{node_info}->{binds} || {}, # XXX
           $args{destination}, $opts];
 } # eval_attr_value
 
@@ -1104,7 +1116,7 @@ sub _process_fields ($$$$) {
         || {preserve => 'preserve', trim => 'trim'}->{$sp}
         || ($process->{node_info}->{preserve_space} ? 'preserve' : 'trim');
     $fields->{$name} = {node => $_, sp => $sp,
-                        binds => $process->{node_info}->{binds}};
+                        binds => $process->{node_info}->{binds}}; # XXX
   }
   my $has_field = [[{map { $_ => 1 } keys %$fields}], 0];
   
@@ -1116,6 +1128,7 @@ sub evaluate ($$$;%) {
   my $writer = $ws->get_writer;
   return Promise->resolve->then (sub {
     my @op = @$compiled;
+    $self->{current} = {stack => []};
     return promised_until {
       return 'done' unless @op;
       while (@op) {
@@ -1127,12 +1140,11 @@ sub evaluate ($$$;%) {
 
         my $x = shift @op;
         if ($x->[0] eq 'eval') {
-          local $_ = $x->[5]; # XXX
           my $value = qq{local \$_;\n#line 1 "$x->[1]"\n$x->[2];};
-          if (keys %$_) {
+          if (keys %{$x->[5]}) {
             $value = "return do {\n$value\n};";
-            for my $var (keys %$_) {
-              $value = qq{for my \$$var (\$_->{$var}->[0]->[$_->{$var}->[1]]) {\n$value\n}\n};
+            for my $var (keys %{$x->[5]}) {
+              $value = qq{for my \$$var (\$_->[$x->[5]->{$var}]) {\n$value\n}\n};
             }
             $value = qq{#line 1 "vars for $x->[1]"\n} . $value;
           }
@@ -1143,6 +1155,7 @@ sub evaluate ($$$;%) {
           my $error;
           my $context = $x->[3];
           {
+            local $_ = $self->{current}->{stack};
             local $@;
             if ($context eq 'bool') {
               $evaled = !! (_eval $value);
@@ -1243,6 +1256,8 @@ sub evaluate ($$$;%) {
             $writer->write (\(htescape $evaled));
           } elsif ($x->[6] eq 'rawtext') {
             $self->{current}->{rawtext} .= $evaled;
+          } elsif ($x->[6] eq 'my') {
+            $self->{current}->{stack}->[$x->[7]->{stack_index}] = $evaled;
           } elsif ($x->[6] eq 'openstart') {
             #XXX
           } elsif ($x->[6] eq 'nop') {
